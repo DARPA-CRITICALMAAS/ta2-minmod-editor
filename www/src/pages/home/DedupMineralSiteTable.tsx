@@ -143,6 +143,8 @@ const columns = [
 export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = observer(({ commodity }) => {
   const { dedupMineralSiteStore, commodityStore } = useStores();
   const [editingDedupSite, setEditingDedupSite] = useState<string | undefined>(undefined);
+  const [currentRows, setCurrentRows] = useState<DedupMineralSite[]>([]);
+  const [movedRows, setMovedRows] = useState<DedupMineralSite[]>([]);
 
   useEffect(() => {
     if (commodity !== undefined) {
@@ -154,8 +156,26 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
     return <Alert message="Error" description="An error occurred while querying dedup mineral sites. Please try again later." type="error" showIcon />;
   }
 
+  const handleRowMove = (site: DedupMineralSite, toMoved: boolean) => {
+    if (toMoved) {
+      setCurrentRows((rows) => rows.filter((row) => row.id !== site.id));
+      setMovedRows((rows) => [...rows, site]);
+    } else {
+      setMovedRows((rows) => rows.filter((row) => row.id !== site.id));
+      setCurrentRows((rows) => [...rows, site]);
+    }
+  };
+
   const isLoading = dedupMineralSiteStore.state.value === "updating";
   const dedupMineralSites = commodity === undefined || isLoading ? emptyFetchResult : dedupMineralSiteStore.getByCommodity(commodity);
+
+  columns[0].render = (_: any, site: DedupMineralSite) => (
+    <Checkbox
+      onChange={(e) => handleRowMove(site, e.target.checked)}
+      checked={movedRows.some((row) => row.id === site.id)}
+    />
+  );
+
   columns[columns.length - 1].render = (_: any, site: DedupMineralSite) => {
     return (
       <Space>
@@ -182,18 +202,45 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
   };
 
   return (
-    <Table<DedupMineralSite>
-      bordered={true}
-      size="small"
-      rowKey="id"
-      columns={columns}
-      dataSource={dedupMineralSites.records}
-      loading={isLoading ? { size: "large" } : false}
-      expandable={{
-        expandedRowRender: (site) => <EditDedupMineralSite commodity={commodity!} dedupSite={site} />,
-        showExpandColumn: false,
-        expandedRowKeys: editingDedupSite === undefined ? [] : [editingDedupSite],
-      }}
-    />
+    <>
+      {movedRows.length > 0 && (
+        <div style={{ position: "sticky", top: 0, zIndex: 1000, background: "#fff", marginTop: "16px" }}>
+          <Typography.Title level={4}>Moved Rows</Typography.Title>
+          <Table<DedupMineralSite>
+            bordered={true}
+            size="small"
+            rowKey="id"
+            columns={[
+              {
+                title: <Button color="primary" variant="filled">Group</Button>,
+                key: "group",
+                render: (_: any, site: DedupMineralSite) => (
+                  <Checkbox
+                    type="primary"
+                    onClick={() => handleRowMove(site, false)}
+                  >
+                  </Checkbox>
+                ),
+              },
+              ...columns.slice(1),
+            ]}
+            dataSource={movedRows}
+          />
+        </div>
+      )}
+      <Table<DedupMineralSite>
+        bordered={true}
+        size="small"
+        rowKey="id"
+        columns={columns}
+        dataSource={dedupMineralSites.records}
+        loading={isLoading ? { size: "large" } : false}
+        expandable={{
+          expandedRowRender: (site) => <EditDedupMineralSite commodity={commodity!} dedupSite={site} />,
+          showExpandColumn: false,
+          expandedRowKeys: editingDedupSite === undefined ? [] : [editingDedupSite],
+        }}
+      />
+    </>
   );
 });
