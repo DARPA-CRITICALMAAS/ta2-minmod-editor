@@ -166,6 +166,21 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
     }
   };
 
+  const handleGroup = () => {
+    const allSiteIds = movedRows.flatMap((row) =>
+      row.sites.map((siteUri) => DedupMineralSite.getId(siteUri))
+    );
+
+    console.log("Grouped Site IDs:", allSiteIds);
+
+    if (allSiteIds.length === 0) {
+      alert("No site IDs found for grouping. Please add some rows.");
+    } else {
+      console.log("Grouping these IDs:", allSiteIds);
+    }
+  };
+
+
   const isLoading = dedupMineralSiteStore.state.value === "updating";
   const dedupMineralSites = commodity === undefined || isLoading ? emptyFetchResult : dedupMineralSiteStore.getByCommodity(commodity);
 
@@ -203,9 +218,12 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
 
   return (
     <>
-      {movedRows.length > 0 && (
+{movedRows.length > 0 && (
         <div style={{ position: "sticky", top: 0, zIndex: 1000, background: "#fff", marginTop: "16px" }}>
           <Typography.Title level={4}>Moved Rows</Typography.Title>
+          <Button type="primary" onClick={handleGroup}>
+            Group
+          </Button>
           <Table<DedupMineralSite>
             bordered={true}
             size="small"
@@ -218,8 +236,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
                   <Checkbox
                     type="primary"
                     onClick={() => handleRowMove(site, false)}
-                  >
-                  </Checkbox>
+                  />
                 ),
               },
               ...columns.slice(1),
