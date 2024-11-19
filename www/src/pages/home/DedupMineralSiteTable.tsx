@@ -168,56 +168,56 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
     }
   };
 
-
   const handleGroup = async () => {
     try {
-      // Step 1: Collect Site IDs
       const allSiteIds = movedRows.flatMap((row) =>
         row.sites.map((siteUri) => DedupMineralSite.getId(siteUri))
       );
-
+  
       if (allSiteIds.length === 0) {
         alert("No site IDs found for grouping. Please add some rows.");
         return;
       }
-
+  
       const sameAsPayload = [
         {
           sites: allSiteIds,
         },
       ];
-
+  
       console.log("Grouping Payload:", sameAsPayload);
-
+  
       let sameAsResponse;
       try {
         sameAsResponse = await axios.post("/api/v1/same-as", sameAsPayload, {
           headers: {
             "Content-Type": "application/json",
           },
-          withCredentials: true, 
+          withCredentials: true,
         });
-
+  
         console.log("Group API Response:", sameAsResponse.data);
       } catch (error) {
         console.error("Error during /same-as API call:", error);
         alert("Group operation failed. Please check the console for details.");
         return;
       }
-
+  
       const ids = sameAsResponse.data.map((entry: any) => entry.id);
       console.log("Extracted IDs:", ids);
+  
       if (ids.length === 0) {
         alert("No IDs returned from grouping API. Cannot proceed.");
         return;
       }
-
+  
       const findByIdsPayload = {
         ids,
       };
-
+  
+      let findByIdsResponse;
       try {
-        const findByIdsResponse = await axios.post(
+        findByIdsResponse = await axios.post(
           `/api/v1/dedup-mineral-sites/find_by_ids?commodity=${commodity?.id}`,
           findByIdsPayload,
           {
@@ -227,10 +227,35 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
             withCredentials: true,
           }
         );
-
-        console.log("Find by IDs API Response:", findByIdsResponse.data);
-
-        alert("Find by IDs operation successful!");
+  
+        console.log("Find by IDs API Response Data:", findByIdsResponse.data);
+  
+        const records = Array.isArray(findByIdsResponse.data)
+          ? findByIdsResponse.data
+          : [findByIdsResponse.data];
+  
+        const newRecords = records
+          .filter((record: any) => record && record.id)
+          .map((record: any) => {
+            try {
+              return dedupMineralSiteStore.deserialize(record);
+            } catch (error) {
+              console.warn("Skipping invalid record during deserialization:", record, error);
+              return null;
+            }
+          })
+          .filter((record: DedupMineralSite | null): record is DedupMineralSite => record !== null); 
+  
+        console.log("Validated and Deserialized Records:", newRecords);
+  
+        newRecords.forEach((record: DedupMineralSite) => {
+          dedupMineralSiteStore.records.set(record.id, record);
+        });
+  
+        const selectedUris = movedRows.map((row) => row.uri);
+        dedupMineralSiteStore.bulkDelete(selectedUris);
+  
+        alert("Group operation successful!");
       } catch (error) {
         console.error("Error during /find_by_ids API call:", error);
         alert("Failed to fetch data by IDs. Please check the console for details.");
@@ -240,6 +265,9 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
       alert("An unexpected error occurred. Please check the console for details.");
     }
   };
+  
+  
+
 
 
 
