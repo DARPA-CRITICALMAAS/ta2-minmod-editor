@@ -11,6 +11,8 @@ export class DedupMineralSiteStore extends RStore<string, DedupMineralSite> {
 
     makeObservable(this, {
       forceFetchByURI: action,
+      bulkDelete: action,
+      bulkUpdate: action,
     });
   }
 
@@ -79,5 +81,54 @@ export class DedupMineralSiteStore extends RStore<string, DedupMineralSite> {
 
   protected normRemoteSuccessfulResponse(resp: any): FetchResponse {
     return { items: resp.data, total: resp.total };
+  }
+
+
+  bulkDelete(uris: string[]): void {
+    runInAction(() => {
+      uris.forEach((uri) => {
+        const id = DedupMineralSite.getId(uri);
+        const record = this.records.get(id);
+        if (record) {
+          this.deindex(record);
+          this.records.delete(id);
+        }
+      });
+      this.state.value = "updated";
+    });
+  }
+
+
+  bulkUpdate(updates: { uri: string; changes: Partial<DedupMineralSite> }[]): void {
+    runInAction(() => {
+      updates.forEach(({ uri, changes }) => {
+        const id = DedupMineralSite.getId(uri);
+        const record = this.records.get(id);
+        if (record) {
+          const updatedRecord: DedupMineralSite = new DedupMineralSite({
+            id: record.id,
+            uri: record.uri,
+            name: changes.name ?? record.name,
+            type: changes.type ?? record.type,
+            rank: changes.rank ?? record.rank,
+            sites: changes.sites ?? record.sites,
+            depositTypes: changes.depositTypes ?? record.depositTypes,
+            location: changes.location ?? record.location,
+            gradeTonnage: changes.gradeTonnage ?? record.gradeTonnage,
+          });
+
+          this.deindex(record);
+          this.records.set(id, updatedRecord);
+          this.index(updatedRecord);
+        }
+      });
+      this.state.value = "updated";
+    });
+  }
+
+  private deindex(record: DedupMineralSite): void {
+    this.indices.forEach((index) => {
+      index.remove(record);
+    });
   }
 }
