@@ -7,6 +7,7 @@ import { FetchResult } from "gena-app";
 import { EditOutlined, UngroupOutlined } from "@ant-design/icons";
 import { EditDedupMineralSite } from "./editDedupSite/EditDedupMineralSite";
 import { Entity } from "components/Entity";
+import axios from "axios";
 
 interface DedupMineralSiteTableProps {
   commodity: Commodity | undefined;
@@ -166,19 +167,42 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
     }
   };
 
-  const handleGroup = () => {
+
+  const handleGroup = async () => {
     const allSiteIds = movedRows.flatMap((row) =>
       row.sites.map((siteUri) => DedupMineralSite.getId(siteUri))
     );
 
-    console.log("Grouped Site IDs:", allSiteIds);
-
     if (allSiteIds.length === 0) {
       alert("No site IDs found for grouping. Please add some rows.");
-    } else {
-      console.log("Grouping these IDs:", allSiteIds);
+      return;
+    }
+
+    const payload = [
+      {
+        sites: allSiteIds,
+      },
+    ];
+
+    console.log("Grouping Payload:", payload);
+
+    try {
+      const response = await axios.post("/api/v1/same-as", payload, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true, 
+      });
+
+      console.log("Group API Response:", response.data);
+
+      alert("Group operation successful!");
+    } catch (error) {
+      console.error("Error during API call:", error);
+      alert("Group operation failed. Please check the console for details.");
     }
   };
+
 
 
   const isLoading = dedupMineralSiteStore.state.value === "updating";
@@ -218,7 +242,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
 
   return (
     <>
-{movedRows.length > 0 && (
+      {movedRows.length > 0 && (
         <div style={{ position: "sticky", top: 0, zIndex: 1000, background: "#fff", marginTop: "16px" }}>
           <Typography.Title level={4}>Moved Rows</Typography.Title>
           <Button type="primary" onClick={handleGroup}>
