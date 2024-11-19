@@ -8,6 +8,7 @@ import { EditOutlined, UngroupOutlined } from "@ant-design/icons";
 import { EditDedupMineralSite } from "./editDedupSite/EditDedupMineralSite";
 import { Entity } from "components/Entity";
 import axios from "axios";
+import { DepositTypeStore } from "models/depositType";
 
 interface DedupMineralSiteTableProps {
   commodity: Commodity | undefined;
@@ -169,39 +170,77 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
 
 
   const handleGroup = async () => {
-    const allSiteIds = movedRows.flatMap((row) =>
-      row.sites.map((siteUri) => DedupMineralSite.getId(siteUri))
-    );
-
-    if (allSiteIds.length === 0) {
-      alert("No site IDs found for grouping. Please add some rows.");
-      return;
-    }
-
-    const payload = [
-      {
-        sites: allSiteIds,
-      },
-    ];
-
-    console.log("Grouping Payload:", payload);
-
     try {
-      const response = await axios.post("/api/v1/same-as", payload, {
-        headers: {
-          "Content-Type": "application/json",
+      // Step 1: Collect Site IDs
+      const allSiteIds = movedRows.flatMap((row) =>
+        row.sites.map((siteUri) => DedupMineralSite.getId(siteUri))
+      );
+
+      if (allSiteIds.length === 0) {
+        alert("No site IDs found for grouping. Please add some rows.");
+        return;
+      }
+
+      const sameAsPayload = [
+        {
+          sites: allSiteIds,
         },
-        withCredentials: true, 
-      });
+      ];
 
-      console.log("Group API Response:", response.data);
+      console.log("Grouping Payload:", sameAsPayload);
 
-      alert("Group operation successful!");
-    } catch (error) {
-      console.error("Error during API call:", error);
-      alert("Group operation failed. Please check the console for details.");
+      let sameAsResponse;
+      try {
+        sameAsResponse = await axios.post("/api/v1/same-as", sameAsPayload, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true, 
+        });
+
+        console.log("Group API Response:", sameAsResponse.data);
+      } catch (error) {
+        console.error("Error during /same-as API call:", error);
+        alert("Group operation failed. Please check the console for details.");
+        return;
+      }
+
+      const ids = sameAsResponse.data.map((entry: any) => entry.id);
+      console.log("Extracted IDs:", ids);
+      if (ids.length === 0) {
+        alert("No IDs returned from grouping API. Cannot proceed.");
+        return;
+      }
+
+      const findByIdsPayload = {
+        ids,
+      };
+
+      try {
+        const findByIdsResponse = await axios.post(
+          `/api/v1/dedup-mineral-sites/find_by_ids?commodity=${commodity?.id}`,
+          findByIdsPayload,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+            withCredentials: true,
+          }
+        );
+
+        console.log("Find by IDs API Response:", findByIdsResponse.data);
+
+        alert("Find by IDs operation successful!");
+      } catch (error) {
+        console.error("Error during /find_by_ids API call:", error);
+        alert("Failed to fetch data by IDs. Please check the console for details.");
+      }
+    } catch (generalError) {
+      console.error("Unexpected error in handleGroup:", generalError);
+      alert("An unexpected error occurred. Please check the console for details.");
     }
   };
+
 
 
 
