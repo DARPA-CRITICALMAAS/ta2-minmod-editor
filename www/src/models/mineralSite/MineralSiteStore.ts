@@ -30,7 +30,7 @@ export class MineralSiteStore extends CRUDStore<string, DraftCreateMineralSite, 
 
   public deserialize(record: any): MineralSite {
     return new MineralSite({
-      uri: record.uri,
+      id: record.id,
       recordId: record.record_id,
       sourceId: record.source_id,
       dedupSiteURI: record.dedup_site_uri,
@@ -117,6 +117,6 @@ export class MineralSiteStore extends CRUDStore<string, DraftCreateMineralSite, 
   }
 
   protected normRemoteSuccessfulResponse(resp: any): FetchResponse {
-    return { items: resp.data, total: resp.total };
+    return { items: Array.isArray(resp.data) ? resp.data : Object.values(resp.data), total: resp.total };
   }
 }
