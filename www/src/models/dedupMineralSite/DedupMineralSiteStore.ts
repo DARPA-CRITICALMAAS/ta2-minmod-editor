@@ -6,6 +6,7 @@ import axios from "axios";
 import { action, makeObservable, runInAction } from "mobx";
 import { NamespaceManager } from "models/Namespace";
 import { GradeTonnage } from "models/mineralSite";
+import { InternalID } from "models/typing";
 
 export class DedupMineralSiteStore extends RStore<string, DedupMineralSite> {
   ns: NamespaceManager;
@@ -16,8 +17,8 @@ export class DedupMineralSiteStore extends RStore<string, DedupMineralSite> {
 
     makeObservable(this, {
       forceFetchByURI: action,
-      bulkDelete: action,
-      bulkUpdate: action,
+      deleteByIds: action,
+      replaceSites: action,
     });
   }
 
@@ -25,51 +26,31 @@ export class DedupMineralSiteStore extends RStore<string, DedupMineralSite> {
     return this.indices[0] as SingleKeyIndex<string, string, DedupMineralSite>;
   }
 
-  bulkDelete(uris: string[]): void {
-    runInAction(() => {
-      uris.forEach((uri) => {
-        const id = DedupMineralSite.getId(uri);
-        const record = this.records.get(id);
-        if (record) {
-          this.deindex(record);
-          this.records.delete(id);
-        }
-      });
-      this.state.value = "updated";
-    });
+  /**
+   * Delete dedup mineral sites by their Ids
+   * @param ids
+   */
+  deleteByIds(ids: InternalID[]): void {
+    this.state.value = "updating";
+    for (const id of ids) {
+      const record = this.records.get(id);
+      if (record !== undefined && record !== null) {
+        this.deindex(record);
+        this.records.delete(id);
+      }
+    }
+    this.state.value = "updated";
   }
 
-  private deindex(record: DedupMineralSite): void {
-    this.indices.forEach((index) => {
-      index.remove(record);
-    });
-  }
-
-  bulkUpdate(updates: { uri: string; changes: Partial<DedupMineralSite> }[]): void {
-    runInAction(() => {
-      updates.forEach(({ uri, changes }) => {
-        const id = DedupMineralSite.getId(uri);
-        const record = this.records.get(id);
-        if (record) {
-          const updatedRecord: DedupMineralSite = new DedupMineralSite({
-            id: record.id,
-            uri: record.uri,
-            name: changes.name ?? record.name,
-            type: changes.type ?? record.type,
-            rank: changes.rank ?? record.rank,
-            sites: changes.sites ?? record.sites,
-            depositTypes: changes.depositTypes ?? record.depositTypes,
-            location: changes.location ?? record.location,
-            gradeTonnage: changes.gradeTonnage ?? record.gradeTonnage,
-          });
-
-          this.deindex(record);
-          this.records.set(id, updatedRecord);
-          this.index(updatedRecord);
-        }
-      });
-      this.state.value = "updated";
-    });
+  /**
+   * Replace given dedup sites with new sites
+   *
+   * @param prevIds previous sites to delete
+   * @param newIds new sites to add
+   */
+  async replaceSites(prevIds: InternalID[], newIds: InternalID[]): Promise<void> {
+    const newSites = await this.fetchByIds(newIds, true);
+    this.deleteByIds(prevIds);
   }
 
   async forceFetchByURI(uri: string, commodity: string): Promise<DedupMineralSite | undefined> {
@@ -160,5 +141,14 @@ export class DedupMineralSiteStore extends RStore<string, DedupMineralSite> {
 
   protected normRemoteSuccessfulResponse(resp: any): FetchResponse {
     return { items: resp.data, total: resp.total };
+  }
+
+  /**
+   * Remove a record (by id) from your indexes
+   */
+  protected deindex(record: DedupMineralSite): void {
+    for (const index of this.indices) {
+      index.remove(record);
+    }
   }
 }

@@ -246,7 +246,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
         });
 
         const selectedUris = movedRows.map((row) => row.uri);
-        dedupMineralSiteStore.bulkDelete(selectedUris);
+        dedupMineralSiteStore.deleteByIds(selectedUris);
 
         alert("Group operation successful!");
       } catch (error) {
