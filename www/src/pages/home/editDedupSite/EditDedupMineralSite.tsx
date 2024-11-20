@@ -47,33 +47,29 @@ export const EditDedupMineralSite = withStyles(css)(
     const sites = fetchedSites.filter((site) => site !== null) as MineralSite[];
     const isLoading = mineralSiteStore.state.value === "updating" || fetchedSites.length !== dedupSite.sites.length;
 
-    const handleCreateOne = async () => {
+    const ungroupTogether = async () => {
       const selectedSiteIds = Array.from(selectedRows);
 
       const allSiteIds = sites.map((site) => site.id);
 
       const unselectedSiteIds = allSiteIds.filter((id) => !selectedRows.has(id));
 
-      const sameAsPayload =
+      const newGroups =
         [
           { sites: selectedSiteIds },
           { sites: unselectedSiteIds },
         ]
 
-      const sameAsResponse = await dedupMineralSiteStore.createOnegroup(sameAsPayload);
-      const newIds = sameAsResponse.map((item: any) => item.id);
-
-
-
+      const newIds = await dedupMineralSiteStore.updateSameAsGroup(newGroups);
       if (commodity && commodity.id) {
         const commodityId = commodity.id;
         await dedupMineralSiteStore.replaceSites([dedupSite.id], newIds, commodityId);
-        message.success("Operation was successful!");
+        message.success("Ungrouping was successful!");
 
       }
     };
 
-    const handleKGroup = async () => {
+    const ungroupSeparately = async () => {
       const selectedSiteIds = Array.from(selectedRows);
 
       const allSiteIds = sites.map((site) => site.id);
@@ -84,14 +80,13 @@ export const EditDedupMineralSite = withStyles(css)(
       const unselectedPayload = unselectedSiteIds.length > 0 ? [{ sites: unselectedSiteIds }] : [];
       const createPayload = [...selectedPayload, ...unselectedPayload];
 
-      const response = await dedupMineralSiteStore.createKgroups(createPayload);
+      const newIds = await dedupMineralSiteStore.updateSameAsGroup(createPayload);
 
-      const newIds = response.data.map((item: any) => item.id);
 
       if (commodity && commodity.id) {
         const commodityId = commodity.id;
         await dedupMineralSiteStore.replaceSites([dedupSite.id], newIds, commodityId);
-        message.success("Operation was successful!");
+        message.success("Ungrouping was successful!");
       }
 
     };
@@ -113,7 +108,7 @@ export const EditDedupMineralSite = withStyles(css)(
                   style={{ background: "#e6f4ff", color: "#1677ff" }}
                   type="default"
                   size="small"
-                  onClick={handleCreateOne}
+                  onClick={ungroupTogether}
                 >
                   Ungroup together
                 </Button>
@@ -121,7 +116,7 @@ export const EditDedupMineralSite = withStyles(css)(
                   style={{ background: "#e6f4ff", color: "#1677ff" }}
                   type="default"
                   size="small"
-                  onClick={handleKGroup}
+                  onClick={ungroupSeparately}
                 >
                   Ungroup Separetely
                 </Button>
@@ -259,7 +254,7 @@ export const EditDedupMineralSite = withStyles(css)(
           },
         },
       ];
-    }, [commodity.id, selectedRows, selectedRows, handleCreateOne]);
+    }, [commodity.id, selectedRows, selectedRows, ungroupTogether]);
 
     useEffect(() => {
       mineralSiteStore.fetchByIds(dedupSite.sites);

@@ -19,9 +19,6 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
   const { dedupMineralSiteStore, countryStore, stateOrProvinceStore } = useStores();
   const [editingDedupSite, setEditingDedupSite] = useState<string | undefined>(undefined);
   const [selectedDedupSiteIds, setSelectedDedupSiteIds] = useState<Set<string>>(new Set());
-  const [messageApi, contextHolder] = message.useMessage();
-  const [showDiv, setShowDiv] = useState(true);
-  const [ungroupingSite, setUngroupingSite] = useState<string | undefined>(undefined);
 
   const columns = useMemo(() => {
     return [
@@ -201,23 +198,16 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
 
   useEffect(() => {
     const fetchData = async () => {
-      if (commodity) {
-        try {
-          const result = await dedupMineralSiteStore.fetchByCommodity(commodity);
-        } catch (error) {
-          console.error("Error fetching data:", error);
-        }
+      if (commodity !== undefined) {
+        await dedupMineralSiteStore.fetchByCommodity(commodity);
+
       }
     };
     fetchData();
   }, [commodity, dedupMineralSiteStore]);
 
-  if (dedupMineralSiteStore.state.value === "error") {
-    return <Alert message="Error" description="An error occurred while querying dedup mineral sites. Please try again later." type="error" showIcon />;
-  }
 
   const selectDedupSite = (site: DedupMineralSite, selectOrNot: boolean) => {
-    setShowDiv(true);
 
     if (selectOrNot) {
       setSelectedDedupSiteIds(selectedDedupSiteIds.union(new Set([site.id])));
@@ -239,7 +229,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
 
     if (commodity && commodity.id) {
       const commodityId = commodity.id;
-      message.info("Grouping was successful", 3);
+      message.success("Grouping was successful", 3);
       setSelectedDedupSiteIds(new Set());
       await dedupMineralSiteStore.replaceSites(prevIds, newIds, commodityId);
     }
@@ -250,11 +240,13 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
 
   return (
     <>
-      {showDiv && selectedDedupSiteIds.size > 0 && (
-        <div style={{ top: 0, zIndex: 1000, background: "#fff", marginTop: "16px" }}>
-          <Button type="primary" onClick={handleGroup}>
-            Group selected sites
-          </Button>
+      {selectedDedupSiteIds.size > 0 && (
+        <>
+          <div>
+            <Button type="primary" onClick={handleGroup}>
+              Group selected sites
+            </Button>
+          </div>
           <Table<DedupMineralSite>
             bordered={true}
             size="small"
@@ -270,7 +262,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
             ]}
             dataSource={Array.from(selectedDedupSiteIds).map((id) => dedupMineralSiteStore.get(id)!)}
           />
-        </div>
+        </>
       )}
       <Table<DedupMineralSite>
         bordered={true}
@@ -287,7 +279,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
             return null;
           },
           showExpandColumn: false,
-          expandedRowKeys: [...(editingDedupSite ? [editingDedupSite] : []), ...(ungroupingSite ? [ungroupingSite] : [])],
+          expandedRowKeys: [...(editingDedupSite ? [editingDedupSite] : [])],
         }}
       />
     </>

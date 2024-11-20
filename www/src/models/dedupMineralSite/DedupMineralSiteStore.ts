@@ -139,36 +139,6 @@ export class DedupMineralSiteStore extends RStore<string, DedupMineralSite> {
     });
   }
 
-  async createOnegroup(sameAsPayload: any): Promise<any> {
-    try {
-      const response = await axios.post("/api/v1/same-as", sameAsPayload, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        withCredentials: true,
-      });
-
-      return response.data;
-    } catch (error) {
-      console.error("Error during groupMineralSites:", error);
-      throw error;
-    }
-  }
-  async createKgroups(payload: any): Promise<any> {
-    try {
-      const response = await axios.post("/api/v1/same-as", payload, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        withCredentials: true,
-      });
-
-      return response.data;
-    } catch (error) {
-      console.error("Error during groupMineralSites:", error);
-      throw error;
-    }
-  }
   async updateSameAsGroup(groups: { sites: InternalID[] }[]): Promise<InternalID[]> {
     const response = await axios.post("/api/v1/same-as", groups, {
       headers: {
