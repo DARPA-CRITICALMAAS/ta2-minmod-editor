@@ -43,29 +43,40 @@ export const Ungroup = withStyles(css)(
     const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
 
     const columns = useMemo(() => {
+      const selectedCount = selectedRows.size;
       return [
         {
-            title: (
-                <Space>
-                <div style={{ display: "flex", flexDirection: "column", gap: "10px", alignItems: "flex-start" }}>
-                  <Button style={{background:"#e6f4ff", color:"#1677ff"}}
-                    type="default"
-                    size="small"
-                    onClick={handleUngroupAll} 
-
-                  >
-                    Ungroup All
-                  </Button>
-                  <Button style={{background:"#e6f4ff", color:"#1677ff"}}
-                    type="default"
-                    size="small"
-                    onClick={handleCreateDedupSite}
-                  >
-                    Create New
-                  </Button>
-                  </div> 
-                </Space>
-             ),          
+          title: (
+            <Space>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "10px",
+                  alignItems: "flex-start",
+                }}
+              >
+                <Button
+                  style={{ background: "#e6f4ff", color: "#1677ff" }}
+                  type="default"
+                  size="small"
+                  onClick={handleUngroupAll} 
+                >
+                  Create 1 Group
+                </Button>
+                <Button
+                  style={{ background: "#e6f4ff", color: "#1677ff" }}
+                  type="default"
+                  size="small"
+                  onClick={handleCreateDedupSite}
+                >
+                  {selectedCount === 0
+                    ? "Create Group"
+                    : `Create ${selectedCount} Group${selectedCount > 1 ? "s" : ""}`}
+                </Button>
+              </div>
+            </Space>
+          ),        
         key: "select",
           render: (_: any, site: MineralSite) => (
             <Checkbox
