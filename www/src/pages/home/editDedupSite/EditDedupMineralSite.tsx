@@ -127,7 +127,7 @@ export const EditDedupMineralSite = withStyles(css)(
                   size="small"
                   onClick={handleCreateOne}
                 >
-                  Create 1 Group
+                  Ungroup together
                 </Button>
                 <Button
                   style={{ background: "#e6f4ff", color: "#1677ff" }}
@@ -135,9 +135,7 @@ export const EditDedupMineralSite = withStyles(css)(
                   size="small"
                   onClick={handleKGroup}
                 >
-                  {selectedCount === 0
-                    ? "Create Group"
-                    : `Create ${selectedCount} Group${selectedCount > 1 ? "s" : ""}`}
+                  Ungroup Separetely
                 </Button>
               </div>
             </Space>
