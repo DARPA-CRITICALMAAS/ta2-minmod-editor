@@ -278,7 +278,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
     <>
       {groupSuccess && <Alert message="Grouping successful!" type="success" showIcon closable afterClose={() => setGroupSuccess(false)} />}
       {showStickyDiv && selectedDedupSiteIds.size > 0 && (
-        <div style={{ position: "sticky", top: 0, zIndex: 1000, background: "#fff", marginTop: "16px" }}>
+        <div style={{ top: 0, zIndex: 1000, background: "#fff", marginTop: "16px" }}>
           <Button type="primary" onClick={handleGroup}>
             Group selected sites
           </Button>
