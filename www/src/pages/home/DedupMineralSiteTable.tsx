@@ -33,7 +33,7 @@ const columns = [
         </Typography.Link>
       );
     },
-    sorter: (a: DedupMineralSite, b: DedupMineralSite) => a.name.localeCompare(b.name),
+      sorter: (a: DedupMineralSite, b: DedupMineralSite) => a.name.localeCompare(b.name),
   },
   {
     title: "Type",
@@ -60,6 +60,11 @@ const columns = [
       }
       return "-";
     },
+    sorter: (a: DedupMineralSite, b: DedupMineralSite) => {
+      const locA = a.location ? `${a.location.lat},${a.location.lon}` : "";
+      const locB = b.location ? `${b.location.lat},${b.location.lon}` : "";
+      return locA.localeCompare(locB);
+    },
   },
   {
     title: "Country",
@@ -77,6 +82,11 @@ const columns = [
         </Space>
       );
     },
+    sorter: (a: DedupMineralSite, b: DedupMineralSite) => {
+      const countryA = a.location?.country.join(",") || "";
+      const countryB = b.location?.country.join(",") || "";
+      return countryA.localeCompare(countryB);
+    },
   },
   {
     title: "State/Province",
@@ -93,6 +103,11 @@ const columns = [
           ))}
         </Space>
       );
+    },
+    sorter: (a: DedupMineralSite, b: DedupMineralSite) => {
+      const stateA = a.location?.stateOrProvince.join(",") || "";
+      const stateB = b.location?.stateOrProvince.join(",") || "";
+      return stateA.localeCompare(stateB);
     },
   },
   {
@@ -127,6 +142,11 @@ const columns = [
       }
       return "-";
     },
+    sorter: (a: DedupMineralSite, b: DedupMineralSite) => {
+      const tonnageA = a.gradeTonnage?.totalTonnage || 0;
+      const tonnageB = b.gradeTonnage?.totalTonnage || 0;
+      return tonnageA - tonnageB;
+    },
   },
   {
     title: "Grade (%)",
@@ -136,6 +156,11 @@ const columns = [
         return site.gradeTonnage.totalGrade.toFixed(2);
       }
       return "-";
+    },
+    sorter: (a: DedupMineralSite, b: DedupMineralSite) => {
+      const gradeA = a.gradeTonnage?.totalGrade || 0;
+      const gradeB = b.gradeTonnage?.totalGrade || 0;
+      return gradeA - gradeB;
     },
   },
   {
@@ -152,12 +177,21 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
   const [groupSuccess, setGroupSuccess] = useState(false);
   const [showStickyDiv, setShowStickyDiv] = useState(true);
   const [ungroupingSite, setUngroupingSite] = useState<string | undefined>(undefined);
+  const [data, setData] = useState<DedupMineralSite[]>([]);
 
   useEffect(() => {
-    if (commodity !== undefined) {
-      dedupMineralSiteStore.fetchByCommodity(commodity);
-    }
-  }, [commodity]);
+    const fetchData = async () => {
+      if (commodity) {
+        try {
+          const result = await dedupMineralSiteStore.fetchByCommodity(commodity);
+          setData(result.records || []);
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        }
+      }
+    };
+    fetchData();
+  }, [commodity, dedupMineralSiteStore]);
 
   if (dedupMineralSiteStore.state.value === "error") {
     return <Alert message="Error" description="An error occurred while querying dedup mineral sites. Please try again later." type="error" showIcon />;
