@@ -241,9 +241,9 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
 
         if (commodity && commodity.id) {
           const commodityId = commodity.id;
-          await dedupMineralSiteStore.replaceSites(prevIds, newIds, commodityId);
           setGroupSuccess(true);
           setSelectedDedupSiteIds(new Set());
+          await dedupMineralSiteStore.replaceSites(prevIds, newIds, commodityId);
         } else {
           console.error("commodity is undefined or does not have an id");
         }
@@ -305,9 +305,8 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
       {groupSuccess && <Alert message="Grouping successful!" type="success" showIcon closable afterClose={() => setGroupSuccess(false)} />}
       {showStickyDiv && selectedDedupSiteIds.size > 0 && (
         <div style={{ position: "sticky", top: 0, zIndex: 1000, background: "#fff", marginTop: "16px" }}>
-          <Typography.Title level={4}>Moved Rows</Typography.Title>
           <Button type="primary" onClick={handleGroup}>
-            Group
+            Group selected sites
           </Button>
           <Table<DedupMineralSite>
             bordered={true}
@@ -315,11 +314,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
             rowKey="id"
             columns={[
               {
-                title: (
-                  <Button color="primary" variant="filled">
-                    Group
-                  </Button>
-                ),
+                title: "Select",
                 key: "group",
                 render: (_: any, site: DedupMineralSite) => <Checkbox type="primary" checked={true} onClick={() => selectDedupSite(site, false)} />,
               },
