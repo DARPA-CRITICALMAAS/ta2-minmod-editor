@@ -7,6 +7,7 @@ import { WithStyles, withStyles } from "@material-ui/styles";
 import { CanEntComponent, ListCanEntComponent } from "./editDedupSite/CandidateEntity";
 import { join } from "misc";
 import { orange } from "@ant-design/colors";
+import axios from "axios";
 
 const css = {
   table: {
@@ -27,20 +28,109 @@ interface UngroupProps {
   commodity: Commodity;
   dedupSite: DedupMineralSite;
 }
-const handleUngroupAll = async () => {
-    console.log("clicked handleGroup")
-}
 
-const handleCreateDedupSite = async () => {
-    console.log("clicked handleCreateDedupSite")
-}
+
+
 
 
 export const Ungroup = withStyles(css)(
   observer(({ dedupSite, commodity, classes }: UngroupProps & WithStyles<typeof css>) => {
     const stores = useStores();
-    const { mineralSiteStore, userStore } = stores;
+    const { mineralSiteStore,dedupMineralSiteStore, userStore } = stores;
     const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+
+    const tmpLst: (MineralSite | null | undefined)[] = dedupSite.sites.map((id) =>
+      mineralSiteStore.get(id)
+    );
+    const fetchedSites = tmpLst.filter((site) => site !== undefined) as (MineralSite | null)[];
+    const sites = fetchedSites.filter((site) => site !== null) as MineralSite[];
+    const isLoading =
+      mineralSiteStore.state.value === "updating" || fetchedSites.length !== dedupSite.sites.length;
+
+    const handleCreateOne = async () => {
+      try {
+        const selectedSiteIds = Array.from(selectedRows);
+        console.log("Selected Site IDs:", selectedSiteIds);
+
+        const allSiteIds = sites.map((site) => site.id);
+        console.log("All Site IDs:", allSiteIds);
+
+        const unselectedSiteIds = allSiteIds.filter((id) => !selectedRows.has(id));
+        console.log("Unselected Site IDs:", unselectedSiteIds);
+
+        const sameAsPayload =
+         [
+            { sites: selectedSiteIds },
+            { sites: unselectedSiteIds },
+          ]
+        console.log("Grouping Payload:", sameAsPayload);
+
+        const sameAsResponse = await axios.post("/api/v1/same-as", sameAsPayload, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        });
+
+        console.log("Group API Response:", sameAsResponse.data);
+        const newIds = sameAsResponse.data.map((item: any) => item.id);
+
+        console.log("New Site IDs:", newIds);
+  
+        if (commodity && commodity.id) {
+          const commodityId = commodity.id;
+          await dedupMineralSiteStore.replaceSites([dedupSite.id], newIds, commodityId);
+      }else {
+        console.error("commodity is undefined or does not have an id");
+    } }  catch (error) {
+        console.error("Error during handleUngroupAll:", error);
+        alert("An error occurred while performing the ungroup operation. Check the console for details.");
+      }
+    };
+
+    const handleKGroup = async () => {
+      try {
+        const selectedSiteIds = Array.from(selectedRows);
+        console.log("Selected Site IDs:", selectedSiteIds);
+    
+        const allSiteIds = sites.map((site) => site.id);
+        console.log("All Site IDs:", allSiteIds);
+    
+        const unselectedSiteIds = allSiteIds.filter((id) => !selectedRows.has(id));
+        console.log("Unselected Site IDs:", unselectedSiteIds);
+    
+        const selectedPayload = selectedSiteIds.map((id) => ({ sites: [id] }));
+        const unselectedPayload = unselectedSiteIds.length > 0 ? [{ sites: unselectedSiteIds }] : [];
+        const createPayload = [...selectedPayload, ...unselectedPayload];
+    
+        console.log("Create Dedup Site Payload:", createPayload);
+    
+        const response = await axios.post("/api/v1/same-as", createPayload, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        });
+    
+        console.log("Create Dedup Site API Response:", response.data);
+    
+        const newIds = response.data.map((item: any) => item.id);
+        console.log("New Site IDs:", newIds);
+    
+        if (commodity && commodity.id) {
+          const commodityId = commodity.id;
+          await dedupMineralSiteStore.replaceSites([dedupSite.id], newIds, commodityId);
+          console.log("Successfully replaced sites.");
+        } else {
+          console.error("commodity is undefined or does not have an id");
+        }
+      } catch (error) {
+        console.error("Error during handleCreateDedupSite:", error);
+        alert("An error occurred while creating dedup sites. Check the console for details.");
+      }
+    };
+    
+
 
     const columns = useMemo(() => {
       const selectedCount = selectedRows.size;
@@ -60,7 +150,7 @@ export const Ungroup = withStyles(css)(
                   style={{ background: "#e6f4ff", color: "#1677ff" }}
                   type="default"
                   size="small"
-                  onClick={handleUngroupAll} 
+                  onClick={handleCreateOne} 
                 >
                   Create 1 Group
                 </Button>
@@ -68,7 +158,7 @@ export const Ungroup = withStyles(css)(
                   style={{ background: "#e6f4ff", color: "#1677ff" }}
                   type="default"
                   size="small"
-                  onClick={handleCreateDedupSite}
+                  onClick={handleKGroup}
                 >
                   {selectedCount === 0
                     ? "Create Group"
@@ -183,16 +273,11 @@ export const Ungroup = withStyles(css)(
           },
         },
       ];
-    }, [commodity.id, selectedRows]);
+    }, [commodity.id, selectedRows,selectedRows, handleCreateOne]);
 
     useEffect(() => {
       mineralSiteStore.fetchByIds(dedupSite.sites);
-    }, [mineralSiteStore]);
-
-    const tmpLst: (MineralSite | null | undefined)[] = dedupSite.sites.map((id) => mineralSiteStore.get(id));
-    const fetchedSites = tmpLst.filter((site) => site !== undefined) as (MineralSite | null)[];
-    const sites = fetchedSites.filter((site) => site !== null) as MineralSite[];
-    const isLoading = mineralSiteStore.state.value === "updating" || fetchedSites.length !== dedupSite.sites.length;
+    }, [mineralSiteStore, dedupSite.sites]);
 
     return (
       <>
