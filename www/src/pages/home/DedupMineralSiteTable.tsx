@@ -227,43 +227,21 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
   };
 
   const handleGroup = async () => {
-    try {
-      const prevIds = Array.from(selectedDedupSiteIds);
+    const prevIds = Array.from(selectedDedupSiteIds);
+    const allSiteIds = Array.from(selectedDedupSiteIds).flatMap((dedupSiteId) => dedupMineralSiteStore.get(dedupSiteId)!.sites.map((siteUri) => DedupMineralSite.getId(siteUri)));
 
-      const allSiteIds = Array.from(selectedDedupSiteIds).flatMap((dedupSiteId) => dedupMineralSiteStore.get(dedupSiteId)!.sites.map((siteUri) => DedupMineralSite.getId(siteUri)));
+    const newSiteGroups = [
+      {
+        sites: allSiteIds,
+      },
+    ];
+    const newIds = await dedupMineralSiteStore.updateSameAsGroup(newSiteGroups);
 
-      const sameAsPayload = [
-        {
-          sites: allSiteIds,
-        },
-      ];
-
-      try {
-        const sameAsResponse = await axios.post("/api/v1/same-as", sameAsPayload, {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        });
-
-        const newIds = sameAsResponse.data.map((item: any) => item.id);
-
-        if (commodity && commodity.id) {
-          const commodityId = commodity.id;
-          messageApi.info("Grouping was successful");
-          setSelectedDedupSiteIds(new Set());
-          await dedupMineralSiteStore.replaceSites(prevIds, newIds, commodityId);
-        } else {
-          console.error("commodity is undefined or does not have an id");
-        }
-        console.log("Sites replaced successfully.");
-      } catch (error) {
-        console.error("Error during /same-as API call:", error);
-        alert("Group operation failed. Please check the console for details.");
-      }
-    } catch (generalError) {
-      console.error("Unexpected error in handleGroup:", generalError);
-      alert("An unexpected error occurred. Please check the console for details.");
+    if (commodity && commodity.id) {
+      const commodityId = commodity.id;
+      message.info("Grouping was successful", 3);
+      setSelectedDedupSiteIds(new Set());
+      await dedupMineralSiteStore.replaceSites(prevIds, newIds, commodityId);
     }
   };
 

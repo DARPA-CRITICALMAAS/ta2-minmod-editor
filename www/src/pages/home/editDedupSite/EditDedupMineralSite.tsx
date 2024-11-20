@@ -48,67 +48,55 @@ export const EditDedupMineralSite = withStyles(css)(
     const isLoading = mineralSiteStore.state.value === "updating" || fetchedSites.length !== dedupSite.sites.length;
 
     const handleCreateOne = async () => {
-      try {
-        const selectedSiteIds = Array.from(selectedRows);
+      const selectedSiteIds = Array.from(selectedRows);
 
-        const allSiteIds = sites.map((site) => site.id);
+      const allSiteIds = sites.map((site) => site.id);
 
-        const unselectedSiteIds = allSiteIds.filter((id) => !selectedRows.has(id));
+      const unselectedSiteIds = allSiteIds.filter((id) => !selectedRows.has(id));
 
-        const sameAsPayload =
-          [
-            { sites: selectedSiteIds },
-            { sites: unselectedSiteIds },
-          ]
+      const sameAsPayload =
+        [
+          { sites: selectedSiteIds },
+          { sites: unselectedSiteIds },
+        ]
 
-        const sameAsResponse = await dedupMineralSiteStore.CreateOnegroup(sameAsPayload);
-        const newIds = sameAsResponse.map((item: any) => item.id);
-
+      const sameAsResponse = await dedupMineralSiteStore.createOnegroup(sameAsPayload);
+      const newIds = sameAsResponse.map((item: any) => item.id);
 
 
-        if (commodity && commodity.id) {
-          const commodityId = commodity.id;
-          await dedupMineralSiteStore.replaceSites([dedupSite.id], newIds, commodityId);
-          message.success("Operation was successful!");
 
-        } else {
-          console.error("commodity is undefined or does not have an id");
-        }
-      } catch (error) {
+      if (commodity && commodity.id) {
+        const commodityId = commodity.id;
+        await dedupMineralSiteStore.replaceSites([dedupSite.id], newIds, commodityId);
+        message.success("Operation was successful!");
 
       }
     };
 
     const handleKGroup = async () => {
-      try {
-        const selectedSiteIds = Array.from(selectedRows);
+      const selectedSiteIds = Array.from(selectedRows);
 
-        const allSiteIds = sites.map((site) => site.id);
+      const allSiteIds = sites.map((site) => site.id);
 
-        const unselectedSiteIds = allSiteIds.filter((id) => !selectedRows.has(id));
+      const unselectedSiteIds = allSiteIds.filter((id) => !selectedRows.has(id));
 
-        const selectedPayload = selectedSiteIds.map((id) => ({ sites: [id] }));
-        const unselectedPayload = unselectedSiteIds.length > 0 ? [{ sites: unselectedSiteIds }] : [];
-        const createPayload = [...selectedPayload, ...unselectedPayload];
+      const selectedPayload = selectedSiteIds.map((id) => ({ sites: [id] }));
+      const unselectedPayload = unselectedSiteIds.length > 0 ? [{ sites: unselectedSiteIds }] : [];
+      const createPayload = [...selectedPayload, ...unselectedPayload];
 
-        const response = await dedupMineralSiteStore.CreateKgroups(createPayload);
+      const response = await dedupMineralSiteStore.createKgroups(createPayload);
 
-        const newIds = response.data.map((item: any) => item.id);
+      const newIds = response.data.map((item: any) => item.id);
 
-        if (commodity && commodity.id) {
-          const commodityId = commodity.id;
-          await dedupMineralSiteStore.replaceSites([dedupSite.id], newIds, commodityId);
-          message.success("Operation was successful!");
-          console.log("Successfully replaced sites.");
-        } else {
-          console.error("commodity is undefined or does not have an id");
-        }
-      } catch (error) {
+      if (commodity && commodity.id) {
+        const commodityId = commodity.id;
+        await dedupMineralSiteStore.replaceSites([dedupSite.id], newIds, commodityId);
+        message.success("Operation was successful!");
       }
+
     };
 
     const columns = useMemo(() => {
-      const selectedCount = selectedRows.size;
       return [
         {
           title: (

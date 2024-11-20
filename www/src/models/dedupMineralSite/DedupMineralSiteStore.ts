@@ -48,9 +48,9 @@ export class DedupMineralSiteStore extends RStore<string, DedupMineralSite> {
    * @param prevIds previous sites to delete
    * @param newIds new sites to add
    */
-  async replaceSites(prevIds: InternalID[], newIds: InternalID[], commodity:Object): Promise<void> {
+  async replaceSites(prevIds: InternalID[], newIds: InternalID[], commodity: Object): Promise<void> {
     this.deleteByIds(prevIds);
-    await this.fetchByIds(newIds, true, {commodity});
+    await this.fetchByIds(newIds, true, { commodity });
   }
 
   async forceFetchByURI(uri: string, commodity: string): Promise<DedupMineralSite | undefined> {
@@ -129,17 +129,17 @@ export class DedupMineralSiteStore extends RStore<string, DedupMineralSite> {
       location:
         record.location !== undefined
           ? new DedupMineralSiteLocation({
-              lat: record.location.lat,
-              lon: record.location.lon,
-              country: (record.location.country || []).map((country: string) => MR.getURI(country)),
-              stateOrProvince: (record.location.state_or_province || []).map((sop: string) => MR.getURI(sop)),
-            })
+            lat: record.location.lat,
+            lon: record.location.lon,
+            country: (record.location.country || []).map((country: string) => MR.getURI(country)),
+            stateOrProvince: (record.location.state_or_province || []).map((sop: string) => MR.getURI(sop)),
+          })
           : undefined,
       gradeTonnage: GradeTonnage.deserialize(record.grade_tonnage),
     });
   }
 
-  async CreateOnegroup(sameAsPayload: any): Promise<any> {
+  async createOnegroup(sameAsPayload: any): Promise<any> {
     try {
       const response = await axios.post("/api/v1/same-as", sameAsPayload, {
         headers: {
@@ -147,14 +147,14 @@ export class DedupMineralSiteStore extends RStore<string, DedupMineralSite> {
         },
         withCredentials: true,
       });
-  
+
       return response.data;
     } catch (error) {
       console.error("Error during groupMineralSites:", error);
-      throw error; 
+      throw error;
     }
   }
-  async CreateKgroups(payload: any): Promise<any> {
+  async createKgroups(payload: any): Promise<any> {
     try {
       const response = await axios.post("/api/v1/same-as", payload, {
         headers: {
@@ -162,31 +162,24 @@ export class DedupMineralSiteStore extends RStore<string, DedupMineralSite> {
         },
         withCredentials: true,
       });
-  
-      return response.data; 
+
+      return response.data;
     } catch (error) {
       console.error("Error during groupMineralSites:", error);
-      throw error; 
+      throw error;
     }
   }
-  async postSameAs(payload: any): Promise<any> {
-    try {
-      const response = await axios.post("/api/v1/same-as", payload, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        withCredentials: true,
-      });
-  
-      console.log("SameAs API Response:", response.data);
-      return response.data; 
-    } catch (error) {
-      console.error("Error during postSameAs:", error);
-      throw error; 
-    }
+  async updateSameAsGroup(groups: { sites: InternalID[] }[]): Promise<InternalID[]> {
+    const response = await axios.post("/api/v1/same-as", groups, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      withCredentials: true,
+    });
+    return response.data.map((dedupSite: any) => dedupSite.id);
   }
-  
-  
+
+
 
   protected normRemoteSuccessfulResponse(resp: any): FetchResponse {
     return { items: Array.isArray(resp.data) ? resp.data : Object.values(resp.data), total: resp.total };
