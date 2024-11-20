@@ -49,10 +49,8 @@ export class DedupMineralSiteStore extends RStore<string, DedupMineralSite> {
    * @param newIds new sites to add
    */
   async replaceSites(prevIds: InternalID[], newIds: InternalID[], commodity:Object): Promise<void> {
-    console.log("prevIds",prevIds)
-    console.log("newIds",newIds)
     this.deleteByIds(prevIds);
-    const newSites = await this.fetchByIds(newIds, true, {commodity});
+    await this.fetchByIds(newIds, true, {commodity});
   }
 
   async forceFetchByURI(uri: string, commodity: string): Promise<DedupMineralSite | undefined> {

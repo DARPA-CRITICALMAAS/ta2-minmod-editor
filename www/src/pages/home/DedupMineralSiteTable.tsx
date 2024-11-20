@@ -2,7 +2,7 @@ import { DedupMineralSite, useStores } from "models";
 import { useEffect, useState } from "react";
 import { observer } from "mobx-react";
 import { Commodity } from "models/commodity";
-import { Alert, Button, Checkbox, Divider, Flex, Space, Spin, Table, Typography } from "antd";
+import { Alert, Button, Checkbox, Divider, Flex, Space, Spin, Table, Typography,message } from "antd";
 import { FetchResult } from "gena-app";
 import { EditOutlined, UngroupOutlined } from "@ant-design/icons";
 import { EditDedupMineralSite } from "./editDedupSite/EditDedupMineralSite";
@@ -60,10 +60,15 @@ const columns = [
       return "-";
     },
     sorter: (a: DedupMineralSite, b: DedupMineralSite) => {
-      const locA = a.location ? `${a.location.lat},${a.location.lon}` : "";
-      const locB = b.location ? `${b.location.lat},${b.location.lon}` : "";
+      const locA = a.location
+        ? `${a.location.lat?.toFixed(3)},${a.location.lon?.toFixed(3)}`
+        : "";
+      const locB = b.location
+        ? `${b.location.lat?.toFixed(3)},${b.location.lon?.toFixed(3)}`
+        : "";
       return locA.localeCompare(locB);
     },
+
   },
   {
     title: "Country",
@@ -172,8 +177,8 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
   const { dedupMineralSiteStore, commodityStore } = useStores();
   const [editingDedupSite, setEditingDedupSite] = useState<string | undefined>(undefined);
   const [selectedDedupSiteIds, setSelectedDedupSiteIds] = useState<Set<string>>(new Set());
-  const [groupSuccess, setGroupSuccess] = useState(false);
-  const [showStickyDiv, setShowStickyDiv] = useState(true);
+  const [messageApi, contextHolder] = message.useMessage();
+  const [showDiv, setShowDiv] = useState(true);
   const [ungroupingSite, setUngroupingSite] = useState<string | undefined>(undefined);
 
   useEffect(() => {
@@ -194,8 +199,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
   }
 
   const selectDedupSite = (site: DedupMineralSite, selectOrNot: boolean) => {
-    setGroupSuccess(false);
-    setShowStickyDiv(true);
+    setShowDiv(true);
 
     if (selectOrNot) {
       setSelectedDedupSiteIds(selectedDedupSiteIds.union(new Set([site.id])));
@@ -231,7 +235,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
 
         if (commodity && commodity.id) {
           const commodityId = commodity.id;
-          setGroupSuccess(true);
+          messageApi.info("Grouping was successful");
           setSelectedDedupSiteIds(new Set());
           await dedupMineralSiteStore.replaceSites(prevIds, newIds, commodityId);
         } else {
@@ -276,8 +280,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
 
   return (
     <>
-      {groupSuccess && <Alert message="Grouping successful!" type="success" showIcon closable afterClose={() => setGroupSuccess(false)} />}
-      {showStickyDiv && selectedDedupSiteIds.size > 0 && (
+      {showDiv && selectedDedupSiteIds.size > 0 && (
         <div style={{ top: 0, zIndex: 1000, background: "#fff", marginTop: "16px" }}>
           <Button type="primary" onClick={handleGroup}>
             Group selected sites
@@ -286,6 +289,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
             bordered={true}
             size="small"
             rowKey="id"
+            pagination={false}
             columns={[
               {
                 title: "Select",
