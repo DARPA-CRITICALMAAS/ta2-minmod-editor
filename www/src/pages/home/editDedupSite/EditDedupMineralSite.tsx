@@ -61,14 +61,9 @@ export const EditDedupMineralSite = withStyles(css)(
             { sites: unselectedSiteIds },
           ]
 
-        const sameAsResponse = await axios.post("/api/v1/same-as", sameAsPayload, {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        });
+        const sameAsResponse = await dedupMineralSiteStore.CreateOnegroup(sameAsPayload);
+        const newIds = sameAsResponse.map((item: any) => item.id);
 
-        const newIds = sameAsResponse.data.map((item: any) => item.id);
 
 
         if (commodity && commodity.id) {
@@ -96,14 +91,7 @@ export const EditDedupMineralSite = withStyles(css)(
         const unselectedPayload = unselectedSiteIds.length > 0 ? [{ sites: unselectedSiteIds }] : [];
         const createPayload = [...selectedPayload, ...unselectedPayload];
 
-
-        const response = await axios.post("/api/v1/same-as", createPayload, {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        });
-
+        const response = await dedupMineralSiteStore.CreateKgroups(createPayload);
 
         const newIds = response.data.map((item: any) => item.id);
 

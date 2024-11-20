@@ -141,6 +141,55 @@ export class DedupMineralSiteStore extends RStore<string, DedupMineralSite> {
     });
   }
 
+  async CreateOnegroup(sameAsPayload: any): Promise<any> {
+    try {
+      const response = await axios.post("/api/v1/same-as", sameAsPayload, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
+  
+      return response.data;
+    } catch (error) {
+      console.error("Error during groupMineralSites:", error);
+      throw error; 
+    }
+  }
+  async CreateKgroups(payload: any): Promise<any> {
+    try {
+      const response = await axios.post("/api/v1/same-as", payload, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
+  
+      return response.data; 
+    } catch (error) {
+      console.error("Error during groupMineralSites:", error);
+      throw error; 
+    }
+  }
+  async postSameAs(payload: any): Promise<any> {
+    try {
+      const response = await axios.post("/api/v1/same-as", payload, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
+  
+      console.log("SameAs API Response:", response.data);
+      return response.data; 
+    } catch (error) {
+      console.error("Error during postSameAs:", error);
+      throw error; 
+    }
+  }
+  
+  
+
   protected normRemoteSuccessfulResponse(resp: any): FetchResponse {
     return { items: Array.isArray(resp.data) ? resp.data : Object.values(resp.data), total: resp.total };
   }

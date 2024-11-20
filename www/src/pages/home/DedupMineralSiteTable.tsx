@@ -207,12 +207,6 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
   const handleGroup = async () => {
     try {
       const prevIds = Array.from(selectedDedupSiteIds);
-      console.log("OLD Ids", prevIds);
-
-      if (prevIds.length === 0) {
-        alert("No site IDs found for grouping. Please add some rows.");
-        return;
-      }
 
       const allSiteIds = Array.from(selectedDedupSiteIds).flatMap((dedupSiteId) => dedupMineralSiteStore.get(dedupSiteId)!.sites.map((siteUri) => DedupMineralSite.getId(siteUri)));
 
@@ -222,7 +216,6 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
         },
       ];
 
-      console.log("Grouping Payload:", sameAsPayload);
 
       try {
         const sameAsResponse = await axios.post("/api/v1/same-as", sameAsPayload, {
@@ -232,11 +225,9 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
           withCredentials: true,
         });
 
-        console.log("Group API Response:", sameAsResponse.data);
 
         const newIds = sameAsResponse.data.map((item: any) => item.id);
 
-        console.log("New Site IDs:", newIds);
 
         if (commodity && commodity.id) {
           const commodityId = commodity.id;
