@@ -9,7 +9,6 @@ import { EditDedupMineralSite } from "./editDedupSite/EditDedupMineralSite";
 import { Entity } from "components/Entity";
 import axios from "axios";
 import { DepositTypeStore } from "models/depositType";
-import { Ungroup } from "./Ungroup";
 interface DedupMineralSiteTableProps {
   commodity: Commodity | undefined;
 }
@@ -278,22 +277,6 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
         >
           Edit
         </Button>
-        <Button
-          color="default"
-          size="middle"
-          icon={<UngroupOutlined />}
-          variant="filled"
-          onClick={() => {
-            if (site.id === ungroupingSite) {
-              setUngroupingSite(undefined); // Close Ungroup view
-            } else {
-              setUngroupingSite(site.id); // Open Ungroup view for the clicked site
-              setEditingDedupSite(undefined); // Close Edit mode if open
-            }
-          }}
-        >
-          Ungroup
-        </Button>
       </Space>
     );
   };
@@ -333,9 +316,6 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
         loading={isLoading ? { size: "large" } : false}
         expandable={{
           expandedRowRender: (site) => {
-            if (ungroupingSite === site.id) {
-              return <Ungroup commodity={commodity!} dedupSite={site} />;
-            }
             if (editingDedupSite === site.id) {
               return <EditDedupMineralSite commodity={commodity!} dedupSite={site} />;
             }
