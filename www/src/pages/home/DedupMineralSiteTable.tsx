@@ -9,7 +9,7 @@ import { EditDedupMineralSite } from "./editDedupSite/EditDedupMineralSite";
 import { Entity } from "components/Entity";
 import axios from "axios";
 import { DepositTypeStore } from "models/depositType";
-
+import { Ungroup } from "./Ungroup";
 interface DedupMineralSiteTableProps {
   commodity: Commodity | undefined;
 }
@@ -151,6 +151,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
   const [currentRows, setCurrentRows] = useState<DedupMineralSite[]>([]);
   const [groupSuccess, setGroupSuccess] = useState(false);
   const [showStickyDiv, setShowStickyDiv] = useState(true);
+  const [ungroupingSite, setUngroupingSite] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (commodity !== undefined) {
@@ -249,9 +250,23 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
         >
           Edit
         </Button>
-        <Button color="default" size="middle" icon={<UngroupOutlined />} variant="filled">
-          Ungroup
-        </Button>
+        <Button
+  color="default"
+  size="middle"
+  icon={<UngroupOutlined />}
+  variant="filled"
+  onClick={() => {
+    if (site.id === ungroupingSite) {
+      setUngroupingSite(undefined); // Close Ungroup view
+    } else {
+      setUngroupingSite(site.id); // Open Ungroup view for the clicked site
+      setEditingDedupSite(undefined); // Close Edit mode if open
+    }
+  }}
+>
+  Ungroup
+</Button>
+
       </Space>
     );
   };
@@ -303,10 +318,19 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
         dataSource={dedupMineralSites.records}
         loading={isLoading ? { size: "large" } : false}
         expandable={{
-          expandedRowRender: (site) => <EditDedupMineralSite commodity={commodity!} dedupSite={site} />,
+          expandedRowRender: (site) => {
+            if (ungroupingSite === site.id) {
+              return <Ungroup commodity={commodity!} dedupSite={site} />;
+            }
+            if (editingDedupSite === site.id) {
+              return <EditDedupMineralSite commodity={commodity!} dedupSite={site} />;
+            }
+            return null;
+          },
           showExpandColumn: false,
-          expandedRowKeys: editingDedupSite === undefined ? [] : [editingDedupSite],
+          expandedRowKeys: [...(editingDedupSite ? [editingDedupSite] : []), ...(ungroupingSite ? [ungroupingSite] : [])],
         }}
+        
       />
     </>
   );
