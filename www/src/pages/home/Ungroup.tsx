@@ -8,6 +8,7 @@ import { CanEntComponent, ListCanEntComponent } from "./editDedupSite/CandidateE
 import { join } from "misc";
 import { orange } from "@ant-design/colors";
 import axios from "axios";
+import { message } from "antd";
 
 const css = {
   table: {
@@ -80,6 +81,8 @@ export const Ungroup = withStyles(css)(
         if (commodity && commodity.id) {
           const commodityId = commodity.id;
           await dedupMineralSiteStore.replaceSites([dedupSite.id], newIds, commodityId);
+          message.success("Operation was successful!");
+
       }else {
         console.error("commodity is undefined or does not have an id");
     } }  catch (error) {
@@ -120,6 +123,7 @@ export const Ungroup = withStyles(css)(
         if (commodity && commodity.id) {
           const commodityId = commodity.id;
           await dedupMineralSiteStore.replaceSites([dedupSite.id], newIds, commodityId);
+          message.success("Operation was successful!");
           console.log("Successfully replaced sites.");
         } else {
           console.error("commodity is undefined or does not have an id");
