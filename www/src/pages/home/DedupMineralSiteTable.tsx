@@ -149,7 +149,8 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
   const [editingDedupSite, setEditingDedupSite] = useState<string | undefined>(undefined);
   const [movedRows, setMovedRows] = useState<DedupMineralSite[]>([]);
   const [currentRows, setCurrentRows] = useState<DedupMineralSite[]>([]);
-
+  const [groupSuccess, setGroupSuccess] = useState(false);
+  const [showStickyDiv, setShowStickyDiv] = useState(true);
 
   useEffect(() => {
     if (commodity !== undefined) {
@@ -162,6 +163,8 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
   }
 
   const handleRowMove = (site: DedupMineralSite, toMoved: boolean) => {
+    setGroupSuccess(false);
+    setShowStickyDiv(true);
     if (toMoved) {
       setCurrentRows((rows) => rows.filter((row) => row.id !== site.id));
       setMovedRows((rows) => [...rows, site]);
@@ -209,6 +212,9 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
         if (commodity && commodity.id) {
           const commodityId = commodity.id;
           await dedupMineralSiteStore.replaceSites(prevIds, newIds, commodityId);
+          setGroupSuccess(true);
+          setMovedRows([]);
+          setCurrentRows((rows) => [...rows, ...movedRows]);
       } else {
           console.error("commodity is undefined or does not have an id");
       }  
@@ -254,7 +260,16 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
 
   return (
     <>
-      {movedRows.length > 0 && (
+          {groupSuccess && (
+        <Alert
+          message="Grouping successful!"
+          type="success"
+          showIcon
+          closable
+          afterClose={() => setGroupSuccess(false)}
+        />
+      )}
+      {showStickyDiv && movedRows.length > 0 && (
         <div style={{ position: "sticky", top: 0, zIndex: 1000, background: "#fff", marginTop: "16px" }}>
           <Typography.Title level={4}>Moved Rows</Typography.Title>
           <Button type="primary" onClick={handleGroup}>
