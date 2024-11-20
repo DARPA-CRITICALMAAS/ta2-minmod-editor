@@ -33,7 +33,7 @@ const columns = [
         </Typography.Link>
       );
     },
-      sorter: (a: DedupMineralSite, b: DedupMineralSite) => a.name.localeCompare(b.name),
+    sorter: (a: DedupMineralSite, b: DedupMineralSite) => a.name.localeCompare(b.name),
   },
   {
     title: "Type",
@@ -172,19 +172,16 @@ const columns = [
 export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = observer(({ commodity }) => {
   const { dedupMineralSiteStore, commodityStore } = useStores();
   const [editingDedupSite, setEditingDedupSite] = useState<string | undefined>(undefined);
-  const [movedRows, setMovedRows] = useState<DedupMineralSite[]>([]);
-  const [currentRows, setCurrentRows] = useState<DedupMineralSite[]>([]);
+  const [selectedDedupSiteIds, setSelectedDedupSiteIds] = useState<Set<string>>(new Set());
   const [groupSuccess, setGroupSuccess] = useState(false);
   const [showStickyDiv, setShowStickyDiv] = useState(true);
   const [ungroupingSite, setUngroupingSite] = useState<string | undefined>(undefined);
-  const [data, setData] = useState<DedupMineralSite[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       if (commodity) {
         try {
           const result = await dedupMineralSiteStore.fetchByCommodity(commodity);
-          setData(result.records || []);
         } catch (error) {
           console.error("Error fetching data:", error);
         }
@@ -197,41 +194,37 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
     return <Alert message="Error" description="An error occurred while querying dedup mineral sites. Please try again later." type="error" showIcon />;
   }
 
-  const handleRowMove = (site: DedupMineralSite, toMoved: boolean) => {
+  const selectDedupSite = (site: DedupMineralSite, selectOrNot: boolean) => {
     setGroupSuccess(false);
     setShowStickyDiv(true);
-  
-    if (toMoved) {
-      setCurrentRows((rows) => rows.filter((row) => row.id !== site.id));
-      setMovedRows((rows) => [...rows, site]); 
+
+    if (selectOrNot) {
+      setSelectedDedupSiteIds(selectedDedupSiteIds.union(new Set([site.id])));
     } else {
-      setMovedRows((rows) => rows.filter((row) => row.id !== site.id)); 
-      setCurrentRows((rows) => [...rows, site]); 
+      setSelectedDedupSiteIds(selectedDedupSiteIds.difference(new Set([site.id])));
     }
   };
-  
 
   const handleGroup = async () => {
     try {
-      const prevIds = movedRows.map((row) => row.id); 
+      const prevIds = Array.from(selectedDedupSiteIds);
       console.log("OLD Ids", prevIds);
 
-  
       if (prevIds.length === 0) {
         alert("No site IDs found for grouping. Please add some rows.");
         return;
       }
-  
-      const allSiteIds = movedRows.flatMap((row) => row.sites.map((siteUri) => DedupMineralSite.getId(siteUri)));
-  
+
+      const allSiteIds = Array.from(selectedDedupSiteIds).flatMap((dedupSiteId) => dedupMineralSiteStore.get(dedupSiteId)!.sites.map((siteUri) => DedupMineralSite.getId(siteUri)));
+
       const sameAsPayload = [
         {
           sites: allSiteIds,
         },
       ];
-  
+
       console.log("Grouping Payload:", sameAsPayload);
-  
+
       try {
         const sameAsResponse = await axios.post("/api/v1/same-as", sameAsPayload, {
           headers: {
@@ -239,22 +232,21 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
           },
           withCredentials: true,
         });
-  
+
         console.log("Group API Response:", sameAsResponse.data);
-  
+
         const newIds = sameAsResponse.data.map((item: any) => item.id);
 
         console.log("New Site IDs:", newIds);
-  
+
         if (commodity && commodity.id) {
           const commodityId = commodity.id;
           await dedupMineralSiteStore.replaceSites(prevIds, newIds, commodityId);
           setGroupSuccess(true);
-          setMovedRows([]);
-          setCurrentRows((rows) => [...rows, ...movedRows]);
-      } else {
+          setSelectedDedupSiteIds(new Set());
+        } else {
           console.error("commodity is undefined or does not have an id");
-      }  
+        }
         console.log("Sites replaced successfully.");
       } catch (error) {
         console.error("Error during /same-as API call:", error);
@@ -265,7 +257,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
       alert("An unexpected error occurred. Please check the console for details.");
     }
   };
-  
+
   const isLoading = dedupMineralSiteStore.state.value === "updating";
   const dedupMineralSites = commodity === undefined || isLoading ? emptyFetchResult : dedupMineralSiteStore.getByCommodity(commodity);
   columns[columns.length - 1].render = (_: any, site: DedupMineralSite) => {
@@ -287,40 +279,31 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
           Edit
         </Button>
         <Button
-  color="default"
-  size="middle"
-  icon={<UngroupOutlined />}
-  variant="filled"
-  onClick={() => {
-    if (site.id === ungroupingSite) {
-      setUngroupingSite(undefined); // Close Ungroup view
-    } else {
-      setUngroupingSite(site.id); // Open Ungroup view for the clicked site
-      setEditingDedupSite(undefined); // Close Edit mode if open
-    }
-  }}
->
-  Ungroup
-</Button>
-
+          color="default"
+          size="middle"
+          icon={<UngroupOutlined />}
+          variant="filled"
+          onClick={() => {
+            if (site.id === ungroupingSite) {
+              setUngroupingSite(undefined); // Close Ungroup view
+            } else {
+              setUngroupingSite(site.id); // Open Ungroup view for the clicked site
+              setEditingDedupSite(undefined); // Close Edit mode if open
+            }
+          }}
+        >
+          Ungroup
+        </Button>
       </Space>
     );
   };
 
-  columns[0].render = (_: any, site: DedupMineralSite) => <Checkbox onChange={(e) => handleRowMove(site, e.target.checked)} checked={movedRows.some((row) => row.id === site.id)} />;
+  columns[0].render = (_: any, site: DedupMineralSite) => <Checkbox onChange={(e) => selectDedupSite(site, e.target.checked)} checked={selectedDedupSiteIds.has(site.id)} />;
 
   return (
     <>
-          {groupSuccess && (
-        <Alert
-          message="Grouping successful!"
-          type="success"
-          showIcon
-          closable
-          afterClose={() => setGroupSuccess(false)}
-        />
-      )}
-      {showStickyDiv && movedRows.length > 0 && (
+      {groupSuccess && <Alert message="Grouping successful!" type="success" showIcon closable afterClose={() => setGroupSuccess(false)} />}
+      {showStickyDiv && selectedDedupSiteIds.size > 0 && (
         <div style={{ position: "sticky", top: 0, zIndex: 1000, background: "#fff", marginTop: "16px" }}>
           <Typography.Title level={4}>Moved Rows</Typography.Title>
           <Button type="primary" onClick={handleGroup}>
@@ -338,11 +321,11 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
                   </Button>
                 ),
                 key: "group",
-                render: (_: any, site: DedupMineralSite) => <Checkbox type="primary" checked={true} onClick={() => handleRowMove(site, false)} />,
+                render: (_: any, site: DedupMineralSite) => <Checkbox type="primary" checked={true} onClick={() => selectDedupSite(site, false)} />,
               },
               ...columns.slice(1),
             ]}
-            dataSource={movedRows}
+            dataSource={Array.from(selectedDedupSiteIds).map((id) => dedupMineralSiteStore.get(id)!)}
           />
         </div>
       )}
@@ -366,7 +349,6 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
           showExpandColumn: false,
           expandedRowKeys: [...(editingDedupSite ? [editingDedupSite] : []), ...(ungroupingSite ? [ungroupingSite] : [])],
         }}
-        
       />
     </>
   );
