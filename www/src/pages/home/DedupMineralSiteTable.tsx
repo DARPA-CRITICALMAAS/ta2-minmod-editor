@@ -148,6 +148,8 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
   const { dedupMineralSiteStore, commodityStore } = useStores();
   const [editingDedupSite, setEditingDedupSite] = useState<string | undefined>(undefined);
   const [movedRows, setMovedRows] = useState<DedupMineralSite[]>([]);
+  const [currentRows, setCurrentRows] = useState<DedupMineralSite[]>([]);
+
 
   useEffect(() => {
     if (commodity !== undefined) {
@@ -171,94 +173,56 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
 
   const handleGroup = async () => {
     try {
-      const allSiteIds = movedRows.flatMap((row) => row.sites.map((siteUri) => DedupMineralSite.getId(siteUri)));
+      const prevIds = movedRows.map((row) => row.id); 
+      console.log("OLD Ids", prevIds);
 
-      if (allSiteIds.length === 0) {
+  
+      if (prevIds.length === 0) {
         alert("No site IDs found for grouping. Please add some rows.");
         return;
       }
-
+  
+      const allSiteIds = movedRows.flatMap((row) => row.sites.map((siteUri) => DedupMineralSite.getId(siteUri)));
+  
       const sameAsPayload = [
         {
           sites: allSiteIds,
         },
       ];
-
+  
       console.log("Grouping Payload:", sameAsPayload);
-
-      let sameAsResponse;
+  
       try {
-        sameAsResponse = await axios.post("/api/v1/same-as", sameAsPayload, {
+        const sameAsResponse = await axios.post("/api/v1/same-as", sameAsPayload, {
           headers: {
             "Content-Type": "application/json",
           },
           withCredentials: true,
         });
-
+  
         console.log("Group API Response:", sameAsResponse.data);
+  
+        const newIds = sameAsResponse.data.map((item: any) => item.id);
+
+        console.log("New Site IDs:", newIds);
+  
+        if (commodity && commodity.id) {
+          const commodityId = commodity.id;
+          await dedupMineralSiteStore.replaceSites(prevIds, newIds, commodityId);
+      } else {
+          console.error("commodity is undefined or does not have an id");
+      }  
+        console.log("Sites replaced successfully.");
       } catch (error) {
         console.error("Error during /same-as API call:", error);
         alert("Group operation failed. Please check the console for details.");
-        return;
-      }
-
-      const ids = sameAsResponse.data.map((entry: any) => entry.id);
-      console.log("Extracted IDs:", ids);
-
-      if (ids.length === 0) {
-        alert("No IDs returned from grouping API. Cannot proceed.");
-        return;
-      }
-
-      const findByIdsPayload = {
-        ids,
-      };
-
-      let findByIdsResponse;
-      try {
-        findByIdsResponse = await axios.post(`/api/v1/dedup-mineral-sites/find_by_ids?commodity=${commodity?.id}`, findByIdsPayload, {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        });
-
-        console.log("Find by IDs API Response Data:", findByIdsResponse.data);
-
-        const records = Array.isArray(findByIdsResponse.data) ? findByIdsResponse.data : [findByIdsResponse.data];
-
-        const newRecords = records
-          .filter((record: any) => record && record.id)
-          .map((record: any) => {
-            try {
-              return dedupMineralSiteStore.deserialize(record);
-            } catch (error) {
-              console.warn("Skipping invalid record during deserialization:", record, error);
-              return null;
-            }
-          })
-          .filter((record: DedupMineralSite | null): record is DedupMineralSite => record !== null);
-
-        console.log("Validated and Deserialized Records:", newRecords);
-
-        newRecords.forEach((record: DedupMineralSite) => {
-          dedupMineralSiteStore.records.set(record.id, record);
-        });
-
-        const selectedUris = movedRows.map((row) => row.uri);
-        dedupMineralSiteStore.deleteByIds(selectedUris);
-
-        alert("Group operation successful!");
-      } catch (error) {
-        console.error("Error during /find_by_ids API call:", error);
-        alert("Failed to fetch data by IDs. Please check the console for details.");
       }
     } catch (generalError) {
       console.error("Unexpected error in handleGroup:", generalError);
       alert("An unexpected error occurred. Please check the console for details.");
     }
   };
-
+  
   const isLoading = dedupMineralSiteStore.state.value === "updating";
   const dedupMineralSites = commodity === undefined || isLoading ? emptyFetchResult : dedupMineralSiteStore.getByCommodity(commodity);
   columns[columns.length - 1].render = (_: any, site: DedupMineralSite) => {

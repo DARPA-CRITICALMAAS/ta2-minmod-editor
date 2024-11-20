@@ -48,9 +48,11 @@ export class DedupMineralSiteStore extends RStore<string, DedupMineralSite> {
    * @param prevIds previous sites to delete
    * @param newIds new sites to add
    */
-  async replaceSites(prevIds: InternalID[], newIds: InternalID[]): Promise<void> {
-    const newSites = await this.fetchByIds(newIds, true);
+  async replaceSites(prevIds: InternalID[], newIds: InternalID[], commodity:Object): Promise<void> {
+    console.log("prevIds",prevIds)
+    console.log("newIds",newIds)
     this.deleteByIds(prevIds);
+    const newSites = await this.fetchByIds(newIds, true, {commodity});
   }
 
   async forceFetchByURI(uri: string, commodity: string): Promise<DedupMineralSite | undefined> {
@@ -140,7 +142,7 @@ export class DedupMineralSiteStore extends RStore<string, DedupMineralSite> {
   }
 
   protected normRemoteSuccessfulResponse(resp: any): FetchResponse {
-    return { items: resp.data, total: resp.total };
+    return { items: Array.isArray(resp.data) ? resp.data : Object.values(resp.data), total: resp.total };
   }
 
   /**
