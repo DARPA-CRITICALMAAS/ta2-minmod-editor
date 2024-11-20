@@ -166,14 +166,16 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
   const handleRowMove = (site: DedupMineralSite, toMoved: boolean) => {
     setGroupSuccess(false);
     setShowStickyDiv(true);
+  
     if (toMoved) {
       setCurrentRows((rows) => rows.filter((row) => row.id !== site.id));
-      setMovedRows((rows) => [...rows, site]);
+      setMovedRows((rows) => [...rows, site]); 
     } else {
-      setMovedRows((rows) => rows.filter((row) => row.id !== site.id));
-      setCurrentRows((rows) => [...rows, site]);
+      setMovedRows((rows) => rows.filter((row) => row.id !== site.id)); 
+      setCurrentRows((rows) => [...rows, site]); 
     }
   };
+  
 
   const handleGroup = async () => {
     try {
@@ -302,7 +304,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
                   </Button>
                 ),
                 key: "group",
-                render: (_: any, site: DedupMineralSite) => <Checkbox type="primary" onClick={() => handleRowMove(site, false)} />,
+                render: (_: any, site: DedupMineralSite) => <Checkbox type="primary" checked={true} onClick={() => handleRowMove(site, false)} />,
               },
               ...columns.slice(1),
             ]}
