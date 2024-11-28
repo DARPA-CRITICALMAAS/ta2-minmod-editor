@@ -10,6 +10,8 @@ import { EditOutlined } from "@ant-design/icons";
 import { EditSiteField } from "./EditSiteField";
 import { orange } from "@ant-design/colors";
 import axios from "axios";
+import { Tooltip, Avatar } from "antd";
+
 const css = {
   table: {
     "& .ant-table": {
@@ -40,6 +42,7 @@ export const EditDedupMineralSite = withStyles(css)(
     const [editField, setEditField] = useState<EditableField | undefined>(undefined);
     const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
 
+
     const tmpLst: (MineralSite | null | undefined)[] = dedupSite.sites.map((id) => mineralSiteStore.get(id));
     // no idea why typescript compiler incorrectly complains about the incorrect type
     const fetchedSites = tmpLst.filter((site) => site !== undefined) as (MineralSite | null)[];
@@ -48,22 +51,45 @@ export const EditDedupMineralSite = withStyles(css)(
 
     const ungroupTogether = async () => {
       const selectedSiteIds = Array.from(selectedRows);
+
       const allSiteIds = sites.map((site) => site.id);
+
       const unselectedSiteIds = allSiteIds.filter((id) => !selectedRows.has(id));
 
-      const newGroups = [{ sites: selectedSiteIds }, { sites: unselectedSiteIds }];
-      const newIds = await dedupMineralSiteStore.updateSameAsGroup(newGroups);
+      const newGroups =
+        [
+          { sites: selectedSiteIds },
+          { sites: unselectedSiteIds },
+        ]
 
+      const newIds = await dedupMineralSiteStore.updateSameAsGroup(newGroups);
       if (commodity && commodity.id) {
         const commodityId = commodity.id;
         await dedupMineralSiteStore.replaceSites([dedupSite.id], newIds, commodityId);
         message.success("Ungrouping was successful!");
+
       }
     };
 
+    const getUserColor = (username: string) => {
+      let hash = 0;
+      for (let i = 0; i < username.length; i++) {
+        hash = username.charCodeAt(i) + ((hash << 5) - hash);
+        hash = hash & hash;
+      }
+      const hue = Math.abs(hash % 360);
+      const saturation = 70;
+      const lightness = 50;
+
+      return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+    };
+
+
     const ungroupSeparately = async () => {
       const selectedSiteIds = Array.from(selectedRows);
+
       const allSiteIds = sites.map((site) => site.id);
+
       const unselectedSiteIds = allSiteIds.filter((id) => !selectedRows.has(id));
 
       const selectedPayload = selectedSiteIds.map((id) => ({ sites: [id] }));
@@ -72,19 +98,75 @@ export const EditDedupMineralSite = withStyles(css)(
 
       const newIds = await dedupMineralSiteStore.updateSameAsGroup(createPayload);
 
+
       if (commodity && commodity.id) {
         const commodityId = commodity.id;
         await dedupMineralSiteStore.replaceSites([dedupSite.id], newIds, commodityId);
         message.success("Ungrouping was successful!");
       }
+
     };
 
     const columns = useMemo(() => {
       return [
         {
-          title: "Select",
+          title: "User",
+          key: "user",
+          render: (_: any, site: MineralSite) => {
+            const username = site.createdBy[0]?.split("/").pop() || "Unknown";
+            const color = getUserColor(username);
+            const fullName = site.createdBy[0]?.split("/").pop();
+            const confidence = 0.85;
+
+            const confidenceColor = confidence >= 0.8 ? "#1677ff" : confidence >= 0.5 ? "#faad14" : "#f5222d";
+
+            return (
+              <Flex align="center" gap={8}>
+                <Tooltip title={fullName}>
+                  <Avatar style={{ backgroundColor: color, verticalAlign: "middle" }}>
+                    {username[0].toUpperCase()}
+                  </Avatar>
+                </Tooltip>
+
+                <Tooltip title={`Confidence: ${confidence}`}>
+                  <Avatar style={{ backgroundColor: confidenceColor }}>{confidence}</Avatar>
+                </Tooltip>
+              </Flex>
+            );
+          },
+        },
+
+        {
+          title: (
+            <Space>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "10px",
+                  alignItems: "flex-start",
+                }}
+              >
+                <Button
+                  style={{ background: "#e6f4ff", color: "#1677ff" }}
+                  type="default"
+                  size="small"
+                  onClick={ungroupTogether}
+                >
+                  Ungroup together
+                </Button>
+                <Button
+                  style={{ background: "#e6f4ff", color: "#1677ff" }}
+                  type="default"
+                  size="small"
+                  onClick={ungroupSeparately}
+                >
+                  Ungroup Separetely
+                </Button>
+              </div>
+            </Space>
+          ),
           key: "select",
-          hidden: sites.length === 1,
           render: (_: any, site: MineralSite) => (
             <Checkbox
               checked={selectedRows.has(site.id)}
@@ -162,7 +244,7 @@ export const EditDedupMineralSite = withStyles(css)(
           ),
           key: "deposit-type",
           render: (_: any, site: MineralSite) => {
-            return <CanEntComponent entity={site.depositTypeCandidate[0]} store="depositTypeStore" />;
+            return <CanEntComponent entity={site.depositTypeCandidate[0]} />;
           },
         },
         {
@@ -215,11 +297,12 @@ export const EditDedupMineralSite = withStyles(css)(
           },
         },
       ];
-    }, [commodity.id, sites.length, selectedRows, ungroupTogether]);
+    }, [commodity.id, selectedRows, selectedRows, ungroupTogether]);
 
     useEffect(() => {
       mineralSiteStore.fetchByIds(dedupSite.sites);
     }, [mineralSiteStore]);
+
 
     const onEditFinish = (change?: { edit: FieldEdit; reference: Reference }) => {
       if (change === undefined) {
@@ -247,29 +330,8 @@ export const EditDedupMineralSite = withStyles(css)(
 
     const currentSite = sites.find((site) => site.createdBy.includes(userStore.getCurrentUser()!.url));
 
-    let groupBtns = undefined;
-    if (selectedRows.size > 0 && sites.length > 1) {
-      const ungrpSepBtn = (
-        <Button key="separately" type="primary" onClick={ungroupSeparately}>
-          Ungroup Separately
-        </Button>
-      );
-      const ungrpTogBtn = (
-        <Button key="together" type="primary" onClick={ungroupTogether}>
-          Ungroup Together
-        </Button>
-      );
-      if (selectedRows.size === 1 || selectedRows.size === sites.length) {
-        groupBtns = [ungrpSepBtn];
-      } else {
-        groupBtns = [ungrpSepBtn, ungrpTogBtn];
-      }
-      groupBtns = <Space>{groupBtns}</Space>;
-    }
-
     return (
-      <Flex vertical={true} gap="small">
-        {groupBtns}
+      <>
         <Table<MineralSite>
           className={classes.table}
           bordered={true}
@@ -284,7 +346,7 @@ export const EditDedupMineralSite = withStyles(css)(
           }}
         />
         <EditSiteField key={editField} sites={sites} currentSite={currentSite} editField={editField} onFinish={onEditFinish} commodity={commodity.id} />
-      </Flex>
+      </>
     );
   })
 ) as React.FC<EditDedupMineralSiteProps>;
