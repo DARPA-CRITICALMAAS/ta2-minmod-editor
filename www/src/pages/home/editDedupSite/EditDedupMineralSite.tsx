@@ -9,6 +9,8 @@ import { join } from "misc";
 import { EditOutlined } from "@ant-design/icons";
 import { EditSiteField } from "./EditSiteField";
 import { orange } from "@ant-design/colors";
+import { Tooltip, Avatar } from "antd";
+
 import axios from "axios";
 const css = {
   table: {
@@ -60,7 +62,18 @@ export const EditDedupMineralSite = withStyles(css)(
         message.success("Ungrouping was successful!");
       }
     };
+    const getUserColor = (username: string) => {
+      let hash = 0;
+      for (let i = 0; i < username.length; i++) {
+        hash = username.charCodeAt(i) + ((hash << 5) - hash);
+        hash = hash & hash;
+      }
+      const hue = Math.abs(hash % 360);
+      const saturation = 70;
+      const lightness = 50;
 
+      return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+    };
     const ungroupSeparately = async () => {
       const selectedSiteIds = Array.from(selectedRows);
       const allSiteIds = sites.map((site) => site.id);
@@ -81,6 +94,32 @@ export const EditDedupMineralSite = withStyles(css)(
 
     const columns = useMemo(() => {
       return [
+        {
+          title: "User",
+          key: "user",
+          render: (_: any, site: MineralSite) => {
+            const username = site.createdBy[0]?.split("/").pop() || "Unknown";
+            const color = getUserColor(username);
+            const fullName = site.createdBy[0]?.split("/").pop();
+            const confidence = 0.85;
+
+            const confidenceColor = confidence >= 0.8 ? "#1677ff" : confidence >= 0.5 ? "#faad14" : "#f5222d";
+
+            return (
+              <Flex align="center" gap={8}>
+                <Tooltip title={fullName}>
+                  <Avatar style={{ backgroundColor: color, verticalAlign: "middle" }}>
+                    {username[0].toUpperCase()}
+                  </Avatar>
+                </Tooltip>
+
+                <Tooltip title={`Confidence: ${confidence}`}>
+                  <Avatar style={{ backgroundColor: confidenceColor }}>{confidence}</Avatar>
+                </Tooltip>
+              </Flex>
+            );
+          },
+        },
         {
           title: "Select",
           key: "select",
