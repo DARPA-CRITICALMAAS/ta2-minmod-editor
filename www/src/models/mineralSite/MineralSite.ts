@@ -16,10 +16,10 @@ export type FieldEdit =
   | { field: "location"; value: string }
   | { field: "depositType"; observedName: string; normalizedURI: string }
   | {
-      field: "grade";
-      value: number;
-      commodity: string;
-    }
+    field: "grade";
+    value: number;
+    commodity: string;
+  }
   | { field: "tonnage"; value: number; commodity: string };
 
 export type MineralSiteConstructorArgs = {
@@ -155,36 +155,68 @@ export class DraftCreateMineralSite extends MineralSite {
     dedupMineralSite: DedupMineralSite,
     sites: MineralSite[],
     username: string,
-    reference: Reference
+    reference: Reference,
+    edit?: FieldEdit
   ): DraftCreateMineralSite {
-    const baseSite = sites[0].id === dedupMineralSite.sites[0] ? sites[0] : sites.filter((site) => site.id === dedupMineralSite.sites[0])[0];
     const createdBy = `https://minmod.isi.edu/users/${username}`;
     const confidence = 1.0;
 
-    return new DraftCreateMineralSite({
+    const draftSite = new DraftCreateMineralSite({
       draftID: `draft-${dedupMineralSite.id}`,
-      id: "", // backend does not care about uri as they will recalculate it
-      sourceId: DraftCreateMineralSite.updateSourceId(baseSite.sourceId, username),
-      recordId: baseSite.recordId,
+      id: "",
+      sourceId: DraftCreateMineralSite.updateSourceId(sites[0].sourceId, username),
+      recordId: sites[0].recordId,
       dedupSiteURI: dedupMineralSite.uri,
       createdBy: [createdBy],
-      name: dedupMineralSite.name,
-      locationInfo: (
-        dedupMineralSite.location ||
-        new DedupMineralSiteLocation({
-          country: [],
-          stateOrProvince: [],
-        })
-      )?.toLocationInfo(stores, createdBy, confidence),
-      depositTypeCandidate: dedupMineralSite.depositTypes.length > 0 ? [dedupMineralSite.getTop1DepositType()!.toCandidateEntity(stores)] : [],
+      name: "",
+      locationInfo: new LocationInfo({ country: [], stateOrProvince: [] }),
+      depositTypeCandidate: [],
       reference: [reference],
-      sameAs: dedupMineralSite.sites,
-      gradeTonnage: {
-        [dedupMineralSite.gradeTonnage.commodity]: dedupMineralSite.gradeTonnage,
-      },
+      sameAs: [],
+      gradeTonnage: {},
       mineralInventory: [],
     });
+
+    if (edit) {
+      switch (edit.field) {
+        case "name":
+          draftSite.name = edit.value;
+          break;
+        case "location":
+          draftSite.locationInfo.location = edit.value;
+          break;
+        case "depositType":
+          draftSite.depositTypeCandidate = [
+            new CandidateEntity({
+              source: createdBy,
+              confidence,
+              normalizedURI: edit.normalizedURI,
+              observedName: edit.observedName,
+            }),
+          ];
+          break;
+        case "grade":
+          draftSite.gradeTonnage[edit.commodity] = new GradeTonnage({
+            commodity: edit.commodity,
+            totalGrade: edit.value,
+            totalTonnage: 0,
+          });
+          break;
+        case "tonnage":
+          draftSite.gradeTonnage[edit.commodity] = new GradeTonnage({
+            commodity: edit.commodity,
+            totalTonnage: edit.value,
+            totalGrade: 0,
+          });
+          break;
+        default:
+          throw new Error(`Unhandled edit field: ${edit}`);
+      }
+    }
+
+    return draftSite;
   }
+
 
   public static updateSourceId(sourceId: string, username: string): string {
     const [sourceType, sourceIdent] = sourceId.split("::", 2);
