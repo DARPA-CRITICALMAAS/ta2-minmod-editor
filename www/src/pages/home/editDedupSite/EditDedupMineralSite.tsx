@@ -247,7 +247,7 @@ export const EditDedupMineralSite = withStyles(css)(
           },
         },
         {
-          title: "Reference",
+          title: "Source",
           key: "reference",
           render: (_: any, site: MineralSite) => {
             return <ReferenceComponent site={site} />;
