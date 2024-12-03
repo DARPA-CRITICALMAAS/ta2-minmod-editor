@@ -7,6 +7,7 @@ import { join } from "misc";
 import { EditOutlined } from "@ant-design/icons";
 import { EditSiteField } from "./EditSiteField";
 import styles from "./EditDedupMineralSite.module.css";
+import { Tooltip, Avatar } from "antd";
 
 interface EditDedupMineralSiteProps {
   commodity: Commodity;
@@ -33,17 +34,28 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
     const newGroups = [{ sites: selectedSiteIds }, { sites: unselectedSiteIds }];
     const newIds = await dedupMineralSiteStore.updateSameAsGroup(newGroups);
 
-    if (commodity && commodity.id) {
-      const commodityId = commodity.id;
-      await dedupMineralSiteStore.replaceSites([dedupSite.id], newIds, commodityId);
-      message.success("Ungrouping was successful!");
-    }
-  };
+      if (commodity && commodity.id) {
+        const commodityId = commodity.id;
+        await dedupMineralSiteStore.replaceSites([dedupSite.id], newIds, commodityId);
+        message.success("Ungrouping was successful!");
+      }
+    };
+    const getUserColor = (username: string) => {
+      let hash = 0;
+      for (let i = 0; i < username.length; i++) {
+        hash = username.charCodeAt(i) + ((hash << 5) - hash);
+        hash = hash & hash;
+      }
+      const hue = Math.abs(hash % 360);
+      const saturation = 70;
+      const lightness = 50;
 
-  const ungroupSeparately = async () => {
-    const selectedSiteIds = Array.from(selectedRows);
-    const allSiteIds = sites.map((site) => site.id);
-    const unselectedSiteIds = allSiteIds.filter((id) => !selectedRows.has(id));
+      return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+    };
+    const ungroupSeparately = async () => {
+      const selectedSiteIds = Array.from(selectedRows);
+      const allSiteIds = sites.map((site) => site.id);
+      const unselectedSiteIds = allSiteIds.filter((id) => !selectedRows.has(id));
 
     const selectedPayload = selectedSiteIds.map((id) => ({ sites: [id] }));
     const unselectedPayload = unselectedSiteIds.length > 0 ? [{ sites: unselectedSiteIds }] : [];
@@ -58,42 +70,52 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
     }
   };
 
-  const columns = useMemo(() => {
-    return [
-      {
-        title: "Select",
-        key: "select",
-        hidden: sites.length === 1,
-        render: (_: any, site: MineralSite) => (
-          <Checkbox
-            checked={selectedRows.has(site.id)}
-            onChange={(e) => {
-              const updatedRows = new Set(selectedRows);
-              if (e.target.checked) {
-                updatedRows.add(site.id);
-              } else {
-                updatedRows.delete(site.id);
-              }
-              setSelectedRows(updatedRows);
-            }}
-          />
-        ),
-      },
-      {
-        title: (
-          <Flex justify="space-between">
-            <span>Name</span>
-            <EditOutlined className={styles.editButton} onClick={() => setEditField("name")} />
-          </Flex>
-        ),
-        key: "name",
-        render: (_: any, site: MineralSite) => {
-          return (
-            <Typography.Link href={site.uri} target="_blank">
-              {site.name}
-            </Typography.Link>
-          );
+    const columns = useMemo(() => {
+      return [
+        {
+          title: "User",
+          key: "user",
+          render: (_: any, site: MineralSite) => {
+            const username = site.createdBy[0]?.split("/").pop() || "Unknown";
+            const color = getUserColor(username);
+            const fullName = site.createdBy[0]?.split("/").pop();
+            const confidence = 0.85;
+
+            const confidenceColor = confidence >= 0.8 ? "#1677ff" : confidence >= 0.5 ? "#faad14" : "#f5222d";
+
+            return (
+              <Flex align="center" gap={8}>
+                <Tooltip title={fullName}>
+                  <Avatar style={{ backgroundColor: color, verticalAlign: "middle" }}>
+                    {username[0].toUpperCase()}
+                  </Avatar>
+                </Tooltip>
+
+                <Tooltip title={`Confidence: ${confidence}`}>
+                  <Avatar style={{ backgroundColor: confidenceColor }}>{confidence}</Avatar>
+                </Tooltip>
+              </Flex>
+            );
+          },
         },
+        {
+          title: "Select",
+          key: "select",
+          hidden: sites.length === 1,
+          render: (_: any, site: MineralSite) => (
+            <Checkbox
+              checked={selectedRows.has(site.id)}
+              onChange={(e) => {
+                const updatedRows = new Set(selectedRows);
+                if (e.target.checked) {
+                  updatedRows.add(site.id);
+                } else {
+                  updatedRows.delete(site.id);
+                }
+                setSelectedRows(updatedRows);
+              }}
+            />
+          ),
       },
       {
         title: (
