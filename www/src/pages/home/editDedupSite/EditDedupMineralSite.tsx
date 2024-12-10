@@ -10,8 +10,6 @@ import { EditOutlined } from "@ant-design/icons";
 import { EditSiteField } from "./EditSiteField";
 import { orange } from "@ant-design/colors";
 import { Tooltip, Avatar } from "antd";
-
-import axios from "axios";
 const css = {
   table: {
     "& .ant-table": {
@@ -98,9 +96,15 @@ export const EditDedupMineralSite = withStyles(css)(
           title: "User",
           key: "user",
           render: (_: any, site: MineralSite) => {
-            const username = site.createdBy[0]?.split("/").pop() || "Unknown";
+            var username = site.createdBy[0]?.split("/").pop() || "Unknown";
+            if (username === "umn" || username === "sri" || username === "inf") {
+              username = "Database System"
+            }
             const color = getUserColor(username);
-            const fullName = site.createdBy[0]?.split("/").pop();
+            var fullName = site.createdBy[0]?.split("/").pop();
+            if (fullName === "umn" || fullName === "sri" || username === "inf") {
+              fullName = "Database System"
+            }
             const confidence = 0.85;
 
             const confidenceColor = confidence >= 0.8 ? "#1677ff" : confidence >= 0.5 ? "#faad14" : "#f5222d";

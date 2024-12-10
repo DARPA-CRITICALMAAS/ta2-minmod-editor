@@ -76,7 +76,7 @@
       ]
     }
   },
-  "proxy": "http://localhost:8080",
+  "proxy": "https://dev.minmod.isi.edu/",
   "browserslist": {
     "production": [
       ">0.2%",
