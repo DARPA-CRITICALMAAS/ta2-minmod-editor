@@ -337,18 +337,15 @@ const ReferenceComponent: React.FC<{ site: MineralSite }> = ({ site }) => {
     return Object.values(site.getReferencedDocuments());
   }, [site]);
 
+  const sourceId = site.sourceId;
+  const extractedSource = sourceId.includes("database::") ? sourceId.split("database::")[1] : sourceId;
+
   return (
     <Typography.Text ellipsis={true} style={{ maxWidth: 200 }}>
-      {join(
-        docs.map((doc) => (
-          <Typography.Link key={doc.uri} target="_blank" href={doc.uri}>
-            {doc.title || doc.uri}
-          </Typography.Link>
-        )),
-        (index) => (
-          <span key={`sep-${index}`}>&nbsp;·&nbsp;</span>
-        )
-      )}
+      <Typography.Link href={extractedSource} target="_blank">
+        {extractedSource}
+      </Typography.Link>
     </Typography.Text>
   );
 };
+
