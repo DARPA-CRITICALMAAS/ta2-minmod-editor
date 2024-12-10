@@ -6,6 +6,7 @@ import { Reference, Document } from "../../models/mineralSite/Reference";
 import { GradeTonnage } from "../../models/mineralSite/GradeTonnage";
 import { CommodityStore } from "models/commodity";
 import { DedupMineralSite, DedupMineralSiteLocation } from "../../models/dedupMineralSite";
+import axios from "axios";
 
 interface NewMineralSiteModalProps {
     commodity: Commodity;
@@ -96,6 +97,12 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({
             });
 
             const newMineralSite = await mineralSiteStore.create(draft);
+            console.log("newMineralSite", newMineralSite.dedupSiteURI)
+            const dedup_site_uri = newMineralSite.dedupSiteURI
+            const dedupSite = await dedupMineralSiteStore.forceFetchByURI(
+                dedup_site_uri,
+                commodity1
+            );
             console.log("newMineralSite", newMineralSite)
             message.success("Mineral site created and dedup store updated successfully!");
             onClose();

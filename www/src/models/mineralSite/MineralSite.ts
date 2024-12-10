@@ -145,8 +145,8 @@ export class MineralSite {
 export class DraftCreateMineralSite extends MineralSite {
   draftID: string;
 
-  constructor({ draftID, ...rest }: { draftID: string } & MineralSiteConstructorArgs) {
-    super(rest);
+  constructor({ draftID, ...rest }: { draftID: string; } & MineralSiteConstructorArgs) {
+    super({ ...rest });
     this.draftID = draftID;
   }
 
@@ -161,7 +161,7 @@ export class DraftCreateMineralSite extends MineralSite {
     const createdBy = `https://minmod.isi.edu/users/${username}`;
     const confidence = 1.0;
 
-    const draftSite = new DraftCreateMineralSite({
+    return new DraftCreateMineralSite({
       draftID: `draft-${dedupMineralSite.id}`,
       id: "",
       sourceId: DraftCreateMineralSite.updateSourceId(sites[0].sourceId, username),
@@ -176,45 +176,6 @@ export class DraftCreateMineralSite extends MineralSite {
       gradeTonnage: {},
       mineralInventory: [],
     });
-
-    if (edit) {
-      switch (edit.field) {
-        case "name":
-          draftSite.name = edit.value;
-          break;
-        case "location":
-          draftSite.locationInfo.location = edit.value;
-          break;
-        case "depositType":
-          draftSite.depositTypeCandidate = [
-            new CandidateEntity({
-              source: createdBy,
-              confidence,
-              normalizedURI: edit.normalizedURI,
-              observedName: edit.observedName,
-            }),
-          ];
-          break;
-        case "grade":
-          draftSite.gradeTonnage[edit.commodity] = new GradeTonnage({
-            commodity: edit.commodity,
-            totalGrade: edit.value,
-            totalTonnage: 0,
-          });
-          break;
-        case "tonnage":
-          draftSite.gradeTonnage[edit.commodity] = new GradeTonnage({
-            commodity: edit.commodity,
-            totalTonnage: edit.value,
-            totalGrade: 0,
-          });
-          break;
-        default:
-          throw new Error(`Unhandled edit field: ${edit}`);
-      }
-    }
-
-    return draftSite;
   }
 
 
