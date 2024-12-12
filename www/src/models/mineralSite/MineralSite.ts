@@ -158,7 +158,7 @@ export class DraftCreateMineralSite extends MineralSite {
     reference: Reference
   ): DraftCreateMineralSite {
     const baseSite = sites[0].id === dedupMineralSite.sites[0].id ? sites[0] : sites.filter((site) => site.id === dedupMineralSite.sites[0].id)[0];
-    const createdBy = `https://minmod.isi.edu/users/${username}`;
+    const createdBy = `https://minmod.isi.edu/users/u/${username}`;
     const confidence = 1.0;
 
     return new DraftCreateMineralSite({

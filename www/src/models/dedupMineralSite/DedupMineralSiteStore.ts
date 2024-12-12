@@ -1,7 +1,7 @@
 import { RStore, FetchResponse, FetchResult, SingleKeyIndex } from "gena-app";
 import { SERVER } from "env";
 import { Commodity } from "../commodity";
-import { DedupMineralSite, DedupMineralSiteDepositType, DedupMineralSiteLocation } from "./DedupMineralSite";
+import { DedupMineralSite, DedupMineralSiteDepositType, DedupMineralSiteLocation, DedupMineralSiteSites } from "./DedupMineralSite";
 import axios from "axios";
 import { action, makeObservable, runInAction } from "mobx";
 import { NamespaceManager } from "../Namespace";
@@ -117,7 +117,10 @@ export class DedupMineralSiteStore extends RStore<string, DedupMineralSite> {
       name: record.name,
       type: record.type,
       rank: record.rank,
-      sites: record.sites,
+      sites: record.sites.map((site: any) => new DedupMineralSiteSites({
+        id: site.id,
+        score: site.score
+      })),
       depositTypes: record.deposit_types.map(
         (depositType: any) =>
           new DedupMineralSiteDepositType({
@@ -129,11 +132,11 @@ export class DedupMineralSiteStore extends RStore<string, DedupMineralSite> {
       location:
         record.location !== undefined
           ? new DedupMineralSiteLocation({
-              lat: record.location.lat,
-              lon: record.location.lon,
-              country: (record.location.country || []).map((country: string) => MR.getURI(country)),
-              stateOrProvince: (record.location.state_or_province || []).map((sop: string) => MR.getURI(sop)),
-            })
+            lat: record.location.lat,
+            lon: record.location.lon,
+            country: (record.location.country || []).map((country: string) => MR.getURI(country)),
+            stateOrProvince: (record.location.state_or_province || []).map((sop: string) => MR.getURI(sop)),
+          })
           : undefined,
       gradeTonnage: GradeTonnage.deserialize(record.grade_tonnage),
     });
