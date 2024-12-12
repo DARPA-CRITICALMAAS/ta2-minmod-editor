@@ -20,7 +20,7 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
   const [editField, setEditField] = useState<EditableField | undefined>(undefined);
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
 
-  const tmpLst: (MineralSite | null | undefined)[] = dedupSite.sites.map((id) => mineralSiteStore.get(id));
+  const tmpLst: (MineralSite | null | undefined)[] = dedupSite.sites.map((site) => mineralSiteStore.get(site.id));
   // no idea why typescript compiler incorrectly complains about the incorrect type
   const fetchedSites = tmpLst.filter((site) => site !== undefined) as (MineralSite | null)[];
   const sites = fetchedSites.filter((site) => site !== null) as MineralSite[];
@@ -76,7 +76,7 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
       {
         title: "User",
         key: "user",
-        render: (_: any, site: MineralSite) => {
+        render: (_: any, site: MineralSite, index: number) => {
           var username = site.createdBy[0]?.split("/").pop() || "Unknown";
           if (username === "umn" || username === "sri" || username === "inf") {
             username = "Database"
@@ -85,10 +85,9 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
           var fullName = site.createdBy[0]?.split("/").pop();
           if (fullName === "umn" || fullName === "sri" || username === "inf") {
             fullName = "Database"
-          } const confidence = 0.85;
-
-          const confidenceColor = confidence >= 0.8 ? "#1677ff" : confidence >= 0.5 ? "#faad14" : "#f5222d";
-
+          }
+          console.log("Sites", dedupSite.sites.map((s) => s.score))
+          const confidence = dedupSite.sites[index]?.score ?? "No score available";
           return (
             <Flex align="center" gap={8}>
               <Tooltip title={fullName}>
@@ -96,9 +95,8 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
                   {username[0].toUpperCase()}
                 </Avatar>
               </Tooltip>
-
               <Tooltip title={`Confidence: ${confidence}`}>
-                <Avatar style={{ backgroundColor: confidenceColor }}>{confidence}</Avatar>
+                <Avatar>{confidence}</Avatar>
               </Tooltip>
             </Flex>
           );
@@ -241,7 +239,7 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
   }, [commodity.id, sites.length, selectedRows, ungroupTogether]);
 
   useEffect(() => {
-    mineralSiteStore.fetchByIds(dedupSite.sites);
+    mineralSiteStore.fetchByIds(dedupSite.sites.map((site) => site.id));
   }, [mineralSiteStore]);
 
   const onEditFinish = (change?: { edit: FieldEdit; reference: Reference }) => {
