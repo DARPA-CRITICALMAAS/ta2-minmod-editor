@@ -77,26 +77,32 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
         title: "User",
         key: "user",
         render: (_: any, site: MineralSite, index: number) => {
+          console.log("USER", site.createdBy);
           const createdBy = site.createdBy[0]?.split("/").pop() || "Unknown";
           let username = createdBy;
           let fullName = createdBy;
 
           if (site.createdBy[0]?.includes("/s/")) {
             username = "System";
-            fullName = "System"
+            fullName = "System";
           } else if (site.createdBy[0]?.includes("/u/")) {
             username = createdBy;
-            fullName = createdBy
+            fullName = createdBy;
           }
+          const allUsernamesTooltip =
+            username === "System"
+              ? site.createdBy.map((url, i) => {
+                const parts = url.split("/");
+                return parts[parts.length - 1];
+              }).join(", ")
+              : fullName;
+
           const color = getUserColor(username);
-          if (fullName === "umn" || fullName === "sri" || username === "inf") {
-            fullName = "Database"
-          }
-          console.log("Sites", dedupSite.sites.map((s) => s.score))
           const confidence = dedupSite.sites[index]?.score ?? "No score available";
+
           return (
             <Flex align="center" gap={8}>
-              <Tooltip title={fullName}>
+              <Tooltip title={allUsernamesTooltip}>
                 <Avatar style={{ backgroundColor: color, verticalAlign: "middle" }}>
                   {username[0].toUpperCase()}
                 </Avatar>
@@ -108,6 +114,7 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
           );
         },
       },
+
       {
         title: "Select",
         key: "select",
