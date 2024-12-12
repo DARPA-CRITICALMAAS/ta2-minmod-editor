@@ -157,14 +157,15 @@ export class DraftCreateMineralSite extends MineralSite {
     username: string,
     reference: Reference
   ): DraftCreateMineralSite {
+    const baseSite = sites[0].id === dedupMineralSite.sites[0] ? sites[0] : sites.filter((site) => site.id === dedupMineralSite.sites[0])[0];
     const createdBy = `https://minmod.isi.edu/users/${username}`;
     const confidence = 1.0;
 
     return new DraftCreateMineralSite({
       draftID: `draft-${dedupMineralSite.id}`,
       id: "", // backend does not care about uri as they will recalculate it
-      sourceId: DraftCreateMineralSite.updateSourceId(sites[0].sourceId, username),
-      recordId: sites[0].recordId,
+      sourceId: DraftCreateMineralSite.updateSourceId(baseSite.sourceId, username),
+      recordId: baseSite.recordId,
       dedupSiteURI: dedupMineralSite.uri,
       createdBy: [createdBy],
       name: "",
