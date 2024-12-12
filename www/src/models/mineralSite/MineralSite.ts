@@ -16,10 +16,10 @@ export type FieldEdit =
   | { field: "location"; value: string }
   | { field: "depositType"; observedName: string; normalizedURI: string }
   | {
-      field: "grade";
-      value: number;
-      commodity: string;
-    }
+    field: "grade";
+    value: number;
+    commodity: string;
+  }
   | { field: "tonnage"; value: number; commodity: string };
 
 export type MineralSiteConstructorArgs = {
