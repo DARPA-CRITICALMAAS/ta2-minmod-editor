@@ -7,6 +7,7 @@ import { join } from "misc";
 import { EditOutlined } from "@ant-design/icons";
 import { EditSiteField } from "./EditSiteField";
 import styles from "./EditDedupMineralSite.module.css";
+import { Tooltip, Avatar } from "antd";
 
 interface EditDedupMineralSiteProps {
   commodity: Commodity;
@@ -39,6 +40,18 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
       message.success("Ungrouping was successful!");
     }
   };
+  const getUserColor = (username: string) => {
+    let hash = 0;
+    for (let i = 0; i < username.length; i++) {
+      hash = username.charCodeAt(i) + ((hash << 5) - hash);
+      hash = hash & hash;
+    }
+    const hue = Math.abs(hash % 360);
+    const saturation = 70;
+    const lightness = 50;
+
+    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+  };
 
   const ungroupSeparately = async () => {
     const selectedSiteIds = Array.from(selectedRows);
@@ -60,6 +73,37 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
 
   const columns = useMemo(() => {
     return [
+      {
+        title: "",
+        key: "user",
+        render: (_: any, site: MineralSite) => {
+          var username = site.createdBy[0]?.split("/").pop() || "Unknown";
+          if (username === "umn" || username === "sri" || username === "inf") {
+            username = "Database"
+          }
+          const color = getUserColor(username);
+          var fullName = site.createdBy[0]?.split("/").pop();
+          if (fullName === "umn" || fullName === "sri" || username === "inf") {
+            fullName = "Database"
+          } const confidence = 0.85;
+
+          const confidenceColor = confidence >= 0.8 ? "#1677ff" : confidence >= 0.5 ? "#faad14" : "#f5222d";
+
+          return (
+            <Flex align="center" gap={8}>
+              <Tooltip title={fullName}>
+                <Avatar style={{ backgroundColor: color, verticalAlign: "middle" }}>
+                  {username[0].toUpperCase()}
+                </Avatar>
+              </Tooltip>
+
+              <Tooltip title={`Confidence: ${confidence}`}>
+                <Avatar style={{ backgroundColor: confidenceColor }}>{confidence}</Avatar>
+              </Tooltip>
+            </Flex>
+          );
+        },
+      },
       {
         title: "Select",
         key: "select",
