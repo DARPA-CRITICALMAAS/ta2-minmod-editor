@@ -77,23 +77,25 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
         title: "User",
         key: "user",
         render: (_: any, site: MineralSite, index: number) => {
-          let username: string = "Unknown";
-          let fullName: string = "Unknown";
+          let username;
+          let fullName;
 
           if (site.createdBy[0]?.includes("/s/")) {
             username = "System";
             fullName = "System";
-          } else if (site.createdBy[0]?.includes("/u/")) {
+          } else {
             const createdBy = site.createdBy[0]?.split("/").pop() || "Unknown";
             username = createdBy;
             fullName = createdBy;
           }
           const allUsernamesTooltip =
             username === "System"
-              ? site.createdBy.map((url, i) => {
-                const parts = url.split("/");
-                return parts[parts.length - 1];
-              }).join(", ")
+              ? site.createdBy
+                  .map((url, i) => {
+                    const parts = url.split("/");
+                    return parts[parts.length - 1];
+                  })
+                  .join(", ")
               : fullName;
 
           const color = getUserColor(username);
@@ -102,9 +104,7 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
           return (
             <Flex align="center" gap={8}>
               <Tooltip title={allUsernamesTooltip}>
-                <Avatar style={{ backgroundColor: color, verticalAlign: "middle" }}>
-                  {username[0].toUpperCase()}
-                </Avatar>
+                <Avatar style={{ backgroundColor: color, verticalAlign: "middle" }}>{username[0].toUpperCase()}</Avatar>
               </Tooltip>
               <Tooltip title={`Confidence: ${confidence}`}>
                 <Avatar>{confidence}</Avatar>
