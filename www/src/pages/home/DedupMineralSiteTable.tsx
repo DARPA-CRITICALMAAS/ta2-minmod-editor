@@ -3,9 +3,11 @@ import { useEffect, useMemo, useState } from "react";
 import { observer } from "mobx-react-lite";
 import { Commodity } from "models/commodity";
 import { Button, Checkbox, Divider, Space, Table, Typography, message } from "antd";
-import { EditOutlined } from "@ant-design/icons";
+import { EditOutlined, PlusOutlined, UngroupOutlined } from "@ant-design/icons";
 import { EditDedupMineralSite } from "./editDedupSite/EditDedupMineralSite";
 import { Entity } from "components/Entity";
+import { NewMineralSiteModal } from "./NewMineralSiteModal";
+
 interface DedupMineralSiteTableProps {
   commodity: Commodity | undefined;
 }
@@ -16,6 +18,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
   const { dedupMineralSiteStore, depositTypeStore, countryStore, stateOrProvinceStore } = useStores();
   const [editingDedupSite, setEditingDedupSite] = useState<string | undefined>(undefined);
   const [selectedDedupSiteIds, setSelectedDedupSiteIds] = useState<Set<string>>(new Set());
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   let columns = useMemo(() => {
     return [
@@ -252,21 +255,30 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
     <>
       {selectedDedupSiteIds.size > 0
         ? [
-            <div>
-              <Button type="primary" onClick={handleGroup} disabled={selectedDedupSiteIds.size === 1}>
-                Group selected sites
-              </Button>
-            </div>,
-            <Table<DedupMineralSite>
-              bordered={true}
-              size="small"
-              rowKey="id"
-              pagination={false}
-              columns={columns}
-              dataSource={Array.from(selectedDedupSiteIds).map((id) => dedupMineralSiteStore.get(id)!)}
-            />,
-          ]
+          <div>
+            <Button type="primary" onClick={handleGroup} disabled={selectedDedupSiteIds.size === 1}>
+              Group selected sites
+            </Button>
+          </div>,
+          <Table<DedupMineralSite>
+            bordered={true}
+            size="small"
+            rowKey="id"
+            pagination={false}
+            columns={columns}
+            dataSource={Array.from(selectedDedupSiteIds).map((id) => dedupMineralSiteStore.get(id)!)}
+          />,
+        ]
         : []}
+      <Space style={{ marginBottom: 16 }}>
+        <Button style={{ marginLeft: "1300px", bottom: "40px" }}
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => setIsModalVisible(true)}
+        >
+        </Button>
+      </Space>
+
       <Table<DedupMineralSite>
         bordered={true}
         size="small"
@@ -284,6 +296,11 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
           showExpandColumn: false,
           expandedRowKeys: [...(editingDedupSite ? [editingDedupSite] : [])],
         }}
+      />
+      <NewMineralSiteModal
+        commodity={commodity!}
+        visible={isModalVisible}
+        onClose={() => setIsModalVisible(false)}
       />
     </>
   );
