@@ -16,10 +16,10 @@ export type FieldEdit =
   | { field: "location"; value: string }
   | { field: "depositType"; observedName: string; normalizedURI: string }
   | {
-      field: "grade";
-      value: number;
-      commodity: string;
-    }
+    field: "grade";
+    value: number;
+    commodity: string;
+  }
   | { field: "tonnage"; value: number; commodity: string };
 
 export type MineralSiteConstructorArgs = {
@@ -157,31 +157,22 @@ export class DraftCreateMineralSite extends MineralSite {
     username: string,
     reference: Reference
   ): DraftCreateMineralSite {
-    const baseSite = sites[0].id === dedupMineralSite.sites[0] ? sites[0] : sites.filter((site) => site.id === dedupMineralSite.sites[0])[0];
     const createdBy = `https://minmod.isi.edu/users/${username}`;
     const confidence = 1.0;
 
     return new DraftCreateMineralSite({
       draftID: `draft-${dedupMineralSite.id}`,
       id: "", // backend does not care about uri as they will recalculate it
-      sourceId: DraftCreateMineralSite.updateSourceId(baseSite.sourceId, username),
-      recordId: baseSite.recordId,
+      sourceId: DraftCreateMineralSite.updateSourceId(sites[0].sourceId, username),
+      recordId: sites[0].recordId,
       dedupSiteURI: dedupMineralSite.uri,
       createdBy: [createdBy],
-      name: dedupMineralSite.name,
-      locationInfo: (
-        dedupMineralSite.location ||
-        new DedupMineralSiteLocation({
-          country: [],
-          stateOrProvince: [],
-        })
-      )?.toLocationInfo(stores, createdBy, confidence),
-      depositTypeCandidate: dedupMineralSite.depositTypes.length > 0 ? [dedupMineralSite.getTop1DepositType()!.toCandidateEntity(stores)] : [],
+      name: "",
+      locationInfo: new LocationInfo({ country: [], stateOrProvince: [] }),
+      depositTypeCandidate: [],
       reference: [reference],
-      sameAs: dedupMineralSite.sites,
-      gradeTonnage: {
-        [dedupMineralSite.gradeTonnage.commodity]: dedupMineralSite.gradeTonnage,
-      },
+      sameAs: [],
+      gradeTonnage: {},
       mineralInventory: [],
     });
   }
