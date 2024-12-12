@@ -9,6 +9,19 @@ import { EditSiteField } from "./EditSiteField";
 import styles from "./EditDedupMineralSite.module.css";
 import { Tooltip, Avatar } from "antd";
 
+const getUserColor = (username: string) => {
+  let hash = 0;
+  for (let i = 0; i < username.length; i++) {
+    hash = username.charCodeAt(i) + ((hash << 5) - hash);
+    hash = hash & hash;
+  }
+  const hue = Math.abs(hash % 360);
+  const saturation = 70;
+  const lightness = 50;
+
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+};
+
 interface EditDedupMineralSiteProps {
   commodity: Commodity;
   dedupSite: DedupMineralSite;
@@ -25,19 +38,6 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
   const fetchedSites = tmpLst.filter((site) => site !== undefined) as (MineralSite | null)[];
   const sites = fetchedSites.filter((site) => site !== null) as MineralSite[];
   const isLoading = mineralSiteStore.state.value === "updating" || fetchedSites.length !== dedupSite.sites.length;
-
-  const getUserColor = (username: string) => {
-    let hash = 0;
-    for (let i = 0; i < username.length; i++) {
-      hash = username.charCodeAt(i) + ((hash << 5) - hash);
-      hash = hash & hash;
-    }
-    const hue = Math.abs(hash % 360);
-    const saturation = 70;
-    const lightness = 50;
-
-    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-  };
 
   const ungroupTogether = async () => {
     const selectedSiteIds = Array.from(selectedRows);
