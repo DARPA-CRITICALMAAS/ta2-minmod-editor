@@ -168,20 +168,12 @@ export class DraftCreateMineralSite extends MineralSite {
       recordId: baseSite.recordId,
       dedupSiteURI: dedupMineralSite.uri,
       createdBy: [createdBy],
-      name: dedupMineralSite.name,
-      locationInfo: (
-        dedupMineralSite.location ||
-        new DedupMineralSiteLocation({
-          country: [],
-          stateOrProvince: [],
-        })
-      )?.toLocationInfo(stores, createdBy, confidence),
-      depositTypeCandidate: dedupMineralSite.depositTypes.length > 0 ? [dedupMineralSite.getTop1DepositType()!.toCandidateEntity(stores)] : [],
+      name: "",
+      locationInfo: new LocationInfo({ country: [], stateOrProvince: [] }),
+      depositTypeCandidate: [],
       reference: [reference],
-      sameAs: dedupMineralSite.sites,
-      gradeTonnage: {
-        [dedupMineralSite.gradeTonnage.commodity]: dedupMineralSite.gradeTonnage,
-      },
+      sameAs: [],
+      gradeTonnage: {},
       mineralInventory: [],
     });
   }
