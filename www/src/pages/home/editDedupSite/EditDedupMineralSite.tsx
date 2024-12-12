@@ -26,6 +26,19 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
   const sites = fetchedSites.filter((site) => site !== null) as MineralSite[];
   const isLoading = mineralSiteStore.state.value === "updating" || fetchedSites.length !== dedupSite.sites.length;
 
+  const getUserColor = (username: string) => {
+    let hash = 0;
+    for (let i = 0; i < username.length; i++) {
+      hash = username.charCodeAt(i) + ((hash << 5) - hash);
+      hash = hash & hash;
+    }
+    const hue = Math.abs(hash % 360);
+    const saturation = 70;
+    const lightness = 50;
+
+    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+  };
+
   const ungroupTogether = async () => {
     const selectedSiteIds = Array.from(selectedRows);
     const allSiteIds = sites.map((site) => site.id);
@@ -40,18 +53,6 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
       message.success("Ungrouping was successful!");
     }
   };
-  const getUserColor = (username: string) => {
-    let hash = 0;
-    for (let i = 0; i < username.length; i++) {
-      hash = username.charCodeAt(i) + ((hash << 5) - hash);
-      hash = hash & hash;
-    }
-    const hue = Math.abs(hash % 360);
-    const saturation = 70;
-    const lightness = 50;
-
-    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-  };
 
   const ungroupSeparately = async () => {
     const selectedSiteIds = Array.from(selectedRows);
@@ -61,7 +62,6 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
     const selectedPayload = selectedSiteIds.map((id) => ({ sites: [id] }));
     const unselectedPayload = unselectedSiteIds.length > 0 ? [{ sites: unselectedSiteIds }] : [];
     const createPayload = [...selectedPayload, ...unselectedPayload];
-
     const newIds = await dedupMineralSiteStore.updateSameAsGroup(createPayload);
 
     if (commodity && commodity.id) {
@@ -74,7 +74,7 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
   const columns = useMemo(() => {
     return [
       {
-        title: "",
+        title: "User",
         key: "user",
         render: (_: any, site: MineralSite) => {
           var username = site.createdBy[0]?.split("/").pop() || "Unknown";
