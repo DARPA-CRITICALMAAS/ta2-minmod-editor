@@ -37,7 +37,7 @@ export class DedupMineralSiteSites {
   public static deserialize(record: any): DedupMineralSiteSites {
     return new DedupMineralSiteSites({
       id: record.id,
-      score: record.score !== undefined ? record.score : 0,
+      score: record.score
     });
   }
 }

@@ -77,15 +77,14 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
         title: "User",
         key: "user",
         render: (_: any, site: MineralSite, index: number) => {
-          console.log("USER", site.createdBy);
-          const createdBy = site.createdBy[0]?.split("/").pop() || "Unknown";
-          let username = createdBy;
-          let fullName = createdBy;
+          let username: string = "Unknown";
+          let fullName: string = "Unknown";
 
           if (site.createdBy[0]?.includes("/s/")) {
             username = "System";
             fullName = "System";
           } else if (site.createdBy[0]?.includes("/u/")) {
+            const createdBy = site.createdBy[0]?.split("/").pop() || "Unknown";
             username = createdBy;
             fullName = createdBy;
           }
@@ -98,7 +97,7 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
               : fullName;
 
           const color = getUserColor(username);
-          const confidence = dedupSite.sites[index]?.score ?? "No score available";
+          const confidence = dedupSite.sites[index].score;
 
           return (
             <Flex align="center" gap={8}>
