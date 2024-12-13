@@ -250,6 +250,11 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
 
   const isLoading = dedupMineralSiteStore.state.value === "updating";
   const dedupMineralSites = commodity === undefined || isLoading ? emptyFetchResult : dedupMineralSiteStore.getByCommodity(commodity);
+  const selectedDedupSites = useMemo(() => {
+    return Array.from(selectedDedupSiteIds)
+      .map((id) => dedupMineralSiteStore.get(id))
+      .filter((site) => site !== undefined) as DedupMineralSite[];
+  }, [selectedDedupSiteIds]);
 
   return (
     <>
@@ -286,6 +291,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
         columns={columns}
         dataSource={dedupMineralSites.records}
         loading={isLoading ? { size: "large" } : false}
+        showSorterTooltip={false}
         expandable={{
           expandedRowRender: (site) => {
             if (editingDedupSite === site.id) {
