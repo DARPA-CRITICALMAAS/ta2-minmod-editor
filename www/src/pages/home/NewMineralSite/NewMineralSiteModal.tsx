@@ -40,55 +40,22 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({
 
     useEffect(() => {
         commodityStore.fetchCriticalCommotities().then((commodities) => {
-            setCommodityOptions(
-                commodities.map((comm: { id: string; name: string }) => ({
-                    value: comm.id,
-                    label: comm.name,
-                }))
-            );
+            setCommodityOptions(commodities.map((comm: { id: string; name: string }) => ({ value: comm.id, label: comm.name, })));
         });
 
         countryStore.fetchAll().then(() => {
-            setCountryOptions(
-                Array.from(countryStore.records.values())
-                    .filter((country): country is Country => country !== null)
-                    .map((country: Country) => ({
-                        value: country.id,
-                        label: country.name,
-                    }))
-            );
+            setCountryOptions(Array.from(countryStore.records.values()).filter((country): country is Country => country !== null).map((country: Country) => ({ value: country.id, label: country.name, })));
         });
 
         stateOrProvinceStore.fetchAll().then(() => {
-            setStateOptions(
-                Array.from(stateOrProvinceStore.records.values())
-                    .filter((state): state is StateOrProvince => state !== null)
-                    .map((state: StateOrProvince) => ({
-                        value: state.id,
-                        label: state.name,
-                    }))
-            );
+            setStateOptions(Array.from(stateOrProvinceStore.records.values()).filter((state): state is StateOrProvince => state !== null).map((state: StateOrProvince) => ({ value: state.id, label: state.name, })));
         });
 
         depositTypeStore.fetchAll().then(() => {
-            setDepositTypeOptions(
-                Array.from(depositTypeStore.records.values())
-                    .filter((type): type is DepositType => type !== null)
-                    .map((type) => ({
-                        value: type.id ?? "",
-                        label: type.name ?? "Unnamed",
-                    }))
-            );
+            setDepositTypeOptions(Array.from(depositTypeStore.records.values()).filter((type): type is DepositType => type !== null).map((type) => ({ value: type.id ?? "", label: type.name ?? "Unnamed", })));
         });
         unitStore.fetchAll().then(() => {
-            setUnitOptions(
-                Array.from(unitStore.records.values())
-                    .filter((unit): unit is Unit => unit !== null)
-                    .map((unit) => ({
-                        value: unit.id ?? "",
-                        label: unit.name ?? "Unnamed",
-                    }))
-            );
+            setUnitOptions(Array.from(unitStore.records.values()).filter((unit): unit is Unit => unit !== null).map((unit) => ({ value: unit.id ?? "", label: unit.name ?? "Unnamed", })));
         });
     }, [commodityStore, countryStore, stateOrProvinceStore]);
 
