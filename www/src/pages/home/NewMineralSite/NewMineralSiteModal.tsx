@@ -9,6 +9,7 @@ import { DedupMineralSite, DedupMineralSiteLocation } from "../../../models/dedu
 import axios from "axios";
 import { Country, StateOrProvince } from "models";
 import { useEffect, useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 
 interface NewMineralSiteModalProps {
     commodity: Commodity;
@@ -37,6 +38,7 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({
     const [stateOptions, setStateOptions] = useState<{ value: string; label: string }[]>([]);
     const [depositTypeOptions, setDepositTypeOptions] = useState<{ value: string; label: string }[]>([]);
     const [unitOptions, setUnitOptions] = useState<{ value: string; label: string }[]>([]);
+    const [recordId, setRecordId] = useState("");
 
     useEffect(() => {
         commodityStore.fetchCriticalCommotities().then((commodities) => {
@@ -57,12 +59,15 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({
         unitStore.fetchAll().then(() => {
             setUnitOptions(Array.from(unitStore.records.values()).filter((unit): unit is Unit => unit !== null).map((unit) => ({ value: unit.id ?? "", label: unit.name ?? "Unnamed", })));
         });
-    }, [commodityStore, countryStore, stateOrProvinceStore]);
+        const generatedId = `record-${uuidv4()}`;
+        setRecordId(generatedId);
+        form.setFieldsValue({ recordId: generatedId });
+    }, [commodityStore, countryStore, stateOrProvinceStore, form, visible]);
 
     const handleSave = async (values: any) => {
         try {
             const currentUser = userStore.getCurrentUser()?.name;
-            const createdBy = `https://minmod.isi.edu/users/${currentUser}`;
+            const createdBy = `https://minmod.isi.edu/users/u/${currentUser}`;
 
             let location = undefined;
             if (values.latitude !== undefined && values.longitude !== undefined) {
@@ -74,6 +79,7 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({
                     new CandidateEntity({
                         observedName: values.country,
                         source: values.country,
+                        normalizedURI: values.country,
                         confidence: 1.0
 
                     }),
@@ -85,6 +91,7 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({
                     new CandidateEntity({
                         observedName: values.stateorprovince,
                         source: values.stateorprovince,
+                        normalizedURI: values.stateorprovince,
                         confidence: 1.0
                     }),
                 ]
@@ -106,7 +113,7 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({
             const draft = new DraftCreateMineralSite({
                 id: "",
                 draftID: `draft-${Date.now()}`,
-                recordId: values.recordId,
+                recordId: recordId,
                 sourceId: values.sourceId,
                 dedupSiteURI: "",
                 createdBy: [createdBy],
