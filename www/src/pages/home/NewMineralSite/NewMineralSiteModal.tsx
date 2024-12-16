@@ -109,12 +109,15 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({
                 document: referenceDocument,
                 comment: values.refComment || "",
             });
+            const sourceType = values.sourceType;
+            const sourceText = values.sourceText;
+            const combinedSourceId = `${sourceType}::${sourceText}`;
 
             const draft = new DraftCreateMineralSite({
                 id: "",
                 draftID: `draft-${Date.now()}`,
                 recordId: recordId,
-                sourceId: values.sourceId,
+                sourceId: combinedSourceId,
                 dedupSiteURI: "",
                 createdBy: [createdBy],
                 name: values.name,
@@ -361,16 +364,50 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({
                 {/* Source & Reference */}
                 <Divider orientation="left">Source & Reference</Divider>
                 <Row gutter={24}>
+                    {/* Source */}
                     <Col span={12}>
-                        <Form.Item name="sourceId" label="Source ID" rules={[{ required: true }]}>
-                            <Input placeholder="Enter source ID" />
+                        <Form.Item label="Source" required>
+                            <Input.Group compact>
+                                <Form.Item
+                                    name="sourceType"
+                                    noStyle
+                                    rules={[{ required: true, message: "Please select a source type" }]}
+                                >
+                                    <Select
+                                        placeholder="Select source type"
+                                        style={{ width: "40%" }}
+                                        options={[
+                                            { value: "database", label: "Database" },
+                                            { value: "technical article", label: "Technical Article" },
+                                            { value: "mining report", label: "Mining Report" },
+                                        ]}
+                                    />
+                                </Form.Item>
+                                <Form.Item
+                                    name="sourceText"
+                                    noStyle
+                                    rules={[{ required: true, message: "Please enter a source value" }]}
+                                >
+                                    <Input
+                                        placeholder="Enter text value"
+                                        style={{ width: "60%" }}
+                                        onBlur={() => {
+                                            const sourceType = form.getFieldValue("sourceType");
+                                            const sourceText = form.getFieldValue("sourceText");
+                                            if (sourceType && sourceText) {
+                                                form.setFieldsValue({ sourceId: `${sourceType}::${sourceText}` });
+                                            }
+                                        }}
+                                    />
+                                </Form.Item>
+                            </Input.Group>
                         </Form.Item>
                     </Col>
                     <Col span={12}>
                         <Form.Item
                             name="refDoc"
                             label="Reference Document URL"
-                            rules={[{ required: true }]}
+                            rules={[{ required: true, message: "Reference Document URL is required" }]}
                         >
                             <Input placeholder="Enter reference document URL" />
                         </Form.Item>
