@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Checkbox, Form, Input, Modal, Space, message, Row, Col, Select, Typography } from "antd";
+import { Button, Checkbox, Form, Input, Modal, Space, message, Row, Col, Select, Typography, Divider } from "antd";
 import { useStores, Commodity, DraftCreateMineralSite, CandidateEntity, initNonCriticalStores, DepositType, Unit } from "models";
 import { LocationInfo } from "../../../models/mineralSite/LocationInfo";
 import { Reference, Document } from "../../../models/mineralSite/Reference";
@@ -164,283 +164,194 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({
                 form={form}
                 layout="vertical"
                 onFinish={handleSave}
-                initialValues={{ refAppliedToAll: true }}
+                initialValues={{ refAppliedToAll: true, deposittypeconfidence: 1 }}
             >
-                <Form.Item
-                    name="name"
-                    label="Name"
-                    rules={[{ required: true, message: "Name is required" }]}
-                >
-                    <Input placeholder="Enter site name" />
-                </Form.Item>
-                <Form.Item
-                    name="commodity"
-                    label="Commodity"
-                    rules={[{ required: true, message: "Commodity is required" }]}
-                >
-                    <Select
-                        style={{ width: "100%" }}
-                        placeholder="Select a commodity"
-                        options={commodityOptions} // Use the fetched options
-                        showSearch
-                        optionFilterProp="label" // Enable search by label
-                    />
-                </Form.Item>
-
-                <Form.Item
-                    name="rank"
-                    label="Rank"
-                    rules={[{ required: true, message: "Rank is required" }]}
-                >
-                    <Select
-                        style={{ width: "100%" }}
-                        placeholder="Select a rank"
-                        options={[
-                            { value: "A", label: "A" },
-                            { value: "B", label: "B" },
-                            { value: "C", label: "C" },
-                            { value: "D", label: "D" },
-                            { value: "E", label: "E" },
-                            { value: "U", label: "U" },
-                        ]}
-                    />
-                </Form.Item>
-
-
-                <Form.Item
-                    name="type"
-                    label="Type"
-                    rules={[{ required: true, message: "Type is required" }]}
-                >
-                    <Select
-                        style={{ width: "100%" }}
-                        placeholder="Select a type"
-                        options={[
-                            { value: "Occurrence", label: "Occurrence" },
-                            { value: "Past Producer", label: "Past Producer" },
-                            { value: "Prospect", label: "Prospect" },
-                            { value: "Plant", label: "Plant" },
-                            { value: "NotSpecified", label: "NotSpecified" },
-                        ]}
-                    />
-                </Form.Item>
-
-                <Form>
-                    <Form.Item
-                        name="deposittype"
-                        label="Deposit Type"
-                        rules={[{ required: true, message: "Deposit Type is required" }]}
-                    >
-                        <Select
-                            style={{ width: "100%" }}
-                            placeholder="Select a deposit type"
-                            options={depositTypeOptions}
-                            showSearch
-                            optionFilterProp="label"
-                        />
-                    </Form.Item>
-
-                </Form>
-                <Form
-                    form={form}
-                    layout="vertical"
-                    onFinish={handleSave}
-                    initialValues={{
-                        refAppliedToAll: true,
-                        deposittypeconfidence: 1,
-                    }}
-                >
-
-                    <Form.Item style={{ paddingTop: "30px" }}
-                        name="deposittypeconfidence"
-                        label="DepositType Confidence"
-                        rules={[{ required: true, message: "Deposit Type confidence is required" }]}
-                    >
-                        <Input
-                            type="number"
-                            step="0.01"
-                            placeholder="Enter deposit type confidence"
-                        />
-                    </Form.Item>
-
-                </Form>
-
-
-                <Form.Item
-                    name="stateorprovince"
-                    label="State or Province"
-                    rules={[{ required: true, message: "State or Province is required" }]}
-                >
-                    <Select
-                        style={{ width: "100%" }}
-                        placeholder="Select a state or province"
-                        options={stateOptions}
-                        showSearch
-                        optionFilterProp="label"
-                    />
-                </Form.Item>
-
-                <Form.Item
-                    name="country"
-                    label="Country"
-                    rules={[{ required: true, message: "Country is required" }]}
-                >
-                    <Select
-                        style={{ width: "100%" }}
-                        placeholder="Select a country"
-                        options={countryOptions}
-                        showSearch
-                        optionFilterProp="label"
-                    />
-                </Form.Item>
-
-                <Form.Item label="Coordinates" required>
-                    <Space direction="horizontal" size="middle" style={{ display: "flex", width: "100%" }}>
-                        <Form.Item
-                            name="latitude"
-                            label="Latitude"
-                            rules={[
-                                { required: true, message: "Latitude is required" },
-                                { type: "number", min: -90, max: 90, message: "Latitude must be between -90 and 90" },
-                            ]}
-                            style={{ flex: 1 }}
-                        >
-                            <Input
-                                type="number"
-                                step="0.0001"
-                                placeholder="Enter latitude"
+                {/* General Information */}
+                <Divider orientation="left">General Information</Divider>
+                <Row gutter={24}>
+                    <Col span={8}>
+                        <Form.Item name="name" label="Name" rules={[{ required: true }]}>
+                            <Input placeholder="Enter site name" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={8}>
+                        <Form.Item name="rank" label="Rank" rules={[{ required: true }]}>
+                            <Select
+                                placeholder="Select a rank"
+                                options={[
+                                    { value: "A", label: "A" },
+                                    { value: "B", label: "B" },
+                                    { value: "C", label: "C" },
+                                    { value: "D", label: "D" },
+                                    { value: "E", label: "E" },
+                                    { value: "U", label: "U" },
+                                ]}
                             />
                         </Form.Item>
-
-                        <Form.Item
-                            name="longitude"
-                            label="Longitude"
-                            rules={[
-                                { required: true, message: "Longitude is required" },
-                                { type: "number", min: -180, max: 180, message: "Longitude must be between -180 and 180" },
-                            ]}
-                            style={{ flex: 1 }}
-                        >
-                            <Input
-                                type="number"
-                                step="0.0001"
-                                placeholder="Enter longitude"
+                    </Col>
+                    <Col span={8}>
+                        <Form.Item name="type" label="Type" rules={[{ required: true }]}>
+                            <Select
+                                placeholder="Select a type"
+                                options={[
+                                    { value: "Occurrence", label: "Occurrence" },
+                                    { value: "Past Producer", label: "Past Producer" },
+                                    { value: "Prospect", label: "Prospect" },
+                                    { value: "Plant", label: "Plant" },
+                                    { value: "NotSpecified", label: "NotSpecified" },
+                                ]}
                             />
                         </Form.Item>
-                    </Space>
-                </Form.Item>
+                    </Col>
+                </Row>
 
+                {/* Location */}
+                <Divider orientation="left">Location</Divider>
+                <Row gutter={24}>
+                    <Col span={12}>
+                        <Form.Item
+                            name="stateorprovince"
+                            label="State or Province"
+                            rules={[{ required: true }]}
+                        >
+                            <Select
+                                placeholder="Select a state or province"
+                                options={stateOptions}
+                                showSearch
+                                optionFilterProp="label"
+                                filterOption={(input, option) =>
+                                    option?.label?.toLowerCase().includes(input.toLowerCase()) ?? false
+                                }
+                            />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item name="country" label="Country" rules={[{ required: true }]}>
+                            <Select
+                                placeholder="Select a country"
+                                options={countryOptions}
+                                showSearch
+                                optionFilterProp="label"
+                                filterOption={(input, option) =>
+                                    option?.label?.toLowerCase().includes(input.toLowerCase()) ?? false
+                                }
+                            />
+                        </Form.Item>
+                    </Col>
+                </Row>
+                <Row gutter={24}>
+                    <Col span={12}>
+                        <Form.Item name="latitude" label="Latitude">
+                            <Input type="number" placeholder="Enter latitude" step="0.0001" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item name="longitude" label="Longitude">
+                            <Input type="number" placeholder="Enter longitude" step="0.0001" />
+                        </Form.Item>
+                    </Col>
+                </Row>
 
-                <Form layout="vertical">
-                    {/* Grade */}
-                    <Form.Item
-                        label="Grade"
-                        required
-                    >
-                        <Row gutter={8}>
-                            <Col span={16}>
-                                <Form.Item
-                                    name="grade"
-                                    noStyle
-                                    rules={[{ required: true, message: "Grade value is required" }]}
-                                >
-                                    <Input type="number" step="0.01" placeholder="Enter grade value" />
-                                </Form.Item>
-                            </Col>
-                            <Col span={8}>
-                                <Form.Item
-                                    name="gradeUnit"
-                                    noStyle
-                                    rules={[{ required: true, message: "Unit is required" }]}
-                                >
-                                    <Select
-                                        placeholder="Select unit"
-                                        options={unitOptions}
-                                        showSearch
-                                        optionFilterProp="label"
-                                    />
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                    </Form.Item>
+                {/* Deposit Info */}
+                <Divider orientation="left">Deposit Info</Divider>
+                <Row gutter={24}>
+                    <Col span={12}>
+                        <Form.Item name="deposittype" label="Deposit Type" rules={[{ required: true }]}>
+                            <Select
+                                placeholder="Select a deposit type"
+                                options={depositTypeOptions}
+                                showSearch
+                                optionFilterProp="label"
+                                filterOption={(input, option) =>
+                                    option?.label?.toLowerCase().includes(input.toLowerCase()) ?? false
+                                }
+                            />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item name="deposittypeconfidence" label="Deposit Type Confidence">
+                            <Input type="number" placeholder="Enter confidence" step="0.01" />
+                        </Form.Item>
+                    </Col>
+                </Row>
 
-                    {/* Tonnage */}
-                    <Form.Item
-                        label="Tonnage"
-                        required
-                    >
-                        <Row gutter={8}>
-                            <Col span={16}>
-                                <Form.Item
-                                    name="tonnage"
-                                    noStyle
-                                    rules={[{ required: true, message: "Tonnage value is required" }]}
-                                >
-                                    <Input type="number" step="0.01" placeholder="Enter tonnage value" />
-                                </Form.Item>
-                            </Col>
-                            <Col span={8}>
-                                <Form.Item
-                                    name="tonnageUnit"
-                                    noStyle
-                                    rules={[{ required: true, message: "Unit is required" }]}
-                                >
-                                    <Select
-                                        placeholder="Select unit"
-                                        options={unitOptions}
-                                        showSearch
-                                        optionFilterProp="label"
-                                    />
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                    </Form.Item>
-                </Form>
+                {/* Mineral Inventory */}
+                <Divider orientation="left">Mineral Inventory</Divider>
+                <Row gutter={24}>
+                    <Col span={8}>
+                        <Form.Item name="grade" label="Grade">
+                            <Input type="number" placeholder="Enter grade value" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={8}>
+                        <Form.Item name="gradeUnit" label="Grade Unit">
+                            <Select
+                                placeholder="Select unit"
+                                options={unitOptions}
+                                showSearch
+                                optionFilterProp="label"
+                            />
+                        </Form.Item>
+                    </Col>
+                    <Col span={8}>
+                        <Form.Item name="tonnage" label="Tonnage">
+                            <Input type="number" placeholder="Enter tonnage value" />
+                        </Form.Item>
+                    </Col>
+                </Row>
+                <Row gutter={24}>
+                    <Col span={12}>
+                        <Form.Item name="tonnageUnit" label="Tonnage Unit">
+                            <Select
+                                placeholder="Select unit"
+                                options={unitOptions}
+                                showSearch
+                                optionFilterProp="label"
+                            />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item name="commodity" label="Commodity">
+                            <Select
+                                placeholder="Select commodity"
+                                options={commodityOptions}
+                                showSearch
+                                optionFilterProp="label"
+                            />
+                        </Form.Item>
+                    </Col>
+                </Row>
 
-                <Form.Item
-                    name="refDoc"
-                    label="Reference Document URL"
-                    rules={[{ required: true, message: "Reference document URL is required" }]}
-                >
-                    <Input placeholder="Enter reference document URL" />
-                </Form.Item>
+                {/* Source & Reference */}
+                <Divider orientation="left">Source & Reference</Divider>
+                <Row gutter={24}>
+                    <Col span={12}>
+                        <Form.Item name="sourceId" label="Source ID" rules={[{ required: true }]}>
+                            <Input placeholder="Enter source ID" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item
+                            name="refDoc"
+                            label="Reference Document URL"
+                            rules={[{ required: true }]}
+                        >
+                            <Input placeholder="Enter reference document URL" />
+                        </Form.Item>
+                    </Col>
+                </Row>
 
-                <Form.Item name="refComment" label="Reference Comment">
-                    <Input.TextArea rows={3} placeholder="Add comments about the reference" />
-                </Form.Item>
-
-                <Form.Item
-                    name="refAppliedToAll"
-                    valuePropName="checked"
-                >
-                    <Checkbox>This reference applies to all fields</Checkbox>
-                </Form.Item>
-
-                <Form.Item
-                    name="sourceId"
-                    label="Source ID"
-                    rules={[{ required: true, message: "Source ID is required" }]}
-                >
-                    <Input placeholder="Enter source ID" />
-                </Form.Item>
-
-                <Form.Item
-                    name="recordId"
-                    label="Record ID"
-                    rules={[{ required: true, message: "Record ID is required" }]}
-                >
-                    <Input placeholder="Enter record ID" />
-                </Form.Item>
-
-                <Form.Item>
+                {/* Footer */}
+                <Form.Item style={{ textAlign: "center" }}>
                     <Space>
+                        <Button onClick={onClose}>Cancel</Button>
                         <Button type="primary" htmlType="submit">
                             Save
                         </Button>
-                        <Button onClick={onClose}>Cancel</Button>
                     </Space>
                 </Form.Item>
             </Form>
         </Modal>
+
     );
 };
