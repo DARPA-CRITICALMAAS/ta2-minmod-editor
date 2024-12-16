@@ -282,43 +282,72 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({
                     </Col>
                 </Row>
 
-                {/* Mineral Inventory */}
                 <Divider orientation="left">Mineral Inventory</Divider>
                 <Row gutter={24}>
-                    <Col span={8}>
-                        <Form.Item name="grade" label="Grade">
-                            <Input type="number" placeholder="Enter grade value" />
+                    <Col span={12}>
+                        <Form.Item label="Grade">
+                            <Input.Group compact>
+                                <Form.Item
+                                    name="grade"
+                                    noStyle
+                                >
+                                    <Input
+                                        type="number"
+                                        placeholder="Enter grade value"
+                                        style={{ width: "60%" }}
+                                    />
+                                </Form.Item>
+                                <Form.Item
+                                    name="gradeUnit"
+                                    noStyle
+                                    rules={[{ required: true, message: "Unit is required" }]}
+                                >
+                                    <Select
+                                        placeholder="Select unit"
+                                        options={unitOptions}
+                                        style={{ width: "40%" }}
+                                        showSearch
+                                        optionFilterProp="label"
+                                    />
+                                </Form.Item>
+                            </Input.Group>
                         </Form.Item>
                     </Col>
-                    <Col span={8}>
-                        <Form.Item name="gradeUnit" label="Grade Unit">
-                            <Select
-                                placeholder="Select unit"
-                                options={unitOptions}
-                                showSearch
-                                optionFilterProp="label"
-                            />
-                        </Form.Item>
-                    </Col>
-                    <Col span={8}>
-                        <Form.Item name="tonnage" label="Tonnage">
-                            <Input type="number" placeholder="Enter tonnage value" />
+
+                    <Col span={12}>
+                        <Form.Item label="Tonnage">
+                            <Input.Group compact>
+                                <Form.Item
+                                    name="tonnage"
+                                    noStyle
+                                >
+                                    <Input
+                                        type="number"
+                                        placeholder="Enter tonnage value"
+                                        style={{ width: "60%" }}
+                                    />
+                                </Form.Item>
+                                <Form.Item
+                                    name="tonnageUnit"
+                                    noStyle
+                                >
+                                    <Select
+                                        placeholder="Select unit"
+                                        options={unitOptions}
+                                        style={{ width: "40%" }}
+                                        showSearch
+                                        optionFilterProp="label"
+                                    />
+                                </Form.Item>
+                            </Input.Group>
                         </Form.Item>
                     </Col>
                 </Row>
+
                 <Row gutter={24}>
+                    {/* Commodity */}
                     <Col span={12}>
-                        <Form.Item name="tonnageUnit" label="Tonnage Unit">
-                            <Select
-                                placeholder="Select unit"
-                                options={unitOptions}
-                                showSearch
-                                optionFilterProp="label"
-                            />
-                        </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                        <Form.Item name="commodity" label="Commodity">
+                        <Form.Item name="commodity" label="Commodity" rules={[{ required: true }]}>
                             <Select
                                 placeholder="Select commodity"
                                 options={commodityOptions}
