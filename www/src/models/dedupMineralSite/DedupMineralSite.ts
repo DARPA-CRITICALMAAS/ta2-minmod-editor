@@ -132,6 +132,7 @@ export class DedupMineralSite {
   depositTypes: DedupMineralSiteDepositType[];
   location?: DedupMineralSiteLocation;
   gradeTonnage: GradeTonnage;
+  modifiedAt: string;
 
   public constructor({
     id,
@@ -143,6 +144,7 @@ export class DedupMineralSite {
     depositTypes,
     location,
     gradeTonnage,
+    modifiedAt,
   }: {
     id: InternalID;
     uri: IRI;
@@ -153,6 +155,7 @@ export class DedupMineralSite {
     depositTypes: DedupMineralSiteDepositType[];
     location?: DedupMineralSiteLocation;
     gradeTonnage: GradeTonnage;
+    modifiedAt: string;
   }) {
     this.id = id;
     this.uri = uri;
@@ -163,6 +166,7 @@ export class DedupMineralSite {
     this.depositTypes = depositTypes;
     this.location = location;
     this.gradeTonnage = gradeTonnage;
+    this.modifiedAt = modifiedAt;
   }
 
   get commodity(): string {
