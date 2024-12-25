@@ -6,7 +6,7 @@ import { Button, Checkbox, Divider, Space, Table, Typography, message } from "an
 import { EditOutlined, PlusOutlined, UngroupOutlined } from "@ant-design/icons";
 import { EditDedupMineralSite } from "./editDedupSite/EditDedupMineralSite";
 import { Entity } from "components/Entity";
-import { NewMineralSiteModal } from "./NewMineralSite/NewMineralSiteModal";
+import { NewMineralSiteModal } from "../home/NewMineralSite/NewMineralSiteModal";
 
 interface DedupMineralSiteTableProps {
   commodity: Commodity | undefined;
