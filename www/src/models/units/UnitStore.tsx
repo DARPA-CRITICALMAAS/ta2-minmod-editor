@@ -1,8 +1,9 @@
 import { RStore, FetchResponse } from "gena-app";
 import { SERVER } from "env";
+import { IRI } from "models/typing";
 
 export interface Unit {
-    id: string;
+    id: IRI;
     name: string;
 }
 
@@ -31,6 +32,6 @@ export class UnitStore extends RStore<string, Unit> {
     }
 
     protected normRemoteSuccessfulResponse(resp: any): FetchResponse {
-        return { items: resp.data, total: resp.total };
+        return { items: resp.data, total: resp.data.length };
     }
 }

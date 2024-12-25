@@ -91,11 +91,11 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
           const allUsernamesTooltip =
             username === "System"
               ? site.createdBy
-                  .map((url, i) => {
-                    const parts = url.split("/");
-                    return parts[parts.length - 1];
-                  })
-                  .join(", ")
+                .map((url, i) => {
+                  const parts = url.split("/");
+                  return parts[parts.length - 1];
+                })
+                .join(", ")
               : fullName;
 
           const color = getUserColor(username);

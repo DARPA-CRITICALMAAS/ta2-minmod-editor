@@ -168,7 +168,7 @@ export class DraftCreateMineralSite extends MineralSite {
   draftID: string;
 
   constructor({ draftID, ...rest }: { draftID: string } & MineralSiteConstructorArgs) {
-    super({ ...rest });
+    super(rest);
     this.draftID = draftID;
   }
 

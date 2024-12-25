@@ -1,6 +1,6 @@
 import React from "react";
 import { Button, Checkbox, Form, Input, Modal, Space, message, Row, Col, Select, Typography, Divider } from "antd";
-import { useStores, Commodity, DraftCreateMineralSite, CandidateEntity, initNonCriticalStores, DepositType, Unit } from "models";
+import { useStores, Commodity, DraftCreateMineralSite, CandidateEntity, initNonCriticalStores, DepositType, Unit, MineralSite } from "models";
 import { LocationInfo } from "../../../models/mineralSite/LocationInfo";
 import { Reference, Document } from "../../../models/mineralSite/Reference";
 import { GradeTonnage } from "../../../models/mineralSite/GradeTonnage";
@@ -10,6 +10,7 @@ import axios from "axios";
 import { Country, StateOrProvince } from "models";
 import { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
+import { UserStore } from "models/user";
 
 interface NewMineralSiteModalProps {
     commodity: Commodity;
@@ -67,7 +68,6 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({
     const handleSave = async (values: any) => {
         try {
             const currentUser = userStore.getCurrentUser()?.name;
-            const createdBy = `https://minmod.isi.edu/users/u/${currentUser}`;
 
             let location = undefined;
             if (values.latitude !== undefined && values.longitude !== undefined) {
@@ -79,7 +79,7 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({
                     new CandidateEntity({
                         observedName: values.country,
                         source: values.country,
-                        normalizedURI: values.country,
+                        normalizedURI: userStore.getCurrentUser()?.url,
                         confidence: 1.0
 
                     }),
@@ -91,11 +91,13 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({
                     new CandidateEntity({
                         observedName: values.stateorprovince,
                         source: values.stateorprovince,
-                        normalizedURI: values.stateorprovince,
+                        normalizedURI: userStore.getCurrentUser()?.url,
                         confidence: 1.0
                     }),
                 ]
                 : [];
+
+
 
 
             const commodity1 = commodity.id
@@ -113,13 +115,16 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({
             const sourceText = values.sourceText;
             const combinedSourceId = `${sourceType}::${sourceText}`;
 
+
+
+
             const draft = new DraftCreateMineralSite({
                 id: "",
                 draftID: `draft-${Date.now()}`,
                 recordId: recordId,
                 sourceId: combinedSourceId,
                 dedupSiteURI: "",
-                createdBy: [createdBy],
+                createdBy: [userStore.getCurrentUser()?.url || "unknown"],
                 name: values.name,
                 locationInfo: new LocationInfo({
                     country: countries,
@@ -174,7 +179,7 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({
                 form={form}
                 layout="vertical"
                 onFinish={handleSave}
-                initialValues={{ refAppliedToAll: true, deposittypeconfidence: 1 }}
+                initialValues={{ refAppliedToAll: true, deposittypeconfidence: 1, type: "NotSpecified", rank: "U", }}
             >
                 {/* General Information */}
                 <Divider orientation="left">General Information</Divider>

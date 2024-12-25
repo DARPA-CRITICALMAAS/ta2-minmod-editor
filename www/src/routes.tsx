@@ -1,5 +1,7 @@
 import { NoArgsPathDef, NoURLArgsPathDef, applyLayout } from "gena-app";
-import { EditorPage, LoginPage } from "./pages";
+import { EditorPage } from "./pages/editor/EditorPage";
+import { LoginPage } from "./pages/login/LoginPage";
+
 
 import { ExtendedRoute, Layout } from "./components/Layout";
 
