@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Checkbox, Form, Input, Modal, Space, message, Row, Col, Select, Typography, Divider } from "antd";
+import { Button, Checkbox, Form, Input, Modal, Space, message, Row, Col, Select, Typography, Divider, Radio, RadioChangeEvent } from "antd";
 import { useStores, Commodity, DraftCreateMineralSite, CandidateEntity, initNonCriticalStores, DepositType, Unit, MineralSite } from "models";
 import { LocationInfo } from "../../../models/mineralSite/LocationInfo";
 import { Reference, Document } from "../../../models/mineralSite/Reference";
@@ -40,6 +40,7 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({
     const [depositTypeOptions, setDepositTypeOptions] = useState<{ value: string; label: string }[]>([]);
     const [unitOptions, setUnitOptions] = useState<{ value: string; label: string }[]>([]);
     const [recordId, setRecordId] = useState("");
+    const [selectedSourceType, setSelectedSourceType] = useState<string | null>(null);
 
     useEffect(() => {
         commodityStore.fetchCriticalCommotities().then((commodities) => {
@@ -65,10 +66,26 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({
         form.setFieldsValue({ recordId: generatedId });
     }, [commodityStore, countryStore, stateOrProvinceStore, form, visible]);
 
+    const handleSourceTypeChange = (e: RadioChangeEvent) => {
+        const value = e.target.value;
+        setSelectedSourceType(value);
+        const refDocUrl = form.getFieldValue('refDoc');
+        const currentUser = userStore.getCurrentUser()?.url;
+
+        if (value === 'unpublished') {
+            form.setFieldsValue({ sourceId: `unpublished::${currentUser || 'unknown'}` });
+        } else if (value && refDocUrl) {
+            form.setFieldsValue({ sourceId: `${value}::${refDocUrl}` });
+        } else {
+            form.setFieldsValue({ sourceId: null });
+            if (value !== 'unpublished') {
+                message.warning('Please provide a Reference Document URL for the selected source type.');
+            }
+        }
+    };
+
     const handleSave = async (values: any) => {
         try {
-            const currentUser = userStore.getCurrentUser()?.name;
-
             let location = undefined;
             if (values.latitude !== undefined && values.longitude !== undefined) {
                 location = `POINT (${values.longitude} ${values.latitude})`;
@@ -116,15 +133,15 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({
             const combinedSourceId = `${sourceType}::${sourceText}`;
 
 
-
-
+            const currentUser = userStore.getCurrentUser()?.name;
+            const createdBy = `https://minmod.isi.edu/users/u/${currentUser}`;
             const draft = new DraftCreateMineralSite({
                 id: "",
                 draftID: `draft-${Date.now()}`,
                 recordId: recordId,
                 sourceId: combinedSourceId,
                 dedupSiteURI: "",
-                createdBy: [userStore.getCurrentUser()?.url || "unknown"],
+                createdBy: [createdBy],
                 name: values.name,
                 locationInfo: new LocationInfo({
                     country: countries,
@@ -167,6 +184,7 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({
         }
     };
 
+
     return (
         <Modal
             title="Add New Mineral Site"
@@ -179,7 +197,7 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({
                 form={form}
                 layout="vertical"
                 onFinish={handleSave}
-                initialValues={{ refAppliedToAll: true, deposittypeconfidence: 1, type: "NotSpecified", rank: "U", }}
+                initialValues={{ refAppliedToAll: true, deposittypeconfidence: 1, type: "NotSpecified", rank: "U", gradeUnit: "%", tonnageUnit: "mt", }}
             >
                 {/* General Information */}
                 <Divider orientation="left">General Information</Divider>
@@ -257,12 +275,12 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({
                 <Row gutter={24}>
                     <Col span={12}>
                         <Form.Item name="latitude" label="Latitude">
-                            <Input type="number" placeholder="Enter latitude" step="0.0001" />
+                            <Input type="number" placeholder="Enter latitude in decimal" step="0.0001" />
                         </Form.Item>
                     </Col>
                     <Col span={12}>
                         <Form.Item name="longitude" label="Longitude">
-                            <Input type="number" placeholder="Enter longitude" step="0.0001" />
+                            <Input type="number" placeholder="Enter longitude in decimal" step="0.0001" />
                         </Form.Item>
                     </Col>
                 </Row>
@@ -284,7 +302,19 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({
                         </Form.Item>
                     </Col>
                     <Col span={12}>
-                        <Form.Item name="deposittypeconfidence" label="Deposit Type Confidence">
+                        <Form.Item
+                            name="deposittypeconfidence"
+                            label="Deposit Type Confidence"
+                            rules={[
+                                { required: true, message: "Confidence value is required" },
+                                {
+                                    validator: (_, value) =>
+                                        value >= 0 && value <= 1
+                                            ? Promise.resolve()
+                                            : Promise.reject(new Error("Confidence must be between 0 and 1")),
+                                },
+                            ]}
+                        >
                             <Input type="number" placeholder="Enter confidence" step="0.01" />
                         </Form.Item>
                     </Col>
@@ -366,59 +396,49 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({
                     </Col>
                 </Row>
 
+
+
                 {/* Source & Reference */}
                 <Divider orientation="left">Source & Reference</Divider>
                 <Row gutter={24}>
-                    {/* Source */}
-                    <Col span={12}>
-                        <Form.Item label="Source" required>
-                            <Input.Group compact>
-                                <Form.Item
-                                    name="sourceType"
-                                    noStyle
-                                    rules={[{ required: true, message: "Please select a source type" }]}
-                                >
-                                    <Select
-                                        placeholder="Select source type"
-                                        style={{ width: "40%" }}
-                                        options={[
-                                            { value: "database", label: "Database" },
-                                            { value: "technical article", label: "Technical Article" },
-                                            { value: "mining report", label: "Mining Report" },
-                                        ]}
-                                    />
-                                </Form.Item>
-                                <Form.Item
-                                    name="sourceText"
-                                    noStyle
-                                    rules={[{ required: true, message: "Please enter a source value" }]}
-                                >
-                                    <Input
-                                        placeholder="Enter text value"
-                                        style={{ width: "60%" }}
-                                        onBlur={() => {
-                                            const sourceType = form.getFieldValue("sourceType");
-                                            const sourceText = form.getFieldValue("sourceText");
-                                            if (sourceType && sourceText) {
-                                                form.setFieldsValue({ sourceId: `${sourceType}::${sourceText}` });
-                                            }
-                                        }}
-                                    />
-                                </Form.Item>
-                            </Input.Group>
-                        </Form.Item>
-                    </Col>
                     <Col span={12}>
                         <Form.Item
-                            name="refDoc"
-                            label="Reference Document URL"
-                            rules={[{ required: true, message: "Reference Document URL is required" }]}
+                            name="sourceType"
+                            label="Source"
+                            rules={[{ required: true, message: 'Please select a source type' }]}
                         >
-                            <Input placeholder="Enter reference document URL" />
+                            <Radio.Group onChange={handleSourceTypeChange}>
+                                <Radio value="database">Database</Radio>
+                                <Radio value="technical article">Technical Article</Radio>
+                                <Radio value="mining report">Mining Report</Radio>
+                                <Radio value="unpublished">Unpublished</Radio>
+                            </Radio.Group>
+                        </Form.Item>
+                    </Col>
+
+                    {(selectedSourceType === 'database' ||
+                        selectedSourceType === 'technical article' ||
+                        selectedSourceType === 'mining report') && (
+                            <Col span={12}>
+                                <Form.Item
+                                    name="refDoc"
+                                    label="Reference Document URL"
+                                    rules={[{ required: true, message: 'Reference Document URL is required' }]}
+                                >
+                                    <Input placeholder="Enter reference document URL" />
+                                </Form.Item>
+                            </Col>
+                        )}
+
+                    <Col span={24}>
+                        <Form.Item name="refComment" label="Reference Comments">
+                            <Input.TextArea
+                                placeholder="Enter any comments about the reference"
+                                autoSize={{ minRows: 1, maxRows: 4 }}
+                            />
                         </Form.Item>
                     </Col>
                 </Row>
-
                 {/* Footer */}
                 <Form.Item style={{ textAlign: "center" }}>
                     <Space>
