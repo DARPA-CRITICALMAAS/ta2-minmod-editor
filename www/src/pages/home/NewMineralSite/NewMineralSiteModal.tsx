@@ -69,20 +69,21 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({
     const handleSourceTypeChange = (e: RadioChangeEvent) => {
         const value = e.target.value;
         setSelectedSourceType(value);
-        const refDocUrl = form.getFieldValue('refDoc');
+
+        const refDocUrl = form.getFieldValue("refDoc");
         const currentUser = userStore.getCurrentUser()?.url;
 
-        if (value === 'unpublished') {
-            form.setFieldsValue({ sourceId: `unpublished::${currentUser || 'unknown'}` });
-        } else if (value && refDocUrl) {
+        if (value === "unpublished") {
+            form.setFieldsValue({ sourceId: `unpublished::${currentUser || "unknown"}` });
+        } else if (refDocUrl) {
             form.setFieldsValue({ sourceId: `${value}::${refDocUrl}` });
         } else {
             form.setFieldsValue({ sourceId: null });
-            if (value !== 'unpublished') {
-                message.warning('Please provide a Reference Document URL for the selected source type.');
-            }
         }
     };
+
+
+
 
     const handleSave = async (values: any) => {
         try {
@@ -129,8 +130,20 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({
                 comment: values.refComment || "",
             });
             const sourceType = values.sourceType;
-            const sourceText = values.sourceText;
-            const combinedSourceId = `${sourceType}::${sourceText}`;
+            const refDocUrl = values.refDoc;
+            let combinedSourceId = " ";
+
+            if (sourceType === "unpublished") {
+                combinedSourceId = `unpublished::${userStore.getCurrentUser()?.url || "unknown"}`;
+            } else if (sourceType && refDocUrl) {
+                combinedSourceId = `${sourceType}::${refDocUrl}`;
+            } else {
+                combinedSourceId = " ";
+            }
+
+            if (!combinedSourceId) {
+                console.error("Error: Source ID could not be constructed. Check sourceType and refDoc values.");
+            }
 
 
             const currentUser = userStore.getCurrentUser()?.name;
