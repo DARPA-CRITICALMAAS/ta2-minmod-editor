@@ -255,14 +255,10 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({
                 <Divider orientation="left">Location</Divider>
                 <Row gutter={24}>
                     <Col span={12}>
-                        <Form.Item
-                            name="stateorprovince"
-                            label="State or Province"
-                            rules={[{ required: true }]}
-                        >
+                        <Form.Item name="country" label="Country" rules={[{ required: true }]}>
                             <Select
-                                placeholder="Select a state or province"
-                                options={stateOptions}
+                                placeholder="Select a country"
+                                options={countryOptions}
                                 showSearch
                                 optionFilterProp="label"
                                 filterOption={(input, option) =>
@@ -272,10 +268,14 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({
                         </Form.Item>
                     </Col>
                     <Col span={12}>
-                        <Form.Item name="country" label="Country" rules={[{ required: true }]}>
+                        <Form.Item
+                            name="stateorprovince"
+                            label="State or Province"
+                            rules={[{ required: true }]}
+                        >
                             <Select
-                                placeholder="Select a country"
-                                options={countryOptions}
+                                placeholder="Select a state or province"
+                                options={stateOptions}
                                 showSearch
                                 optionFilterProp="label"
                                 filterOption={(input, option) =>
@@ -413,12 +413,12 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({
 
                 {/* Source & Reference */}
                 <Divider orientation="left">Source & Reference</Divider>
-                <Row gutter={24}>
-                    <Col span={12}>
+                <Row gutter={[16, 16]}>
+                    <Col span={24}>
                         <Form.Item
                             name="sourceType"
                             label="Source"
-                            rules={[{ required: true, message: 'Please select a source type' }]}
+                            rules={[{ required: true, message: "Please select a source type" }]}
                         >
                             <Radio.Group onChange={handleSourceTypeChange}>
                                 <Radio value="database">Database</Radio>
@@ -429,22 +429,27 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({
                         </Form.Item>
                     </Col>
 
-                    {(selectedSourceType === 'database' ||
-                        selectedSourceType === 'technical article' ||
-                        selectedSourceType === 'mining report') && (
-                            <Col span={12}>
+                    {/* Reference Document URL */}
+                    {(selectedSourceType === "database" ||
+                        selectedSourceType === "technical article" ||
+                        selectedSourceType === "mining report") && (
+                            <Col span={24}>
                                 <Form.Item
                                     name="refDoc"
                                     label="Reference Document URL"
-                                    rules={[{ required: true, message: 'Reference Document URL is required' }]}
+                                    rules={[{ required: true, message: "Reference Document URL is required" }]}
                                 >
                                     <Input placeholder="Enter reference document URL" />
                                 </Form.Item>
                             </Col>
                         )}
 
+                    {/* Reference Comments */}
                     <Col span={24}>
-                        <Form.Item name="refComment" label="Reference Comments">
+                        <Form.Item
+                            name="refComment"
+                            label="Reference Comments"
+                        >
                             <Input.TextArea
                                 placeholder="Enter any comments about the reference"
                                 autoSize={{ minRows: 1, maxRows: 4 }}
@@ -452,6 +457,7 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({
                         </Form.Item>
                     </Col>
                 </Row>
+
                 {/* Footer */}
                 <Form.Item style={{ textAlign: "center" }}>
                     <Space>
