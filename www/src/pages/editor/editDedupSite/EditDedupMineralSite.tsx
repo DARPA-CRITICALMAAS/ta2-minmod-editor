@@ -257,7 +257,13 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
         key: "reference",
         render: (_: any, site: MineralSite) => {
           const sourceId = site.sourceId;
-          const connection = sourceConnections[sourceId];
+          let connection = sourceConnections[sourceId];
+          if (connection && connection.startsWith("pdf:::")) {
+            connection = connection.replace("pdf:::", "");
+            const recordId = site.recordId;
+            connection = connection
+              .replace("{record_id}", recordId)
+          }
 
           return connection ? (
             <Typography.Link target="_blank" href={connection}>
@@ -275,7 +281,7 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
 
 
   const fetchSourcesAndConnections = async () => {
-    const response = await axios.get("http://localhost:8000/api/v1/sources");
+    const response = await axios.get("/api/v1/sources");
     const sources = response.data || [];
     const connections: Record<string, string> = {};
 
