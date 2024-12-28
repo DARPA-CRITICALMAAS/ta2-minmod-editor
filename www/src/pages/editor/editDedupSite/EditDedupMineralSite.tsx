@@ -8,6 +8,7 @@ import { EditOutlined } from "@ant-design/icons";
 import { EditSiteField } from "./EditSiteField";
 import styles from "./EditDedupMineralSite.module.css";
 import { Tooltip, Avatar } from "antd";
+import axios from "axios";
 
 const getUserColor = (username: string) => {
   let hash = 0;
@@ -32,6 +33,7 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
   const { mineralSiteStore, userStore, dedupMineralSiteStore } = stores;
   const [editField, setEditField] = useState<EditableField | undefined>(undefined);
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+  const [sourceConnections, setSourceConnections] = useState<Record<string, string>>({});
 
   const tmpLst: (MineralSite | null | undefined)[] = dedupSite.sites.map((site) => mineralSiteStore.get(site.id));
   // no idea why typescript compiler incorrectly complains about the incorrect type
@@ -91,11 +93,11 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
           const allUsernamesTooltip =
             username === "System"
               ? site.createdBy
-                  .map((url, i) => {
-                    const parts = url.split("/");
-                    return parts[parts.length - 1];
-                  })
-                  .join(", ")
+                .map((url, i) => {
+                  const parts = url.split("/");
+                  return parts[parts.length - 1];
+                })
+                .join(", ")
               : fullName;
 
           const color = getUserColor(username);
@@ -254,15 +256,51 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
         title: "Source",
         key: "reference",
         render: (_: any, site: MineralSite) => {
-          return <ReferenceComponent site={site} />;
+          const sourceId = site.sourceId;
+          const connection = sourceConnections[sourceId];
+
+          return connection ? (
+            <Typography.Link target="_blank" href={connection}>
+              {connection}
+            </Typography.Link>
+          ) : (
+            <ReferenceComponent site={site} />
+          );
         },
-      },
+      }
     ];
   }, [commodity.id, sites.length, selectedRows, ungroupTogether]);
 
+
+
+
+  const fetchSourcesAndConnections = async () => {
+    const response = await axios.get("http://localhost:8000/api/v1/sources");
+    const sources = response.data || [];
+    const connections: Record<string, string> = {};
+
+    sources.forEach((source: { id: string; connection: string }) => {
+      connections[source.id] = source.connection;
+    });
+    console.log("connections", connections)
+    return connections;
+  };
+
+
+
   useEffect(() => {
-    mineralSiteStore.fetchByIds(dedupSite.sites.map((site) => site.id));
-  }, [mineralSiteStore]);
+    const fetchData = async () => {
+      try {
+        mineralSiteStore.fetchByIds(dedupSite.sites.map((site) => site.id));
+        const connections = await fetchSourcesAndConnections();
+        setSourceConnections(connections);
+      } catch (error) {
+        console.error("Error in fetchData:", error);
+      }
+    };
+
+    fetchData();
+  }, [dedupSite.sites, mineralSiteStore]);
 
   const onEditFinish = (change?: { edit: FieldEdit; reference: Reference }) => {
     if (change === undefined) {
