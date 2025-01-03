@@ -258,11 +258,20 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
         render: (_: any, site: MineralSite) => {
           const sourceId = site.sourceId;
           let connection = sourceConnections[sourceId];
-          if (connection && connection.startsWith("pdf:::")) {
+          if (connection != null && connection != undefined && connection.startsWith("pdf:::")) {
             connection = connection.replace("pdf:::", "");
             const recordId = site.recordId;
-            connection = connection
-              .replace("{record_id}", recordId)
+            const pageInfo = site.reference[0].pageInfo;
+            if (pageInfo != undefined || pageInfo != null) {
+              const page = pageInfo[0].page
+              connection = connection
+                .replace("{record_id}", recordId)
+                .replace("{page_number=1}", page.toString())
+            }
+            else {
+              connection = connection
+                .replace("{record_id}", recordId)
+            }
           }
 
           return connection ? (
