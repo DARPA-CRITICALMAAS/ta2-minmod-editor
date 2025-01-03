@@ -26,7 +26,19 @@ export class Reference {
       document: this.document.clone(),
       comment: this.comment,
       property: this.property,
-      pageInfo: this.pageInfo
+      pageInfo: this.pageInfo.map((info) =>
+        new PageInfo({
+          page: info.page,
+          boundingBox: info.boundingBox
+            ? new BoundingBox({
+              xMax: info.boundingBox.xMax,
+              xMin: info.boundingBox.xMin,
+              yMax: info.boundingBox.yMax,
+              yMin: info.boundingBox.yMin,
+            })
+            : undefined,
+        })
+      ),
     });
   }
 
@@ -34,6 +46,7 @@ export class Reference {
     obj = {
       ...obj,
       document: Document.deserialize(obj.document),
+      pageInfo: obj.page_info?.map((info: any) => PageInfo.deserialize(info)) || [],
     };
     return new Reference(obj);
   }
@@ -43,7 +56,7 @@ export class Reference {
       document: this.document.serialize(),
       comment: this.comment,
       property: this.property,
-      pageInfo: this.pageInfo
+      pageInfo: this.pageInfo.map((info) => info.serialize()),
     };
   }
 
@@ -95,14 +108,76 @@ export class Document {
   }
 }
 
-export interface PageInfo {
+export class PageInfo {
   page: number;
   boundingBox?: BoundingBox;
-}
-export interface BoundingBox {
-  x_max: number;
-  x_min: number;
-  y_max: number;
-  y_min: number;
 
+  public constructor({
+    page,
+    boundingBox,
+  }: {
+    page: number;
+    boundingBox?: BoundingBox;
+  }) {
+    this.page = page;
+    this.boundingBox = boundingBox;
+  }
+
+  public static deserialize(obj: any): PageInfo {
+    return new PageInfo({
+      page: obj.page,
+      boundingBox: obj.bounding_box
+        ? BoundingBox.deserialize(obj.bounding_box)
+        : undefined,
+    });
+  }
+
+  public serialize(): object {
+    return {
+      page: this.page,
+      bounding_box: this.boundingBox?.serialize(),
+    };
+  }
+}
+
+export class BoundingBox {
+  xMax: number;
+  xMin: number;
+  yMax: number;
+  yMin: number;
+
+  public constructor({
+    xMax,
+    xMin,
+    yMax,
+    yMin,
+  }: {
+    xMax: number;
+    xMin: number;
+    yMax: number;
+    yMin: number;
+  }) {
+    this.xMax = xMax;
+    this.xMin = xMin;
+    this.yMax = yMax;
+    this.yMin = yMin;
+  }
+
+  public static deserialize(obj: any): BoundingBox {
+    return new BoundingBox({
+      xMax: obj.xMax,
+      xMin: obj.xMin,
+      yMax: obj.yMax,
+      yMin: obj.yMin,
+    });
+  }
+
+  public serialize(): object {
+    return {
+      xMax: this.xMax,
+      xMin: this.xMin,
+      yMax: this.yMax,
+      yMin: this.yMin,
+    };
+  }
 }

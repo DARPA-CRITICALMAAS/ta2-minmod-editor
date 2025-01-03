@@ -9,7 +9,8 @@ import { EditSiteField } from "./EditSiteField";
 import styles from "./EditDedupMineralSite.module.css";
 import { Tooltip, Avatar } from "antd";
 import axios from "axios";
-
+import SourceLink from "components/SourceLinkProps";
+import { SourceStore } from "../../../models/source"
 const getUserColor = (username: string) => {
   let hash = 0;
   for (let i = 0; i < username.length; i++) {
@@ -255,59 +256,18 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
       {
         title: "Source",
         key: "reference",
-        render: (_: any, site: MineralSite) => {
-          const sourceId = site.sourceId;
-          let connection = sourceConnections[sourceId];
-          if (connection != null && connection != undefined && connection.startsWith("pdf:::")) {
-            connection = connection.replace("pdf:::", "");
-            const recordId = site.recordId;
-            const pageInfo = site.reference[0].pageInfo;
-            if (pageInfo != undefined || pageInfo != null) {
-              const page = pageInfo[0].page
-              connection = connection
-                .replace("{record_id}", recordId)
-                .replace("{page_number=1}", page.toString())
-            }
-            else {
-              connection = connection
-                .replace("{record_id}", recordId)
-            }
-          }
-
-          return connection ? (
-            <Typography.Link target="_blank" href={connection}>
-              {connection}
-            </Typography.Link>
-          ) : (
-            <ReferenceComponent site={site} />
-          );
-        },
+        render: (_: any, site: MineralSite) => (
+          <SourceLink site={site} sourceConnections={sourceConnections} />
+        ),
       }
     ];
   }, [commodity.id, sites.length, selectedRows, ungroupTogether]);
-
-
-
-
-  const fetchSourcesAndConnections = async () => {
-    const response = await axios.get("/api/v1/sources");
-    const sources = response.data || [];
-    const connections: Record<string, string> = {};
-
-    sources.forEach((source: { id: string; connection: string }) => {
-      connections[source.id] = source.connection;
-    });
-    console.log("connections", connections)
-    return connections;
-  };
-
-
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         mineralSiteStore.fetchByIds(dedupSite.sites.map((site) => site.id));
-        const connections = await fetchSourcesAndConnections();
+        const connections = await stores.sourceStore.fetchSourcesAndConnections();
         setSourceConnections(connections);
       } catch (error) {
         console.error("Error in fetchData:", error);
@@ -384,23 +344,3 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
   );
 }) as React.FC<EditDedupMineralSiteProps>;
 
-const ReferenceComponent: React.FC<{ site: MineralSite }> = ({ site }) => {
-  const docs = useMemo(() => {
-    return Object.values(site.getReferencedDocuments());
-  }, [site]);
-
-  return (
-    <Typography.Text ellipsis={true} style={{ maxWidth: 200 }}>
-      {join(
-        docs.map((doc) => (
-          <Typography.Link key={doc.uri} target="_blank" href={doc.uri}>
-            {doc.title || doc.uri}
-          </Typography.Link>
-        )),
-        (index) => (
-          <span key={`sep-${index}`}>&nbsp;·&nbsp;</span>
-        )
-      )}
-    </Typography.Text>
-  );
-};
