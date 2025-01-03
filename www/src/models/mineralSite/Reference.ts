@@ -2,22 +2,23 @@ export class Reference {
   document: Document;
   comment: string;
   property?: string;
-  // pageInfo: PageInfo[];
+  pageInfo: PageInfo[];
 
   public constructor({
     document,
     comment,
     property,
+    pageInfo
   }: {
     document: Document;
     comment: string;
     property?: string;
-    // pageInfo: PageInfo[]
+    pageInfo: PageInfo[]
   }) {
     this.document = document;
     this.comment = comment;
     this.property = property;
-    // this.pageInfo = pageInfo;
+    this.pageInfo = pageInfo;
   }
 
   public clone(): Reference {
@@ -25,7 +26,7 @@ export class Reference {
       document: this.document.clone(),
       comment: this.comment,
       property: this.property,
-      // pageInfo: this.pageInfo
+      pageInfo: this.pageInfo
     });
   }
 
@@ -42,7 +43,7 @@ export class Reference {
       document: this.document.serialize(),
       comment: this.comment,
       property: this.property,
-      // pageInfo: this.pageInfo
+      pageInfo: this.pageInfo
     };
   }
 
@@ -94,6 +95,14 @@ export class Document {
   }
 }
 
-// export interface PageInfo {
-//   page: number;
-// }
+export interface PageInfo {
+  page: number;
+  boundingBox?: BoundingBox;
+}
+export interface BoundingBox {
+  x_max: number;
+  x_min: number;
+  y_max: number;
+  y_min: number;
+
+}
