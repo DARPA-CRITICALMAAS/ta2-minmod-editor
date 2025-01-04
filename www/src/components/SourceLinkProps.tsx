@@ -3,51 +3,48 @@ import { Typography } from "antd";
 import { MineralSite } from "models";
 import { SourceStore } from "models/source";
 
-interface SourceLinkProps {
+interface ReferenceComponentProps {
     site: MineralSite;
     sourceStore: SourceStore;
 }
 
-const SourceLink: React.FC<SourceLinkProps> = ({ site, sourceStore }) => {
+const ReferenceComponent: React.FC<ReferenceComponentProps> = ({ site, sourceStore }) => {
     const connection = useMemo(() => {
         const sourceId = site.sourceId;
-        let connection = sourceStore.getByURI(sourceId);
+        const rawConnection = sourceStore.getByURI(sourceId);
 
-        if (connection != null && connection.startsWith("pdf:::")) {
-            connection = connection.replace("pdf:::", "");
-            const recordId = site.recordId;
-            const pageInfo = site.reference[0]?.pageInfo;
-
-            if (Array.isArray(pageInfo) && pageInfo.length > 0) {
-                const page = pageInfo[0]?.page ?? 1;
-                connection = connection
-                    .replace("{record_id}", recordId)
-                    .replace(/\{page_number(=[0-9]*)?\}/, `page_number=${page}`);
-            } else {
-                connection = connection.replace("{record_id}", recordId);
-            }
+        if (!rawConnection) {
+            return null;
         }
 
-        return connection;
+        const [type, urlTemplate] = rawConnection.split(":::");
+        if ((type !== "pdf" && type !== "webpage")) {
+            return null;
+        }
+
+        const recordId = site.recordId || "";
+        const pageInfo = site.reference[0]?.pageInfo || [];
+        const page = pageInfo.length > 0 && pageInfo[0]?.page ? pageInfo[0].page : 1;
+
+        return urlTemplate.replace(/\{(\w+)(=[^}]*)?\}/g, (match, key) => {
+            if (key === "record_id") {
+                return recordId;
+            } else if (key === "page_number") {
+                return page.toString();
+            } else {
+                return "";
+            }
+        });
     }, [site, sourceStore]);
+
+    const docs = useMemo(() => Object.values(site.getReferencedDocuments()), [site]);
 
     return connection ? (
         <Typography.Link target="_blank" href={connection}>
             {connection}
+
         </Typography.Link>
     ) : (
-        <ReferenceComponent site={site} />
-    );
-};
-
-export default SourceLink;
-
-const ReferenceComponent: React.FC<{ site: MineralSite }> = ({ site }) => {
-    const docs = useMemo(() => {
-        return Object.values(site.getReferencedDocuments());
-    }, [site]);
-
-    return (
         <Typography.Text ellipsis={true} style={{ maxWidth: 200 }}>
             {docs.map((doc, index) => (
                 <React.Fragment key={doc.uri}>
@@ -60,3 +57,5 @@ const ReferenceComponent: React.FC<{ site: MineralSite }> = ({ site }) => {
         </Typography.Text>
     );
 };
+
+export default ReferenceComponent;
