@@ -6,24 +6,16 @@ export interface Source {
     id: IRI;
     connection: string;
 }
-
 export class SourceStore extends RStore<string, Source> {
-    static fetchSourcesAndConnections() {
-        throw new Error("Method not implemented.");
-    }
     constructor() {
         super(`${SERVER}/api/v1/sources`, undefined, false);
     }
-
     public deserialize(obj: any): Source {
         return {
             id: obj.id,
             connection: obj.connection,
         };
     }
-
-
-
     async fetchSourcesAndConnections(): Promise<Record<string, string>> {
         if (this.refetch || this.records.size === 0) {
             await this.fetch({});
@@ -31,16 +23,12 @@ export class SourceStore extends RStore<string, Source> {
 
         const connections: Record<string, string> = {};
         this.records.forEach((source) => {
-            if (source && source.connection) {
+            if (source !== null && source.connection !== undefined) {
                 connections[source.id] = source.connection;
             }
         });
-
-        console.log("connections", connections);
         return connections;
     }
-
-
     public getByURI(sourceId: string): string | undefined {
         const source = this.records.get(sourceId);
         return source?.connection;

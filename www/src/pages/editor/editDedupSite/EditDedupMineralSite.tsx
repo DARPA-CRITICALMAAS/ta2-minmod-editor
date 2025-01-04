@@ -34,8 +34,6 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
   const { mineralSiteStore, userStore, dedupMineralSiteStore } = stores;
   const [editField, setEditField] = useState<EditableField | undefined>(undefined);
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
-  const [sourceConnections, setSourceConnections] = useState<Record<string, string>>({});
-
   const tmpLst: (MineralSite | null | undefined)[] = dedupSite.sites.map((site) => mineralSiteStore.get(site.id));
   // no idea why typescript compiler incorrectly complains about the incorrect type
   const fetchedSites = tmpLst.filter((site) => site !== undefined) as (MineralSite | null)[];
@@ -257,7 +255,7 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
         title: "Source",
         key: "reference",
         render: (_: any, site: MineralSite) => (
-          <SourceLink site={site} sourceConnections={sourceConnections} />
+          <SourceLink site={site} sourceStore={stores.sourceStore} />
         ),
       }
     ];
@@ -267,8 +265,6 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
     const fetchData = async () => {
       try {
         mineralSiteStore.fetchByIds(dedupSite.sites.map((site) => site.id));
-        const connections = await stores.sourceStore.fetchSourcesAndConnections();
-        setSourceConnections(connections);
       } catch (error) {
         console.error("Error in fetchData:", error);
       }

@@ -1,16 +1,17 @@
 import React, { useMemo } from "react";
 import { Typography } from "antd";
 import { MineralSite } from "models";
+import { SourceStore } from "models/source";
 
 interface SourceLinkProps {
     site: MineralSite;
-    sourceConnections: Record<string, string>;
+    sourceStore: SourceStore;
 }
 
-const SourceLink: React.FC<SourceLinkProps> = ({ site, sourceConnections }) => {
+const SourceLink: React.FC<SourceLinkProps> = ({ site, sourceStore }) => {
     const connection = useMemo(() => {
         const sourceId = site.sourceId;
-        let connection = sourceConnections[sourceId];
+        let connection = sourceStore.getByURI(sourceId);
 
         if (connection != null && connection.startsWith("pdf:::")) {
             connection = connection.replace("pdf:::", "");
@@ -28,7 +29,7 @@ const SourceLink: React.FC<SourceLinkProps> = ({ site, sourceConnections }) => {
         }
 
         return connection;
-    }, [site, sourceConnections]);
+    }, [site, sourceStore]);
 
     return connection ? (
         <Typography.Link target="_blank" href={connection}>

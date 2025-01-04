@@ -165,19 +165,19 @@ export class BoundingBox {
 
   public static deserialize(obj: any): BoundingBox {
     return new BoundingBox({
-      xMax: obj.xMax,
-      xMin: obj.xMin,
-      yMax: obj.yMax,
-      yMin: obj.yMin,
+      xMax: obj.x_max,
+      xMin: obj.x_min,
+      yMax: obj.y_max,
+      yMin: obj.y_min,
     });
   }
 
   public serialize(): object {
     return {
-      xMax: this.xMax,
-      xMin: this.xMin,
-      yMax: this.yMax,
-      yMin: this.yMin,
+      x_max: this.xMax,
+      x_min: this.xMin,
+      y_max: this.yMax,
+      y_min: this.yMin,
     };
   }
 }
