@@ -30,7 +30,7 @@ const ReferenceComponent: React.FC<ReferenceComponentProps> = ({ site, sourceSto
             if (key === "record_id") {
                 return recordId;
             } else if (key === "page_number") {
-                return page.toString();
+                return page !== undefined ? page.toString() : defaultValue || "1";
             } else {
                 return defaultValue || "";
             }
