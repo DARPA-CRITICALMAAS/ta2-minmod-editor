@@ -13,7 +13,7 @@ const ReferenceComponent: React.FC<ReferenceComponentProps> = ({ site, sourceSto
         const sourceId = site.sourceId;
         const rawConnection = sourceStore.getByURI(sourceId);
 
-        if (!rawConnection) {
+        if (rawConnection == undefined) {
             return null;
         }
 
@@ -22,17 +22,17 @@ const ReferenceComponent: React.FC<ReferenceComponentProps> = ({ site, sourceSto
             return null;
         }
 
-        const recordId = site.recordId || "";
+        const recordId = site.recordId;
         const pageInfo = site.reference[0]?.pageInfo || [];
         const page = pageInfo.length > 0 && pageInfo[0]?.page ? pageInfo[0].page : 1;
 
-        return urlTemplate.replace(/\{(\w+)(=[^}]*)?\}/g, (match, key) => {
+        return urlTemplate.replace(/\{(\w+)(=[^}]*)?\}/g, (match, key, _defaultMatch, defaultValue) => {
             if (key === "record_id") {
                 return recordId;
             } else if (key === "page_number") {
                 return page.toString();
             } else {
-                return "";
+                return defaultValue || "";
             }
         });
     }, [site, sourceStore]);
@@ -42,7 +42,6 @@ const ReferenceComponent: React.FC<ReferenceComponentProps> = ({ site, sourceSto
     return connection ? (
         <Typography.Link target="_blank" href={connection}>
             {connection}
-
         </Typography.Link>
     ) : (
         <Typography.Text ellipsis={true} style={{ maxWidth: 200 }}>
