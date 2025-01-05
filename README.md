@@ -22,22 +22,29 @@ git clone https://github.com/DARPA-CRITICALMAAS/ta2-minmod-editor.git
 
 ### 2. Backend Setup
 Navigate to the Backend Directory
+
 git clone https://github.com/DARPA-CRITICALMAAS/ta2-minmod-kg.git
+
 Follow the README.md to set it up
+
 backend will start on --**http://localhost:8000.--**
 
 
 ### 3. Frontend Setup
 Navigate to the Frontend Directory
+
 In another terminal window, move to the frontend folder:
+
 --**cd minmod_editor/www**
 
 Install Frontend Dependencies
+
 Install the necessary Node.js packages with npm:
+
 Add --**http://localhost:8000.--** to the proxy of package.json
+
 --**npm install**
 
-Start the Frontend Server
 Start the frontend server:
 --**npm start**
 
