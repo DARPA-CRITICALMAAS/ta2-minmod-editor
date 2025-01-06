@@ -40,9 +40,9 @@ export class MineralSiteStore extends CRUDStore<string, DraftCreateMineralSite, 
         record.location_info !== undefined
           ? LocationInfo.deserialize(record.location_info)
           : new LocationInfo({
-              country: [],
-              stateOrProvince: [],
-            }),
+            country: [],
+            stateOrProvince: [],
+          }),
       depositTypeCandidate: (record.deposit_type_candidate || []).map(CandidateEntity.deserialize),
       reference: record.reference.map(Reference.deserialize),
       sameAs: record.same_as,
@@ -102,7 +102,7 @@ export class MineralSiteStore extends CRUDStore<string, DraftCreateMineralSite, 
       record_id: record.recordId,
       source_id: record.sourceId,
       created_by: record.createdBy,
-      dedup_site_uri: record.dedupSiteURI,
+      dedup_site_uri: record.dedupSiteURI === "" ? undefined : record.dedupSiteURI,
       location_info: {
         country: record.locationInfo.country.map((country) => country.serialize()),
         state_or_province: record.locationInfo.stateOrProvince.map((state_or_province) => state_or_province.serialize()),
