@@ -89,11 +89,6 @@ const NewMineralSiteForm = ({ commodity }: NewMineralSiteModalProps, ref: Forwar
     if (values.latitude !== undefined && values.longitude !== undefined) {
       location = `POINT (${values.longitude} ${values.latitude})`;
     }
-
-    if (commodity === undefined) {
-      console.log("commodity not chosen")
-      return
-    }
     const countries = values.country
       ? [
         new CandidateEntity({
@@ -115,7 +110,7 @@ const NewMineralSiteForm = ({ commodity }: NewMineralSiteModalProps, ref: Forwar
         }),
       ]
       : [];
-    const commodity1 = commodity.id;
+    const commodity1 = commodity && commodity.id;
     const referenceDocument = new Document({
       uri: values.refDoc,
     });
@@ -138,8 +133,8 @@ const NewMineralSiteForm = ({ commodity }: NewMineralSiteModalProps, ref: Forwar
       commodity: new CandidateEntity({
         source: currentUserUrl,
         confidence: 1.0,
-        observedName: commodity.name,
-        normalizedURI: commodity.uri,
+        observedName: commodity && commodity.name,
+        normalizedURI: commodity && commodity.uri,
       }),
       grade: values.grade !== undefined
         ? new Measure({
@@ -200,7 +195,7 @@ const NewMineralSiteForm = ({ commodity }: NewMineralSiteModalProps, ref: Forwar
       sameAs: [],
       gradeTonnage: {
         [commodity1 as string]: new GradeTonnage({
-          commodity: commodity1,
+          commodity: commodity1 || "",
           totalTonnage: values.tonnage || 0,
           totalGrade: values.grade || 0,
         }),
