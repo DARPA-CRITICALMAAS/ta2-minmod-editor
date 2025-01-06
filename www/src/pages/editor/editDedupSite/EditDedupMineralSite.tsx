@@ -9,7 +9,7 @@ import { EditSiteField } from "./EditSiteField";
 import styles from "./EditDedupMineralSite.module.css";
 import { Tooltip, Avatar } from "antd";
 import axios from "axios";
-import SourceLink from "components/SourceLinkProps";
+import ReferenceComponent from "components/ReferenceComponent";
 import { SourceStore } from "../../../models/source"
 const getUserColor = (username: string) => {
   let hash = 0;
@@ -255,7 +255,7 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
         title: "Source",
         key: "reference",
         render: (_: any, site: MineralSite) => (
-          <SourceLink site={site} sourceStore={stores.sourceStore} />
+          <ReferenceComponent site={site} sourceStore={stores.sourceStore} />
         ),
       }
     ];
