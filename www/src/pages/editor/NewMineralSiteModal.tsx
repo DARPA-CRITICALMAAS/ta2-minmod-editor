@@ -41,6 +41,7 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
   const [form] = Form.useForm();
   const [recordId, setRecordId] = useState("");
   const [selectedSourceType, setSelectedSourceType] = useState<string | null>(null);
+  const currentUserUrl = userStore.getCurrentUser()!.url;
 
   const commodityOptions = useMemo(() => {
     return commodityStore.list.map((comm) => ({
@@ -48,7 +49,6 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
       label: comm.name,
     }));
   }, [commodityStore.records]);
-  const currentUserUrl = userStore.getCurrentUser()!.url;
   const countryOptions = useMemo(() => {
     return countryStore.list.map((country) => ({
       value: country.uri,
@@ -58,21 +58,21 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
 
   const stateOptions = useMemo(() => {
     return stateOrProvinceStore.list.map((state) => ({
-      value: state.id,
+      value: state.uri,
       label: state.name,
     }));
   }, [stateOrProvinceStore.records]);
 
   const depositTypeOptions = useMemo(() => {
     return depositTypeStore.list.map((type) => ({
-      value: type.id,
+      value: type.uri,
       label: type.name,
     }));
   }, [depositTypeStore.records]);
 
   const unitOptions = useMemo(() => {
     return unitStore.list.map((unit) => ({
-      value: unit.id,
+      value: unit.uri,
       label: unit.name,
     }));
   }, [unitStore.records]);
@@ -84,151 +84,142 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
     const refDocUrl = form.getFieldValue("refDoc");
     if (value === "unpublished") {
       form.setFieldsValue({ sourceId: `unpublished::${currentUserUrl}` });
-    } else if (refDocUrl) {
+    }
+    if (refDocUrl) {
       form.setFieldsValue({ sourceId: `${value}::${refDocUrl}` });
     }
   };
-
-
-
   const handleSave = async (values: FormValues) => {
-    try {
-      let location = undefined;
-      if (values.latitude !== undefined && values.longitude !== undefined) {
-        location = `POINT (${values.longitude} ${values.latitude})`;
-      }
-
-      const countries = values.country
-        ? [
-          new CandidateEntity({
-            observedName: countryStore.getByURI(values.country)!.name,
-            source: currentUserUrl,
-            normalizedURI: values.country,
-            confidence: 1.0,
-          }),
-        ]
-        : [];
-
-      const statesOrProvinces = values.stateOrProvince
-        ? [
-          new CandidateEntity({
-            observedName: stateOrProvinceStore.getByURI(values.stateOrProvince)!.name,
-            source: currentUserUrl,
-            normalizedURI: values.stateOrProvince,
-            confidence: 1.0,
-          }),
-        ]
-        : [];
-
-      const commodity1 = commodity.id;
-      const referenceDocument = new Document({
-        uri: values.refDoc,
-        title: values.refDoc,
-      });
-
-      const reference = new Reference({
-        document: referenceDocument,
-        comment: values.refComment || "",
-      });
-
-      const mineralInventory = new MineralInventory({
-        category: ["Inferred", "Indicated", "Measured"].map(
-          (name) =>
-            new CandidateEntity({
-              source: currentUserUrl,
-              confidence: 1.0,
-              observedName: name,
-              normalizedURI: `https://minmod.isi.edu/resource/${name}`,
-            })
-        ),
-        commodity: new CandidateEntity({
-          source: currentUserUrl,
-          confidence: 1.0,
-          observedName: commodity.name,
-          normalizedURI: commodity.uri,
-        }),
-        grade: values.grade
-          ? new Measure({
-            value: values.grade,
-            unit: new CandidateEntity({
-              source: currentUserUrl,
-              confidence: 1,
-              observedName: unitStore.getByURI(values.gradeUnit!)!.name,
-              normalizedURI: values.gradeUnit,
-            }),
-          })
-          : undefined,
-        ore: values.tonnage
-          ? new Measure({
-            value: values.tonnage,
-            unit: new CandidateEntity({
-              source: currentUserUrl,
-              confidence: 1,
-              observedName: unitStore.getByURI(values.tonnageUnit!)!.name,
-              normalizedURI: values.tonnageUnit,
-            }),
-          })
-          : undefined,
-        reference: reference,
-      });
-
-
-      const sourceType = values.sourceType;
-      const refDocUrl = values.refDoc;
-      let combinedSourceId = "";
-
-      if (sourceType === "unpublished") {
-        combinedSourceId = `unpublished::${currentUserUrl}`;
-      } else if (sourceType && refDocUrl) {
-        combinedSourceId = `${sourceType}::${refDocUrl}`;
-      } else {
-        combinedSourceId = " ";
-      }
-
-
-      const draft = new DraftCreateMineralSite({
-        id: "",
-        draftID: `draft-${Date.now()}`,
-        recordId: `record-${uuidv4()}`,
-        sourceId: combinedSourceId,
-        dedupSiteURI: "",
-        createdBy: [currentUserUrl],
-        name: values.name,
-        locationInfo: new LocationInfo({
-          country: countries,
-          stateOrProvince: statesOrProvinces,
-          location: location,
-        }),
-        depositTypeCandidate: [
-          new CandidateEntity({
-            source: currentUserUrl,
-            confidence: values.depositTypeConfidence,
-            observedName: values.depositType,
-            normalizedURI: values.depositType,
-          }),
-        ],
-        reference: [reference],
-        sameAs: [],
-        gradeTonnage: {
-          [commodity1 as string]: new GradeTonnage({
-            commodity: commodity1,
-            totalTonnage: values.tonnage || 0,
-            totalGrade: values.grade || 0,
-          }),
-        },
-        mineralInventory: [mineralInventory],
-      });
-      const newMineralSite = await mineralSiteStore.create(draft);
-      console.log("newMineralSite", newMineralSite.dedupSiteURI);
-      const dedup_site_uri = newMineralSite.dedupSiteURI;
-      const dedupSite = await dedupMineralSiteStore.forceFetchByURI(dedup_site_uri, commodity1);
-      console.log("newMineralSite", newMineralSite);
-      message.success("Mineral site created and dedup store updated successfully!");
-      onClose();
-    } catch (error) {
-      console.error("Error saving mineral site:", error);
-      message.error("Failed to create mineral site. Please try again.");
+    let location = undefined;
+    if (values.latitude !== undefined && values.longitude !== undefined) {
+      location = `POINT (${values.longitude} ${values.latitude})`;
     }
+
+    const countries = values.country
+      ? [
+        new CandidateEntity({
+          observedName: countryStore.getByURI(values.country)!.name,
+          source: currentUserUrl,
+          normalizedURI: values.country,
+          confidence: 1.0,
+        }),
+      ]
+      : [];
+
+    const statesOrProvinces = values.stateOrProvince
+      ? [
+        new CandidateEntity({
+          observedName: stateOrProvinceStore.getByURI(values.stateOrProvince)!.name,
+          source: currentUserUrl,
+          normalizedURI: values.stateOrProvince,
+          confidence: 1.0,
+        }),
+      ]
+      : [];
+
+    const commodity1 = commodity.id;
+    const referenceDocument = new Document({
+      uri: values.refDoc,
+      title: values.refDoc,
+    });
+
+    const reference = new Reference({
+      document: referenceDocument,
+      comment: values.refComment!,
+    });
+
+    const mineralInventory = new MineralInventory({
+      category: ["Inferred", "Indicated", "Measured"].map(
+        (name) =>
+          new CandidateEntity({
+            source: currentUserUrl,
+            confidence: 1.0,
+            observedName: name,
+            normalizedURI: `https://minmod.isi.edu/resource/${name}`,
+          })
+      ),
+      commodity: new CandidateEntity({
+        source: currentUserUrl,
+        confidence: 1.0,
+        observedName: commodity.name,
+        normalizedURI: commodity.uri,
+      }),
+      grade: values.grade
+        ? new Measure({
+          value: values.grade,
+          unit: new CandidateEntity({
+            source: currentUserUrl,
+            confidence: 1,
+            // observedName: unitStore.getByURI(values.gradeUnit!)!.name,
+            normalizedURI: values.gradeUnit,
+          }),
+        })
+        : undefined,
+      ore: values.tonnage
+        ? new Measure({
+          value: values.tonnage,
+          unit: new CandidateEntity({
+            source: currentUserUrl,
+            confidence: 1,
+            // observedName: unitStore.getByURI(values.tonnageUnit!)!.name,
+            normalizedURI: values.tonnageUnit,
+          }),
+        })
+        : undefined,
+      reference: reference,
+    });
+
+
+    const sourceType = values.sourceType;
+    const refDocUrl = values.refDoc;
+    let combinedSourceId = "";
+
+    if (sourceType === "unpublished") {
+      combinedSourceId = `unpublished::${currentUserUrl}`;
+    } else if (sourceType && refDocUrl) {
+      combinedSourceId = `${sourceType}::${refDocUrl}`;
+    }
+
+
+    const draft = new DraftCreateMineralSite({
+      id: "",
+      draftID: `draft-${Date.now()}`,
+      recordId: `record-${uuidv4()}`,
+      sourceId: combinedSourceId,
+      dedupSiteURI: "",
+      createdBy: [currentUserUrl],
+      name: values.name,
+      locationInfo: new LocationInfo({
+        country: countries,
+        stateOrProvince: statesOrProvinces,
+        location: location,
+      }),
+      depositTypeCandidate: [
+        new CandidateEntity({
+          source: currentUserUrl,
+          confidence: values.depositTypeConfidence,
+          observedName: values.depositType,
+          normalizedURI: values.depositType,
+        }),
+      ],
+      reference: [reference],
+      sameAs: [],
+      gradeTonnage: {
+        [commodity1 as string]: new GradeTonnage({
+          commodity: commodity1,
+          totalTonnage: values.tonnage || 0,
+          totalGrade: values.grade || 0,
+        }),
+      },
+      mineralInventory: [mineralInventory],
+    });
+    const newMineralSite = await mineralSiteStore.create(draft);
+    const dedup_site_uri = newMineralSite.dedupSiteURI;
+    const dedupSite = await dedupMineralSiteStore.forceFetchByURI(dedup_site_uri, commodity1);
+    console.log("newMineralSite", newMineralSite);
+    message.success("Mineral site created and dedup store updated successfully!");
+    onClose();
+
   };
 
   return (
