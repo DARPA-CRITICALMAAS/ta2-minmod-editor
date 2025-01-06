@@ -30,7 +30,7 @@ export const EditorPage = observer(() => {
       <DedupMineralSiteTable commodity={normSearchArgs.commodity} />
       <NewMineralSiteModal
         ref={modalRef}
-        commodity={normSearchArgs.commodity}
+        commodity={normSearchArgs.commodity!}
       />
     </Flex>
   );
