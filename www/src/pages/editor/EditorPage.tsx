@@ -16,16 +16,28 @@ export const EditorPage = observer(() => {
 
   return (
     <Flex vertical={true} gap="small">
-      <SearchBar searchArgs={searchArgs} setSearchArgs={setSearchArgs} />
-      <Button style={{ marginLeft: "1180px", bottom: "40px", width: "200px" }} type="primary" onClick={handleOpenModal}> Add Mineral Site</Button>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <SearchBar searchArgs={searchArgs} setSearchArgs={setSearchArgs} />
+        <Button type="primary" onClick={handleOpenModal}>
+          Add Mineral Site
+        </Button>
+      </div>
       <DedupMineralSiteTable commodity={normSearchArgs.commodity} />
       {isCreatingMineralSite && (
         <NewMineralSiteModal
           commodity={normSearchArgs.commodity as Commodity}
-          visible={isCreatingMineralSite}
+          visible={true}
           onClose={handleCloseModal}
         />
       )}
     </Flex>
   );
+
 });
+
