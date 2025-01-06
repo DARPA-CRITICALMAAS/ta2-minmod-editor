@@ -1,6 +1,6 @@
 import React from "react";
 import { Button, Checkbox, Form, Input, Modal, Space, message, Row, Col, Select, Typography, Divider, Radio, RadioChangeEvent } from "antd";
-import { useStores, Commodity, DraftCreateMineralSite, CandidateEntity, initNonCriticalStores, DepositType, Unit, MineralSite } from "models";
+import { useStores, Commodity, DraftCreateMineralSite, CandidateEntity, DepositType, Unit, MineralSite } from "models";
 import { LocationInfo } from "../../models/mineralSite/LocationInfo";
 import { Reference, Document } from "../../models/mineralSite/Reference";
 import { GradeTonnage } from "../../models/mineralSite/GradeTonnage";
@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { UserStore } from "models/user";
 import { MineralInventory, Measure } from "../../models/mineralSite/MineralInventory";
+import { useMemo } from "react";
 
 interface NewMineralSiteModalProps {
   commodity: Commodity;
@@ -21,13 +22,13 @@ interface FormValues {
   latitude?: number;
   longitude?: number;
   country?: string;
-  stateorprovince?: string;
+  stateOrProvince?: string;
   name: string;
   refDoc: string;
   refComment?: string;
   sourceType: string;
-  deposittype: string;
-  deposittypeconfidence: number;
+  depositType: string;
+  depositTypeConfidence: number;
   tonnage?: number;
   grade?: number;
   gradeUnit?: string;
@@ -39,51 +40,50 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
   const [form] = Form.useForm();
   const [recordId, setRecordId] = useState("");
   const [selectedSourceType, setSelectedSourceType] = useState<string | null>(null);
-
-  const commodityOptions = Array.from(commodityStore.records.values())
-    .filter((comm): comm is Commodity => comm !== null)
-    .map((comm: Commodity) => ({
-      value: comm.id,
-      label: comm.name,
+  const commodityOptions = useMemo(() => {
+    return Array.from(commodityStore.records.values()).map((comm) => ({
+      value: comm?.id,
+      label: comm?.name,
     }));
-
-  const countryOptions = Array.from(countryStore.records.values())
-    .filter((country): country is Country => country !== null)
-    .map((country: Country) => ({
-      value: country.id,
-      label: country.name,
+  }, [commodityStore.records]);
+  const currentUser = userStore.getCurrentUser()?.url;
+  const countryOptions = useMemo(() => {
+    return Array.from(countryStore.records.values()).map((country) => ({
+      value: country?.id,
+      label: country?.name,
     }));
+  }, [countryStore.records]);
 
-  const stateOptions = Array.from(stateOrProvinceStore.records.values())
-    .filter((state): state is StateOrProvince => state !== null)
-    .map((state: StateOrProvince) => ({
-      value: state.id,
-      label: state.name,
+  const stateOptions = useMemo(() => {
+    return Array.from(stateOrProvinceStore.records.values()).map((state) => ({
+      value: state?.id,
+      label: state?.name,
     }));
+  }, [stateOrProvinceStore.records]);
 
-  const depositTypeOptions = Array.from(depositTypeStore.records.values())
-    .filter((type): type is DepositType => type !== null)
-    .map((type) => ({
-      value: type.id ?? "",
-      label: type.name ?? "Unnamed",
+  const depositTypeOptions = useMemo(() => {
+    return Array.from(depositTypeStore.records.values()).map((type) => ({
+      value: type?.id ?? "",
+      label: type?.name ?? "Unnamed",
     }));
+  }, [depositTypeStore.records]);
 
-  const unitOptions = Array.from(unitStore.records.values())
-    .filter((unit): unit is Unit => unit !== null)
-    .map((unit) => ({
-      value: unit.id ?? "",
-      label: unit.name ?? "Unnamed",
+  const unitOptions = useMemo(() => {
+    return Array.from(unitStore.records.values()).map((unit) => ({
+      value: unit?.id ?? "",
+      label: unit?.name ?? "Unnamed",
     }));
-
+  }, [unitStore.records]);
   useEffect(() => {
     const initialize = async () => {
       try {
-        await initNonCriticalStores();
 
         if (visible) {
           const generatedId = `record-${uuidv4()}`;
+          setRecordId(generatedId)
           form.setFieldsValue({ recordId: generatedId });
         }
+        console.log("Generated ID:", recordId);
       } catch (error) {
         console.error("Error initializing stores:", error);
       }
@@ -97,8 +97,6 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
     setSelectedSourceType(value);
 
     const refDocUrl = form.getFieldValue("refDoc");
-    const currentUser = userStore.getCurrentUser()?.url;
-
     if (value === "unpublished") {
       form.setFieldsValue({ sourceId: `unpublished::${currentUser || "unknown"}` });
     } else if (refDocUrl) {
@@ -121,19 +119,19 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
         ? [
           new CandidateEntity({
             observedName: countryStore.getByURI(values.country)?.name,
-            source: values.country,
+            source: currentUser ? currentUser : "unknown",
             normalizedURI: values.country,
             confidence: 1.0,
           }),
         ]
         : [];
 
-      const statesOrProvinces = values.stateorprovince
+      const statesOrProvinces = values.stateOrProvince
         ? [
           new CandidateEntity({
-            observedName: stateOrProvinceStore.getByURI(values.stateorprovince)?.name,
-            source: values.stateorprovince,
-            normalizedURI: values.stateorprovince,
+            observedName: stateOrProvinceStore.getByURI(values.stateOrProvince)?.name,
+            source: currentUser ? currentUser : "unknown",
+            normalizedURI: values.stateOrProvince,
             confidence: 1.0,
           }),
         ]
@@ -154,14 +152,14 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
         category: ["Inferred", "Indicated", "Measured"].map(
           (name) =>
             new CandidateEntity({
-              source: userStore.getCurrentUser()?.url || "unknown",
+              source: currentUser ? currentUser : "null",
               confidence: 1.0,
               observedName: name,
               normalizedURI: `https://minmod.isi.edu/resource/${name}`,
             })
         ),
         commodity: new CandidateEntity({
-          source: "user",
+          source: currentUser ? currentUser : "null",
           confidence: 1.0,
           observedName: commodity.name,
           normalizedURI: commodity.uri,
@@ -170,10 +168,10 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
           ? new Measure({
             value: values.grade,
             unit: new CandidateEntity({
-              source: "user",
+              source: currentUser ? currentUser : "null",
               confidence: values.grade,
               observedName: "%",
-              normalizedURI: commodity.uri,
+              normalizedURI: unitStore.getByURI(values.gradeUnit ? values.gradeUnit : "null")?.id,
             }),
           })
           : undefined,
@@ -181,10 +179,10 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
           ? new Measure({
             value: values.tonnage,
             unit: new CandidateEntity({
-              source: "user",
+              source: currentUser ? currentUser : "null",
               confidence: values.tonnage,
               observedName: "mt",
-              normalizedURI: commodity.uri,
+              normalizedURI: unitStore.getByURI(values.tonnageUnit ? values.tonnageUnit : "null")?.id,
             }),
           })
           : undefined,
@@ -194,7 +192,7 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
 
       const sourceType = values.sourceType;
       const refDocUrl = values.refDoc;
-      let combinedSourceId = " ";
+      let combinedSourceId = "";
 
       if (sourceType === "unpublished") {
         combinedSourceId = `unpublished::${userStore.getCurrentUser()?.url || "unknown"}`;
@@ -204,18 +202,14 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
         combinedSourceId = " ";
       }
 
-      const currentUser = userStore.getCurrentUser()?.name;
-      const currentURL = userStore.getCurrentUser()?.url;
 
-      console.log("currentURL", currentURL)
-      const createdBy = `https://minmod.isi.edu/users/u/${currentUser}`;
       const draft = new DraftCreateMineralSite({
         id: "",
         draftID: `draft-${Date.now()}`,
         recordId: recordId,
         sourceId: combinedSourceId,
         dedupSiteURI: "",
-        createdBy: [createdBy],
+        createdBy: currentUser ? [currentUser] : ["null"],
         name: values.name,
         locationInfo: new LocationInfo({
           country: countries,
@@ -224,10 +218,10 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
         }),
         depositTypeCandidate: [
           new CandidateEntity({
-            source: values.deposittype,
-            confidence: values.deposittypeconfidence,
-            observedName: values.deposittype,
-            normalizedURI: values.deposittype,
+            source: currentUser ? currentUser : "null",
+            confidence: values.depositTypeConfidence,
+            observedName: values.depositType,
+            normalizedURI: values.depositType,
           }),
         ],
         reference: [reference],
@@ -241,7 +235,6 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
         },
         mineralInventory: [mineralInventory],
       });
-
       const newMineralSite = await mineralSiteStore.create(draft);
       console.log("newMineralSite", newMineralSite.dedupSiteURI);
       const dedup_site_uri = newMineralSite.dedupSiteURI;
@@ -257,7 +250,7 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
 
   return (
     <Modal title="Add New Mineral Site" visible={visible} onCancel={onClose} footer={null} width="70%">
-      <Form form={form} layout="vertical" onFinish={handleSave} initialValues={{ refAppliedToAll: true, deposittypeconfidence: 1, type: "NotSpecified", rank: "U", gradeUnit: "%", tonnageUnit: "mt" }}>
+      <Form form={form} layout="vertical" onFinish={handleSave} initialValues={{ refAppliedToAll: true, depositTypeConfidence: 1, type: "NotSpecified", rank: "U", gradeUnit: "%", tonnageUnit: "mt" }}>
         {/* General Information */}
         <Divider orientation="left">General Information</Divider>
         <Row gutter={24}>
@@ -296,7 +289,6 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
             </Form.Item>
           </Col>
         </Row>
-
         {/* Location */}
         <Divider orientation="left">Location</Divider>
         <Row gutter={24}>
@@ -312,7 +304,7 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item name="stateorprovince" label="State or Province" rules={[{ required: true }]}>
+            <Form.Item name="stateOrProvince" label="State or Province" rules={[{ required: true }]}>
               <Select
                 placeholder="Select a state or province"
                 options={stateOptions}
@@ -340,7 +332,7 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
         <Divider orientation="left">Deposit Info</Divider>
         <Row gutter={24}>
           <Col span={12}>
-            <Form.Item name="deposittype" label="Deposit Type" rules={[{ required: true }]}>
+            <Form.Item name="depositType" label="Deposit Type" rules={[{ required: true }]}>
               <Select
                 placeholder="Select a deposit type"
                 options={depositTypeOptions}
@@ -352,7 +344,7 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
           </Col>
           <Col span={12}>
             <Form.Item
-              name="deposittypeconfidence"
+              name="depositTypeConfidence"
               label="Deposit Type Confidence"
               rules={[
                 { required: true, message: "Confidence value is required" },
