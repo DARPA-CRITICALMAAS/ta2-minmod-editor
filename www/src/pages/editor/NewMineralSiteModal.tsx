@@ -46,7 +46,7 @@ const NewMineralSiteForm = ({ commodity }: NewMineralSiteModalProps, ref: Forwar
   }));
   const commodityOptions = useMemo(() => {
     return commodityStore.list.map((comm) => ({
-      value: comm.uri,
+      value: comm.id,
       label: comm.name,
     }));
   }, [commodityStore.records.size]);
@@ -85,10 +85,10 @@ const NewMineralSiteForm = ({ commodity }: NewMineralSiteModalProps, ref: Forwar
   };
   const handleSave = async (values: FormValues) => {
     const currentUserUrl = userStore.getCurrentUser()!.url;
-    const selectedCommodity = commodityStore.list.find(
-      (comm) => comm.uri === values.commodity
-    );
+    const selectedCommodity = commodityStore.get(values.commodity);
     const commodityName = selectedCommodity ? selectedCommodity.name : undefined;
+    const commodityUri = selectedCommodity ? selectedCommodity.uri : undefined;
+
     let location = undefined;
     if (values.latitude !== undefined && values.longitude !== undefined) {
       location = `POINT (${values.longitude} ${values.latitude})`;
@@ -114,7 +114,8 @@ const NewMineralSiteForm = ({ commodity }: NewMineralSiteModalProps, ref: Forwar
         }),
       ]
       : [];
-    const commodity1 = commodityName ? commodityStore.getByName(commodityName)?.id : undefined;
+    const commodity1 = selectedCommodity ? selectedCommodity.id : undefined;
+
     const referenceDocument = new Document({
       uri: values.refDoc,
     });
@@ -138,7 +139,7 @@ const NewMineralSiteForm = ({ commodity }: NewMineralSiteModalProps, ref: Forwar
         source: currentUserUrl,
         confidence: 1.0,
         observedName: commodityName,
-        normalizedURI: values.commodity,
+        normalizedURI: commodityUri,
       }),
       grade: values.grade !== undefined
         ? new Measure({
