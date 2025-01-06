@@ -69,7 +69,7 @@ const NewMineralSiteForm = ({ commodity }: NewMineralSiteModalProps, ref: Forwar
       value: type.uri,
       label: type.name,
     }));
-  }, [depositTypeStore.records]);
+  }, [depositTypeStore.records.size]);
 
   const unitOptions = useMemo(() => {
     return unitStore.list.map((unit) => ({
