@@ -2,17 +2,19 @@ import { Button, Flex, Space } from "antd";
 import { observer } from "mobx-react-lite";
 import { SearchBar, useSearchArgs } from "./SearchBar";
 import { DedupMineralSiteTable } from "./DedupMineralSiteTable";
-import { useState } from "react";
-import { NewMineralSiteModal } from "./NewMineralSiteModal";
+import { useRef, useState } from "react";
+import { NewMineralSiteModal, NewMineralSiteModalRef } from "./NewMineralSiteModal";
 import { Commodity } from "models";
 import { PlusOutlined } from "@ant-design/icons";
 
 export const EditorPage = observer(() => {
   const [searchArgs, normSearchArgs, setSearchArgs] = useSearchArgs();
-  const [isCreatingMineralSite, setIsCreatingMineralSite] = useState(false);
-
-  const handleOpenModal = () => setIsCreatingMineralSite(true);
-  const handleCloseModal = () => setIsCreatingMineralSite(false);
+  const modalRef = useRef<NewMineralSiteModalRef>(null);
+  const handleOpenModal = () => {
+    if (modalRef.current != null || modalRef.current != undefined) {
+      modalRef.current.open();
+    }
+  };
 
 
   //using ref 
@@ -32,13 +34,10 @@ export const EditorPage = observer(() => {
         </Button>
       </div>
       <DedupMineralSiteTable commodity={normSearchArgs.commodity} />
-      {isCreatingMineralSite && (
-        <NewMineralSiteModal
-          commodity={normSearchArgs.commodity as Commodity}
-          visible={true}
-          onClose={handleCloseModal}
-        />
-      )}
+      <NewMineralSiteModal
+        ref={modalRef}
+        commodity={normSearchArgs.commodity as Commodity}
+      />
     </Flex>
   );
 
