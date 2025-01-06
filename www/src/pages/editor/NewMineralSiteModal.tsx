@@ -90,6 +90,10 @@ const NewMineralSiteForm = ({ commodity }: NewMineralSiteModalProps, ref: Forwar
       location = `POINT (${values.longitude} ${values.latitude})`;
     }
 
+    if (commodity === undefined) {
+      console.log("commodity not chosen")
+      return
+    }
     const countries = values.country
       ? [
         new CandidateEntity({
@@ -111,110 +115,104 @@ const NewMineralSiteForm = ({ commodity }: NewMineralSiteModalProps, ref: Forwar
         }),
       ]
       : [];
+    const commodity1 = commodity.id;
+    const referenceDocument = new Document({
+      uri: values.refDoc,
+    });
 
-    if (commodity != null || commodity != undefined) {
-      const commodity1 = commodity.id;
-      const referenceDocument = new Document({
-        uri: values.refDoc,
-      });
+    const reference = new Reference({
+      document: referenceDocument,
+      comment: values.refComment,
+    });
 
-      const reference = new Reference({
-        document: referenceDocument,
-        comment: values.refComment,
-      });
-
-      const mineralInventory = new MineralInventory({
-        category: ["Inferred", "Indicated", "Measured"].map(
-          (name) =>
-            new CandidateEntity({
-              source: currentUserUrl,
-              confidence: 1.0,
-              observedName: name,
-              normalizedURI: `https://minmod.isi.edu/resource/${name}`,
-            })
-        ),
-        commodity: new CandidateEntity({
-          source: currentUserUrl,
-          confidence: 1.0,
-          observedName: commodity.name,
-          normalizedURI: commodity.uri,
-        }),
-        grade: values.grade !== undefined
-          ? new Measure({
-            value: values.grade,
-            unit: new CandidateEntity({
-              source: currentUserUrl,
-              confidence: 1,
-              observedName: unitStore.getByURI(values.gradeUnit!)!.name,
-              normalizedURI: values.gradeUnit,
-            }),
-          })
-          : undefined,
-        ore: values.tonnage !== undefined
-          ? new Measure({
-            value: values.tonnage,
-            unit: new CandidateEntity({
-              source: currentUserUrl,
-              confidence: 1,
-              observedName: unitStore.getByURI(values.tonnageUnit!)!.name,
-              normalizedURI: values.tonnageUnit,
-            }),
-          })
-          : undefined,
-        reference: reference,
-      });
-
-
-      const sourceType = values.sourceType;
-      const refDocUrl = values.refDoc;
-      let combinedSourceId = "";
-
-      if (sourceType === "unpublished") {
-        combinedSourceId = `unpublished::${currentUserUrl}`;
-      } else if (sourceType !== "unpublished") {
-        combinedSourceId = `${sourceType}::${refDocUrl}`;
-      }
-
-
-      const draft = new DraftCreateMineralSite({
-        id: "",
-        draftID: `draft-${Date.now()}`,
-        recordId: `record-${uuidv4()}`,
-        sourceId: combinedSourceId,
-        dedupSiteURI: "",
-        createdBy: [currentUserUrl],
-        name: values.name,
-        locationInfo: new LocationInfo({
-          country: countries,
-          stateOrProvince: statesOrProvinces,
-          location: location,
-        }),
-        depositTypeCandidate: [
+    const mineralInventory = new MineralInventory({
+      category: ["Inferred", "Indicated", "Measured"].map(
+        (name) =>
           new CandidateEntity({
             source: currentUserUrl,
-            confidence: values.depositTypeConfidence,
-            observedName: depositTypeStore.getByURI(values.depositType)!.name,
-            normalizedURI: values.depositType,
+            confidence: 1.0,
+            observedName: name,
+            normalizedURI: `https://minmod.isi.edu/resource/${name}`,
+          })
+      ),
+      commodity: new CandidateEntity({
+        source: currentUserUrl,
+        confidence: 1.0,
+        observedName: commodity.name,
+        normalizedURI: commodity.uri,
+      }),
+      grade: values.grade !== undefined
+        ? new Measure({
+          value: values.grade,
+          unit: new CandidateEntity({
+            source: currentUserUrl,
+            confidence: 1,
+            observedName: unitStore.getByURI(values.gradeUnit!)!.name,
+            normalizedURI: values.gradeUnit,
           }),
-        ],
-        reference: [reference],
-        sameAs: [],
-        gradeTonnage: {
-          [commodity1 as string]: new GradeTonnage({
-            commodity: commodity1,
-            totalTonnage: values.tonnage || 0,
-            totalGrade: values.grade || 0,
+        })
+        : undefined,
+      ore: values.tonnage !== undefined
+        ? new Measure({
+          value: values.tonnage,
+          unit: new CandidateEntity({
+            source: currentUserUrl,
+            confidence: 1,
+            observedName: unitStore.getByURI(values.tonnageUnit!)!.name,
+            normalizedURI: values.tonnageUnit,
           }),
-        },
-        mineralInventory: [mineralInventory],
-      });
+        })
+        : undefined,
+      reference: reference,
+    });
 
-      const newMineralSite = await mineralSiteStore.create(draft);
-      const dedup_site_uri = newMineralSite.dedupSiteURI;
-      const dedupSite = await dedupMineralSiteStore.forceFetchByURI(dedup_site_uri, commodity1 ?? "");
-      message.success("Mineral site created and dedup store updated successfully!");
+    const sourceType = values.sourceType;
+    const refDocUrl = values.refDoc;
+    let combinedSourceId = "";
+
+    if (sourceType === "unpublished") {
+      combinedSourceId = `unpublished::${currentUserUrl}`;
+    } else if (sourceType !== "unpublished") {
+      combinedSourceId = `${sourceType}::${refDocUrl}`;
     }
+    const draft = new DraftCreateMineralSite({
+      id: "",
+      draftID: `draft-${Date.now()}`,
+      recordId: `record-${uuidv4()}`,
+      sourceId: combinedSourceId,
+      dedupSiteURI: "",
+      createdBy: [currentUserUrl],
+      name: values.name,
+      locationInfo: new LocationInfo({
+        country: countries,
+        stateOrProvince: statesOrProvinces,
+        location: location,
+      }),
+      depositTypeCandidate: [
+        new CandidateEntity({
+          source: currentUserUrl,
+          confidence: values.depositTypeConfidence,
+          observedName: depositTypeStore.getByURI(values.depositType)!.name,
+          normalizedURI: values.depositType,
+        }),
+      ],
+      reference: [reference],
+      sameAs: [],
+      gradeTonnage: {
+        [commodity1 as string]: new GradeTonnage({
+          commodity: commodity1,
+          totalTonnage: values.tonnage || 0,
+          totalGrade: values.grade || 0,
+        }),
+      },
+      mineralInventory: [mineralInventory],
+    });
+    const newMineralSite = await mineralSiteStore.create(draft);
+    const dedup_site_uri = newMineralSite.dedupSiteURI;
+    const dedupSite = await dedupMineralSiteStore.forceFetchByURI(dedup_site_uri, commodity1 ?? "");
+    message.success("Mineral site created and dedup store updated successfully!");
   };
+
 
   return (
     <Modal title="Add New Mineral Site" visible={visible} onCancel={() => setVisible(false)} footer={null} width="70%">
