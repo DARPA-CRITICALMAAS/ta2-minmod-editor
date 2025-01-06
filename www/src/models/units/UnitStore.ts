@@ -4,6 +4,7 @@ import { IRI } from "models/typing";
 
 export interface Unit {
     id: IRI;
+    uri: IRI;
     name: string;
 }
 
@@ -27,6 +28,7 @@ export class UnitStore extends RStore<string, Unit> {
     public deserialize(obj: any): Unit {
         return {
             id: obj.uri,
+            uri: obj.uri,
             name: obj.name,
         };
     }

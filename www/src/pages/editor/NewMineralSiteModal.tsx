@@ -12,6 +12,7 @@ import { v4 as uuidv4 } from "uuid";
 import { UserStore } from "models/user";
 import { MineralInventory, Measure } from "../../models/mineralSite/MineralInventory";
 import { useMemo } from "react";
+import { UnitStore } from "models/units";
 
 interface NewMineralSiteModalProps {
   commodity: Commodity;
@@ -40,38 +41,39 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
   const [form] = Form.useForm();
   const [recordId, setRecordId] = useState("");
   const [selectedSourceType, setSelectedSourceType] = useState<string | null>(null);
+
   const commodityOptions = useMemo(() => {
-    return Array.from(commodityStore.records.values()).map((comm) => ({
-      value: comm?.id,
-      label: comm?.name,
+    return commodityStore.list.map((comm) => ({
+      value: comm.uri,
+      label: comm.name,
     }));
   }, [commodityStore.records]);
-  const currentUser = userStore.getCurrentUser()?.url;
+  const currentUserUrl = userStore.getCurrentUser()!.url;
   const countryOptions = useMemo(() => {
-    return Array.from(countryStore.records.values()).map((country) => ({
-      value: country?.id,
-      label: country?.name,
+    return countryStore.list.map((country) => ({
+      value: country.uri,
+      label: country.name,
     }));
   }, [countryStore.records]);
 
   const stateOptions = useMemo(() => {
-    return Array.from(stateOrProvinceStore.records.values()).map((state) => ({
-      value: state?.id,
-      label: state?.name,
+    return stateOrProvinceStore.list.map((state) => ({
+      value: state.id,
+      label: state.name,
     }));
   }, [stateOrProvinceStore.records]);
 
   const depositTypeOptions = useMemo(() => {
-    return Array.from(depositTypeStore.records.values()).map((type) => ({
-      value: type?.id,
-      label: type?.name,
+    return depositTypeStore.list.map((type) => ({
+      value: type.id,
+      label: type.name,
     }));
   }, [depositTypeStore.records]);
 
   const unitOptions = useMemo(() => {
-    return Array.from(unitStore.records.values()).map((unit) => ({
-      value: unit?.id,
-      label: unit?.name,
+    return unitStore.list.map((unit) => ({
+      value: unit.id,
+      label: unit.name,
     }));
   }, [unitStore.records]);
 
@@ -81,7 +83,7 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
 
     const refDocUrl = form.getFieldValue("refDoc");
     if (value === "unpublished") {
-      form.setFieldsValue({ sourceId: `unpublished::${currentUser || "unknown"}` });
+      form.setFieldsValue({ sourceId: `unpublished::${currentUserUrl}` });
     } else if (refDocUrl) {
       form.setFieldsValue({ sourceId: `${value}::${refDocUrl}` });
     }
@@ -99,9 +101,9 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
       const countries = values.country
         ? [
           new CandidateEntity({
-            observedName: countryStore.getByURI(values.country)?.name,
-            source: currentUser!,
-            normalizedURI: countryStore.getByURI(values.country)?.uri,
+            observedName: countryStore.getByURI(values.country)!.name,
+            source: currentUserUrl,
+            normalizedURI: values.country,
             confidence: 1.0,
           }),
         ]
@@ -110,9 +112,9 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
       const statesOrProvinces = values.stateOrProvince
         ? [
           new CandidateEntity({
-            observedName: stateOrProvinceStore.getByURI(values.stateOrProvince)?.name,
-            source: currentUser!,
-            normalizedURI: stateOrProvinceStore.getByURI(values.stateOrProvince)?.uri,
+            observedName: stateOrProvinceStore.getByURI(values.stateOrProvince)!.name,
+            source: currentUserUrl,
+            normalizedURI: values.stateOrProvince,
             confidence: 1.0,
           }),
         ]
@@ -133,14 +135,14 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
         category: ["Inferred", "Indicated", "Measured"].map(
           (name) =>
             new CandidateEntity({
-              source: currentUser!,
+              source: currentUserUrl,
               confidence: 1.0,
               observedName: name,
               normalizedURI: `https://minmod.isi.edu/resource/${name}`,
             })
         ),
         commodity: new CandidateEntity({
-          source: currentUser!,
+          source: currentUserUrl,
           confidence: 1.0,
           observedName: commodity.name,
           normalizedURI: commodity.uri,
@@ -149,10 +151,10 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
           ? new Measure({
             value: values.grade,
             unit: new CandidateEntity({
-              source: currentUser!,
-              confidence: values.grade,
-              observedName: "%",
-              normalizedURI: unitStore.getByURI(values.gradeUnit ? values.gradeUnit : "null")?.id,
+              source: currentUserUrl,
+              confidence: 1,
+              observedName: unitStore.getByURI(values.gradeUnit!)!.name,
+              normalizedURI: values.gradeUnit,
             }),
           })
           : undefined,
@@ -160,10 +162,10 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
           ? new Measure({
             value: values.tonnage,
             unit: new CandidateEntity({
-              source: currentUser!,
-              confidence: values.tonnage,
-              observedName: "mt",
-              normalizedURI: unitStore.getByURI(values.tonnageUnit ? values.tonnageUnit : "null")?.id,
+              source: currentUserUrl,
+              confidence: 1,
+              observedName: unitStore.getByURI(values.tonnageUnit!)!.name,
+              normalizedURI: values.tonnageUnit,
             }),
           })
           : undefined,
@@ -176,7 +178,7 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
       let combinedSourceId = "";
 
       if (sourceType === "unpublished") {
-        combinedSourceId = `unpublished::${userStore.getCurrentUser()?.url}`;
+        combinedSourceId = `unpublished::${currentUserUrl}`;
       } else if (sourceType && refDocUrl) {
         combinedSourceId = `${sourceType}::${refDocUrl}`;
       } else {
@@ -190,7 +192,7 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
         recordId: `record-${uuidv4()}`,
         sourceId: combinedSourceId,
         dedupSiteURI: "",
-        createdBy: [currentUser!],
+        createdBy: [currentUserUrl],
         name: values.name,
         locationInfo: new LocationInfo({
           country: countries,
@@ -199,7 +201,7 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
         }),
         depositTypeCandidate: [
           new CandidateEntity({
-            source: currentUser!,
+            source: currentUserUrl,
             confidence: values.depositTypeConfidence,
             observedName: values.depositType,
             normalizedURI: values.depositType,
