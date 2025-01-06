@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { observer } from "mobx-react-lite";
 import { Commodity } from "models/commodity";
 import { Button, Checkbox, Divider, Space, Table, Typography, message } from "antd";
-import { EditOutlined } from "@ant-design/icons";
+import { EditOutlined, PlusOutlined, UngroupOutlined } from "@ant-design/icons";
 import { EditDedupMineralSite } from "./editDedupSite/EditDedupMineralSite";
 import { Entity } from "components/Entity";
 import { NewMineralSiteModal } from "./NewMineralSiteModal";
@@ -18,6 +18,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
   const { dedupMineralSiteStore, depositTypeStore, countryStore, stateOrProvinceStore } = useStores();
   const [editingDedupSite, setEditingDedupSite] = useState<string | undefined>(undefined);
   const [selectedDedupSiteIds, setSelectedDedupSiteIds] = useState<Set<string>>(new Set());
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   let columns = useMemo(() => {
     return [
@@ -270,6 +271,9 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
       ) : (
         <></>
       )}
+      <Space style={{ marginBottom: 16 }}>
+        <Button style={{ marginLeft: "1300px", bottom: "40px" }} type="primary" icon={<PlusOutlined />} onClick={() => setIsModalVisible(true)}></Button>
+      </Space>
       <Table<DedupMineralSite>
         bordered={true}
         size="small"
@@ -288,6 +292,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
           expandedRowKeys: [...(editingDedupSite ? [editingDedupSite] : [])],
         }}
       />
+      <NewMineralSiteModal commodity={commodity!} visible={isModalVisible} onClose={() => setIsModalVisible(false)} />
     </>
   );
 });
