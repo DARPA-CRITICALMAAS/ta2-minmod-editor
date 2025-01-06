@@ -6,7 +6,6 @@ import { Button, Checkbox, Divider, Space, Table, Typography, message } from "an
 import { EditOutlined, PlusOutlined, UngroupOutlined } from "@ant-design/icons";
 import { EditDedupMineralSite } from "./editDedupSite/EditDedupMineralSite";
 import { Entity } from "components/Entity";
-import { NewMineralSiteModal } from "./NewMineralSiteModal";
 
 interface DedupMineralSiteTableProps {
   commodity: Commodity | undefined;
@@ -18,7 +17,6 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
   const { dedupMineralSiteStore, depositTypeStore, countryStore, stateOrProvinceStore } = useStores();
   const [editingDedupSite, setEditingDedupSite] = useState<string | undefined>(undefined);
   const [selectedDedupSiteIds, setSelectedDedupSiteIds] = useState<Set<string>>(new Set());
-  const [isModalVisible, setIsModalVisible] = useState(false);
 
   let columns = useMemo(() => {
     return [
@@ -231,7 +229,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
 
   const handleGroup = async () => {
     const prevIds = Array.from(selectedDedupSiteIds);
-    const allSiteIds = Array.from(selectedDedupSiteIds).flatMap((dedupSiteId) => dedupMineralSiteStore.get(dedupSiteId)!.sites.map((siteUri) => DedupMineralSite.getId(siteUri.id)));
+    const allSiteIds = Array.from(selectedDedupSiteIds).flatMap((dedupSiteId) => dedupMineralSiteStore.get(dedupSiteId)!.sites.map((site) => site.id));
 
     const newSiteGroups = [
       {
@@ -271,9 +269,6 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
       ) : (
         <></>
       )}
-      <Space style={{ marginBottom: 16 }}>
-        <Button style={{ marginLeft: "1300px", bottom: "40px" }} type="primary" icon={<PlusOutlined />} onClick={() => setIsModalVisible(true)}></Button>
-      </Space>
       <Table<DedupMineralSite>
         bordered={true}
         size="small"
@@ -292,7 +287,6 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
           expandedRowKeys: [...(editingDedupSite ? [editingDedupSite] : [])],
         }}
       />
-      <NewMineralSiteModal commodity={commodity!} visible={isModalVisible} onClose={() => setIsModalVisible(false)} />
     </>
   );
 });

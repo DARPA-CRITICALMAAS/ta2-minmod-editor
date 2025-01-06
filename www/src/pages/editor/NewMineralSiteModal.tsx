@@ -1,11 +1,10 @@
 import React from "react";
 import { Button, Checkbox, Form, Input, Modal, Space, message, Row, Col, Select, Typography, Divider, Radio, RadioChangeEvent } from "antd";
 import { useStores, Commodity, DraftCreateMineralSite, CandidateEntity, initNonCriticalStores, DepositType, Unit, MineralSite } from "models";
-import { LocationInfo } from "../../../models/mineralSite/LocationInfo";
-import { Reference, Document } from "../../../models/mineralSite/Reference";
-import { GradeTonnage } from "../../../models/mineralSite/GradeTonnage";
+import { LocationInfo } from "../../models/mineralSite/LocationInfo";
+import { Reference, Document } from "../../models/mineralSite/Reference";
+import { GradeTonnage } from "../../models/mineralSite/GradeTonnage";
 import { CommodityStore } from "models/commodity";
-import { DedupMineralSite, DedupMineralSiteLocation } from "../../../models/dedupMineralSite";
 import axios from "axios";
 import { Country, StateOrProvince } from "models";
 import { useEffect, useState } from "react";
@@ -30,44 +29,51 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
   const [selectedSourceType, setSelectedSourceType] = useState<string | null>(null);
 
   useEffect(() => {
-    commodityStore.fetchCriticalCommotities().then((commodities) => {
-      setCommodityOptions(commodities.map((comm: { id: string; name: string }) => ({ value: comm.id, label: comm.name })));
-    });
+    const fetchData = async () => {
+      try {
+        await initNonCriticalStores();
 
-    countryStore.fetchAll().then(() => {
-      setCountryOptions(
-        Array.from(countryStore.records.values())
-          .filter((country): country is Country => country !== null)
-          .map((country: Country) => ({ value: country.id, label: country.name }))
-      );
-    });
+        const commodities = await commodityStore.fetchCriticalCommotities();
+        setCommodityOptions(
+          commodities.map((comm: { id: string; name: string }) => ({ value: comm.id, label: comm.name }))
+        );
 
-    stateOrProvinceStore.fetchAll().then(() => {
-      setStateOptions(
-        Array.from(stateOrProvinceStore.records.values())
-          .filter((state): state is StateOrProvince => state !== null)
-          .map((state: StateOrProvince) => ({ value: state.id, label: state.name }))
-      );
-    });
+        setCountryOptions(
+          Array.from(countryStore.records.values())
+            .filter((country): country is Country => country !== null)
+            .map((country: Country) => ({ value: country.id, label: country.name }))
+        );
 
-    depositTypeStore.fetchAll().then(() => {
-      setDepositTypeOptions(
-        Array.from(depositTypeStore.records.values())
-          .filter((type): type is DepositType => type !== null)
-          .map((type) => ({ value: type.id ?? "", label: type.name ?? "Unnamed" }))
-      );
-    });
-    unitStore.fetchAll().then(() => {
-      setUnitOptions(
-        Array.from(unitStore.records.values())
-          .filter((unit): unit is Unit => unit !== null)
-          .map((unit) => ({ value: unit.id ?? "", label: unit.name ?? "Unnamed" }))
-      );
-    });
-    const generatedId = `record-${uuidv4()}`;
-    setRecordId(generatedId);
-    form.setFieldsValue({ recordId: generatedId });
-  }, [commodityStore, countryStore, stateOrProvinceStore, form, visible]);
+        setStateOptions(
+          Array.from(stateOrProvinceStore.records.values())
+            .filter((state): state is StateOrProvince => state !== null)
+            .map((state: StateOrProvince) => ({ value: state.id, label: state.name }))
+        );
+
+        setDepositTypeOptions(
+          Array.from(depositTypeStore.records.values())
+            .filter((type): type is DepositType => type !== null)
+            .map((type) => ({ value: type.id ?? "", label: type.name ?? "Unnamed" }))
+        );
+
+        setUnitOptions(
+          Array.from(unitStore.records.values())
+            .filter((unit): unit is Unit => unit !== null)
+            .map((unit) => ({ value: unit.id ?? "", label: unit.name ?? "Unnamed" }))
+        );
+        if (visible) {
+          const generatedId = `record-${uuidv4()}`;
+          setRecordId(generatedId);
+          form.setFieldsValue({ recordId: generatedId });
+        }
+      } catch (error) {
+        console.error("Error fetching data for NewMineralSiteModal:", error);
+      }
+    };
+
+    fetchData();
+  }, [commodityStore, countryStore, stateOrProvinceStore, depositTypeStore, unitStore, form, visible]);
+
 
   const handleSourceTypeChange = (e: RadioChangeEvent) => {
     const value = e.target.value;
@@ -85,7 +91,25 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
     }
   };
 
-  const handleSave = async (values: any) => {
+  interface FormValues {
+    latitude?: number;
+    longitude?: number;
+    country?: string;
+    stateorprovince?: string;
+    name: string;
+    refDoc: string;
+    refComment?: string;
+    sourceType: string;
+    deposittype: string;
+    deposittypeconfidence: number;
+    tonnage?: number;
+    grade?: number;
+    gradeUnit?: string;
+    tonnageUnit?: string;
+  }
+
+
+  const handleSave = async (values: FormValues) => {
     try {
       let location = undefined;
       if (values.latitude !== undefined && values.longitude !== undefined) {
@@ -94,28 +118,27 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
 
       const countries = values.country
         ? [
-            new CandidateEntity({
-              observedName: values.country,
-              source: values.country,
-              normalizedURI: userStore.getCurrentUser()?.url,
-              confidence: 1.0,
-            }),
-          ]
+          new CandidateEntity({
+            observedName: countryStore.getByURI(values.country)?.name,
+            source: values.country,
+            normalizedURI: countryStore.getByURI(values.country)?.uri,
+            confidence: 1.0,
+          }),
+        ]
         : [];
 
       const statesOrProvinces = values.stateorprovince
         ? [
-            new CandidateEntity({
-              observedName: values.stateorprovince,
-              source: values.stateorprovince,
-              normalizedURI: userStore.getCurrentUser()?.url,
-              confidence: 1.0,
-            }),
-          ]
+          new CandidateEntity({
+            observedName: stateOrProvinceStore.getByURI(values.stateorprovince)?.name,
+            source: values.stateorprovince,
+            normalizedURI: stateOrProvinceStore.getByURI(values.stateorprovince)?.uri,
+            confidence: 1.0,
+          }),
+        ]
         : [];
 
       const commodity1 = commodity.id;
-      console.log("COMMOdity", commodity1);
       const referenceDocument = new Document({
         uri: values.refDoc,
         title: values.refDoc,
@@ -137,11 +160,14 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
         combinedSourceId = " ";
       }
 
-      if (!combinedSourceId) {
+      if (combinedSourceId === undefined || combinedSourceId === null || combinedSourceId === "") {
         console.error("Error: Source ID could not be constructed. Check sourceType and refDoc values.");
       }
 
       const currentUser = userStore.getCurrentUser()?.name;
+      const currentURL = userStore.getCurrentUser()?.url;
+
+      console.log("currentURL", currentURL)
       const createdBy = `https://minmod.isi.edu/users/u/${currentUser}`;
       const draft = new DraftCreateMineralSite({
         id: "",
