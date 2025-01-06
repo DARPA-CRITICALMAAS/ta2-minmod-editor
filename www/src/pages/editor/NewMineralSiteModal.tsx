@@ -13,6 +13,7 @@ import { UserStore } from "models/user";
 import { MineralInventory, Measure } from "../../models/mineralSite/MineralInventory";
 import { useMemo } from "react";
 import { UnitStore } from "models/units";
+import { values } from "lodash";
 
 interface NewMineralSiteModalProps {
   commodity: Commodity;
@@ -77,17 +78,13 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
     }));
   }, [unitStore.records]);
 
+  console.log("unitOptions", unitOptions)
+
+  // we need source type and reference to update the source id
   const handleSourceTypeChange = (e: RadioChangeEvent) => {
     const value = e.target.value;
     setSelectedSourceType(value);
 
-    const refDocUrl = form.getFieldValue("refDoc");
-    if (value === "unpublished") {
-      form.setFieldsValue({ sourceId: `unpublished::${currentUserUrl}` });
-    }
-    if (refDocUrl) {
-      form.setFieldsValue({ sourceId: `${value}::${refDocUrl}` });
-    }
   };
   const handleSave = async (values: FormValues) => {
     let location = undefined;
@@ -150,7 +147,7 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
           unit: new CandidateEntity({
             source: currentUserUrl,
             confidence: 1,
-            // observedName: unitStore.getByURI(values.gradeUnit!)!.name,
+            observedName: unitStore.getByURI(values.gradeUnit!)!.name,
             normalizedURI: values.gradeUnit,
           }),
         })
@@ -161,7 +158,7 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
           unit: new CandidateEntity({
             source: currentUserUrl,
             confidence: 1,
-            // observedName: unitStore.getByURI(values.tonnageUnit!)!.name,
+            observedName: unitStore.getByURI(values.tonnageUnit!)!.name,
             normalizedURI: values.tonnageUnit,
           }),
         })
@@ -216,15 +213,13 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
     const newMineralSite = await mineralSiteStore.create(draft);
     const dedup_site_uri = newMineralSite.dedupSiteURI;
     const dedupSite = await dedupMineralSiteStore.forceFetchByURI(dedup_site_uri, commodity1);
-    console.log("newMineralSite", newMineralSite);
     message.success("Mineral site created and dedup store updated successfully!");
     onClose();
-
   };
 
   return (
     <Modal title="Add New Mineral Site" visible={visible} onCancel={onClose} footer={null} width="70%">
-      <Form form={form} layout="vertical" onFinish={handleSave} initialValues={{ refAppliedToAll: true, depositTypeConfidence: 1, type: "NotSpecified", rank: "U", gradeUnit: "%", tonnageUnit: "mt" }}>
+      <Form form={form} layout="vertical" onFinish={handleSave} initialValues={{ refAppliedToAll: true, depositTypeConfidence: 1, type: "NotSpecified", rank: "U", gradeUnit: "https://minmod.isi.edu/resource/Q201", tonnageUnit: "https://minmod.isi.edu/resource/Q202" }}>
         {/* General Information */}
         <Divider orientation="left">General Information</Divider>
         <Row gutter={24}>
@@ -341,7 +336,7 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
                   <Input type="number" placeholder="Enter grade value" style={{ width: "60%" }} />
                 </Form.Item>
                 <Form.Item name="gradeUnit" noStyle rules={[{ required: true, message: "Unit is required" }]}>
-                  <Select placeholder="Select unit" options={unitOptions} style={{ width: "40%" }} showSearch optionFilterProp="label" />
+                  <Select placeholder="Select unit" options={unitOptions} style={{ width: "40%" }} showSearch optionFilterProp="label" filterOption={(input, option) => option?.label?.toLowerCase().includes(input.toLowerCase()) ?? false} />
                 </Form.Item>
               </Input.Group>
             </Form.Item>
@@ -354,7 +349,7 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
                   <Input type="number" placeholder="Enter tonnage value" style={{ width: "60%" }} />
                 </Form.Item>
                 <Form.Item name="tonnageUnit" noStyle>
-                  <Select placeholder="Select unit" options={unitOptions} style={{ width: "40%" }} showSearch optionFilterProp="label" />
+                  <Select placeholder="Select unit" options={unitOptions} style={{ width: "40%" }} showSearch optionFilterProp="label" filterOption={(input, option) => option?.label?.toLowerCase().includes(input.toLowerCase()) ?? false} />
                 </Form.Item>
               </Input.Group>
             </Form.Item>

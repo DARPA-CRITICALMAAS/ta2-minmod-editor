@@ -14,6 +14,9 @@ export const EditorPage = observer(() => {
   const handleOpenModal = () => setIsCreatingMineralSite(true);
   const handleCloseModal = () => setIsCreatingMineralSite(false);
 
+
+  //using ref 
+
   return (
     <Flex vertical={true} gap="small">
       <div

@@ -60,43 +60,6 @@ export class MineralSiteStore extends CRUDStore<string, DraftCreateMineralSite, 
     // convert mineral site to the format that the server required to save the mineral site.
     // TODO: validate for the location
     const reference = record.reference.map((ref) => ref.serialize());
-    let mineralInventory = [];
-
-    for (const gt of Object.values(record.gradeTonnage)) {
-      console.log("@@@", gt);
-      mineralInventory.push({
-        // TODO: fix me! find correct source
-        // TODO: get correct users
-        category: ["Inferred", "Indicated", "Measured"].map((cat) => ({
-          source: record.createdBy[0],
-          confidence: 1.0,
-          normalized_uri: `https://minmod.isi.edu/resource/${cat}`,
-        })),
-        commodity: {
-          source: record.createdBy[0],
-          confidence: 1.0,
-          normalized_uri: `https://minmod.isi.edu/resource/${gt.commodity}`,
-        },
-        ore: {
-          value: gt.totalTonnage,
-          unit: {
-            source: record.createdBy[0],
-            confidence: 1.0,
-            normalized_uri: "https://minmod.isi.edu/resource/Q202",
-          },
-        },
-        grade: {
-          value: gt.totalGrade,
-          unit: {
-            source: record.createdBy[0],
-            confidence: 1.0,
-            normalized_uri: "https://minmod.isi.edu/resource/Q201",
-          },
-        },
-        reference: reference[0],
-      });
-    }
-
     return {
       name: record.name,
       record_id: record.recordId,
@@ -109,8 +72,11 @@ export class MineralSiteStore extends CRUDStore<string, DraftCreateMineralSite, 
         crs: record.locationInfo.crs?.serialize(),
         location: record.locationInfo.location,
       },
+      GradeTonnage: record.gradeTonnage,
       deposit_type_candidate: record.depositTypeCandidate.map((depositTypeCandidate) => depositTypeCandidate.serialize()),
-      mineral_inventory: mineralInventory,
+      // mineral_inventory: record.mineralInventory.map(MineralInventory.serialize()),
+      mineral_inventory: [],
+
       reference: reference,
       same_as: record.sameAs,
     };
