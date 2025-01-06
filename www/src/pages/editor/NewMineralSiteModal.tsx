@@ -170,7 +170,7 @@ const NewMineralSiteForm = ({ commodity }: NewMineralSiteModalProps, ref: Forwar
 
     if (sourceType === "unpublished") {
       combinedSourceId = `unpublished::${currentUserUrl}`;
-    } else if (sourceType !== "unpublished" && refDocUrl.trim().length > 0) {
+    } else if (sourceType !== "unpublished") {
       combinedSourceId = `${sourceType}::${refDocUrl}`;
     }
 
