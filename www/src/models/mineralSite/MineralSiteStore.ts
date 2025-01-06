@@ -72,10 +72,8 @@ export class MineralSiteStore extends CRUDStore<string, DraftCreateMineralSite, 
         crs: record.locationInfo.crs?.serialize(),
         location: record.locationInfo.location,
       },
-      GradeTonnage: record.gradeTonnage,
       deposit_type_candidate: record.depositTypeCandidate.map((depositTypeCandidate) => depositTypeCandidate.serialize()),
       mineral_inventory: record.mineralInventory.map((mineralInventory) => mineralInventory.serialize()),
-
       reference: reference,
       same_as: record.sameAs,
     };
