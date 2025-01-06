@@ -276,6 +276,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
         columns={columns}
         dataSource={dedupMineralSites.records}
         loading={isLoading ? { size: "large" } : false}
+        showSorterTooltip={false}
         expandable={{
           expandedRowRender: (site) => {
             if (editingDedupSite === site.id) {

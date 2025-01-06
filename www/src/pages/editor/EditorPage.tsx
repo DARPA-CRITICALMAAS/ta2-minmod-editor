@@ -9,10 +9,10 @@ import { PlusOutlined } from "@ant-design/icons";
 
 export const EditorPage = observer(() => {
   const [searchArgs, normSearchArgs, setSearchArgs] = useSearchArgs();
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isCreatingMineralSite, setisCreatingMineralSite] = useState(false);
 
-  const handleOpenModal = () => setIsModalVisible(true);
-  const handleCloseModal = () => setIsModalVisible(false);
+  const handleOpenModal = () => setisCreatingMineralSite(true);
+  const handleCloseModal = () => setisCreatingMineralSite(false);
 
   return (
     <Flex vertical={true} gap="small">
@@ -21,10 +21,10 @@ export const EditorPage = observer(() => {
         <Button style={{ marginLeft: "330px", bottom: "40px" }} type="primary" icon={<PlusOutlined />} onClick={handleOpenModal}></Button>
       </Space>
       <DedupMineralSiteTable commodity={normSearchArgs.commodity} />
-      {isModalVisible && (
+      {isCreatingMineralSite && (
         <NewMineralSiteModal
           commodity={normSearchArgs.commodity as Commodity}
-          visible={isModalVisible}
+          visible={isCreatingMineralSite}
           onClose={handleCloseModal}
         />
       )}

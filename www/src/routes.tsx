@@ -1,10 +1,6 @@
 import { NoArgsPathDef, NoURLArgsPathDef, applyLayout } from "gena-app";
-import { EditorPage } from "./pages/editor/EditorPage";
-import { LoginPage } from "./pages/login/LoginPage";
-
-
+import { EditorPage, LoginPage } from "./pages";
 import { ExtendedRoute, Layout } from "./components/Layout";
-
 import { Role } from "./components/RequiredAuthentication";
 import { PUBLIC_URL } from "./env";
 import { IFrame } from "pages/dashboard/IFrame";

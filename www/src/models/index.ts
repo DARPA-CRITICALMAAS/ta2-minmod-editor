@@ -27,7 +27,6 @@ export const stores = {
   countryStore: new CountryStore(),
   sourceStore: new SourceStore(),
   unitStore: new UnitStore(),
-
 };
 
 registerDefaultAxiosErrorHandler((error) => {
