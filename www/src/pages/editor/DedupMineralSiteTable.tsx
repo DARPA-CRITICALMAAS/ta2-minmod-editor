@@ -6,6 +6,7 @@ import { Button, Checkbox, Divider, Space, Table, Typography, message } from "an
 import { EditOutlined } from "@ant-design/icons";
 import { EditDedupMineralSite } from "./editDedupSite/EditDedupMineralSite";
 import { Entity } from "components/Entity";
+import { NewMineralSiteModal } from "./NewMineralSiteModal";
 
 interface DedupMineralSiteTableProps {
   commodity: Commodity | undefined;
@@ -229,7 +230,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
 
   const handleGroup = async () => {
     const prevIds = Array.from(selectedDedupSiteIds);
-    const allSiteIds = Array.from(selectedDedupSiteIds).flatMap((dedupSiteId) => dedupMineralSiteStore.get(dedupSiteId)!.sites.map((site) => site.id));
+    const allSiteIds = Array.from(selectedDedupSiteIds).flatMap((dedupSiteId) => dedupMineralSiteStore.get(dedupSiteId)!.sites.map((siteUri) => DedupMineralSite.getId(siteUri.id)));
 
     const newSiteGroups = [
       {
@@ -248,10 +249,6 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
 
   const isLoading = dedupMineralSiteStore.state.value === "updating";
   const dedupMineralSites = commodity === undefined || isLoading ? emptyFetchResult : dedupMineralSiteStore.getByCommodity(commodity);
-  // const dedupMineralSiteRecords = useMemo(() => {
-  //   return dedupMineralSites.records.slice().sort((a, b) => b.modifiedAt.localeCompare(a.modifiedAt));
-  // }, dedupMineralSites.records);
-  const dedupMineralSiteRecords = dedupMineralSites.records;
 
   const selectedDedupSites = useMemo(() => {
     return Array.from(selectedDedupSiteIds)
@@ -278,9 +275,8 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
         size="small"
         rowKey="id"
         columns={columns}
-        dataSource={dedupMineralSiteRecords}
+        dataSource={dedupMineralSites.records}
         loading={isLoading ? { size: "large" } : false}
-        showSorterTooltip={false}
         expandable={{
           expandedRowRender: (site) => {
             if (editingDedupSite === site.id) {
