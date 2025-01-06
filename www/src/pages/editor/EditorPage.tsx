@@ -3,14 +3,14 @@ import { observer } from "mobx-react-lite";
 import { SearchBar, useSearchArgs } from "./SearchBar";
 import { DedupMineralSiteTable } from "./DedupMineralSiteTable";
 import { useRef } from "react";
-import { NewMineralSiteModal, newMineralSiteFormRef } from "./NewMineralSiteModal";
+import { NewMineralSiteModal, NewMineralSiteFormRef } from "./NewMineralSiteModal";
 
 export const EditorPage = observer(() => {
   const [searchArgs, normSearchArgs, setSearchArgs] = useSearchArgs();
-  const modalRef = useRef<newMineralSiteFormRef>(null);
+  const newMineralSiteFormRef = useRef<NewMineralSiteFormRef>(null);
   const handleOpenNewMineralSiteForm = () => {
-    if (modalRef.current != null || modalRef.current != undefined) {
-      modalRef.current.open();
+    if (newMineralSiteFormRef.current != null || newMineralSiteFormRef.current != undefined) {
+      newMineralSiteFormRef.current.open();
     }
   };
   return (
@@ -29,8 +29,8 @@ export const EditorPage = observer(() => {
       </div>
       <DedupMineralSiteTable commodity={normSearchArgs.commodity} />
       <NewMineralSiteModal
-        ref={modalRef}
-        commodity={normSearchArgs.commodity!}
+        ref={newMineralSiteFormRef}
+        commodity={normSearchArgs.commodity}
       />
     </Flex>
   );

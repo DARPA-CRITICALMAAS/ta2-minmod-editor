@@ -11,9 +11,9 @@ import { useMemo } from "react";
 import { observer } from "mobx-react-lite";
 
 interface NewMineralSiteModalProps {
-  commodity: Commodity;
+  commodity: Commodity | undefined;
 }
-export interface newMineralSiteFormRef {
+export interface NewMineralSiteFormRef {
   open: () => void;
   close: () => void;
 }
@@ -34,7 +34,7 @@ interface FormValues {
   tonnageUnit?: string;
 }
 
-const NewMineralSiteForm = ({ commodity }: NewMineralSiteModalProps, ref: ForwardedRef<newMineralSiteFormRef>) => {
+const NewMineralSiteForm = ({ commodity }: NewMineralSiteModalProps, ref: ForwardedRef<NewMineralSiteFormRef>) => {
   const { mineralSiteStore, dedupMineralSiteStore, userStore, commodityStore, countryStore, stateOrProvinceStore, depositTypeStore, unitStore } = useStores();
   const [form] = Form.useForm();
   const [selectedSourceType, setSelectedSourceType] = useState<string | null>(null);
@@ -112,7 +112,7 @@ const NewMineralSiteForm = ({ commodity }: NewMineralSiteModalProps, ref: Forwar
       ]
       : [];
 
-    const commodity1 = commodity.id;
+    const commodity1 = commodity?.id;
     const referenceDocument = new Document({
       uri: values.refDoc,
     });
@@ -135,8 +135,8 @@ const NewMineralSiteForm = ({ commodity }: NewMineralSiteModalProps, ref: Forwar
       commodity: new CandidateEntity({
         source: currentUserUrl,
         confidence: 1.0,
-        observedName: commodity.name,
-        normalizedURI: commodity.uri,
+        observedName: commodity?.name,
+        normalizedURI: commodity?.uri,
       }),
       grade: values.grade !== undefined && values.grade !== null
         ? new Measure({
@@ -200,7 +200,7 @@ const NewMineralSiteForm = ({ commodity }: NewMineralSiteModalProps, ref: Forwar
       sameAs: [],
       gradeTonnage: {
         [commodity1 as string]: new GradeTonnage({
-          commodity: commodity1,
+          commodity: commodity1 ?? " ",
           totalTonnage: values.tonnage || 0,
           totalGrade: values.grade || 0,
         }),
@@ -406,4 +406,4 @@ const NewMineralSiteForm = ({ commodity }: NewMineralSiteModalProps, ref: Forwar
   );
 };
 
-export const NewMineralSiteModal = observer(forwardRef<newMineralSiteFormRef, NewMineralSiteModalProps>(NewMineralSiteForm));
+export const NewMineralSiteModal = observer(forwardRef<NewMineralSiteFormRef, NewMineralSiteModalProps>(NewMineralSiteForm));
