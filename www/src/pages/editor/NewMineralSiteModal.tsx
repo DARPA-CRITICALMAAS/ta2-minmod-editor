@@ -32,6 +32,7 @@ interface FormValues {
   grade?: number;
   gradeUnit?: string;
   tonnageUnit?: string;
+  commodity: string;
 }
 
 const NewMineralSiteForm = ({ commodity }: NewMineralSiteModalProps, ref: ForwardedRef<NewMineralSiteFormRef>) => {
@@ -39,7 +40,6 @@ const NewMineralSiteForm = ({ commodity }: NewMineralSiteModalProps, ref: Forwar
   const [form] = Form.useForm();
   const [selectedSourceType, setSelectedSourceType] = useState<string | null>(null);
   const [visible, setVisible] = useState(false);
-
   useImperativeHandle(ref, () => ({
     open: () => setVisible(true),
     close: () => setVisible(false),
@@ -85,6 +85,10 @@ const NewMineralSiteForm = ({ commodity }: NewMineralSiteModalProps, ref: Forwar
   };
   const handleSave = async (values: FormValues) => {
     const currentUserUrl = userStore.getCurrentUser()!.url;
+    const selectedCommodity = commodityStore.list.find(
+      (comm) => comm.uri === values.commodity
+    );
+    const commodityName = selectedCommodity ? selectedCommodity.name : undefined;
     let location = undefined;
     if (values.latitude !== undefined && values.longitude !== undefined) {
       location = `POINT (${values.longitude} ${values.latitude})`;
@@ -110,7 +114,7 @@ const NewMineralSiteForm = ({ commodity }: NewMineralSiteModalProps, ref: Forwar
         }),
       ]
       : [];
-    const commodity1 = commodity && commodity.id;
+    const commodity1 = commodityName ? commodityStore.getByName(commodityName)?.id : undefined;
     const referenceDocument = new Document({
       uri: values.refDoc,
     });
@@ -133,8 +137,8 @@ const NewMineralSiteForm = ({ commodity }: NewMineralSiteModalProps, ref: Forwar
       commodity: new CandidateEntity({
         source: currentUserUrl,
         confidence: 1.0,
-        observedName: commodity && commodity.name,
-        normalizedURI: commodity && commodity.uri,
+        observedName: commodityName,
+        normalizedURI: values.commodity,
       }),
       grade: values.grade !== undefined
         ? new Measure({
@@ -164,7 +168,6 @@ const NewMineralSiteForm = ({ commodity }: NewMineralSiteModalProps, ref: Forwar
     const sourceType = values.sourceType;
     const refDocUrl = values.refDoc;
     let combinedSourceId = "";
-
     if (sourceType === "unpublished") {
       combinedSourceId = `unpublished::${currentUserUrl}`;
     } else if (sourceType !== "unpublished") {
@@ -195,7 +198,7 @@ const NewMineralSiteForm = ({ commodity }: NewMineralSiteModalProps, ref: Forwar
       sameAs: [],
       gradeTonnage: {
         [commodity1 as string]: new GradeTonnage({
-          commodity: commodity1 || "",
+          commodity: commodity1 ?? "",
           totalTonnage: values.tonnage || 0,
           totalGrade: values.grade || 0,
         }),
