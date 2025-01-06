@@ -117,7 +117,6 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
     const commodity1 = commodity.id;
     const referenceDocument = new Document({
       uri: values.refDoc,
-      title: values.refDoc,
     });
 
     const reference = new Reference({
@@ -141,7 +140,7 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
         observedName: commodity.name,
         normalizedURI: commodity.uri,
       }),
-      grade: values.grade
+      grade: values.grade !== undefined && values.grade !== null
         ? new Measure({
           value: values.grade,
           unit: new CandidateEntity({
@@ -152,7 +151,7 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
           }),
         })
         : undefined,
-      ore: values.tonnage
+      ore: values.tonnage !== undefined && values.tonnage !== null
         ? new Measure({
           value: values.tonnage,
           unit: new CandidateEntity({
@@ -195,7 +194,7 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
         new CandidateEntity({
           source: currentUserUrl,
           confidence: values.depositTypeConfidence,
-          observedName: values.depositType,
+          observedName: depositTypeStore.getByURI(values.depositType)!.name,
           normalizedURI: values.depositType,
         }),
       ],
