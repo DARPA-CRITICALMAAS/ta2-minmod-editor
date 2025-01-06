@@ -78,8 +78,6 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
     }));
   }, [unitStore.records]);
 
-  console.log("unitOptions", unitOptions)
-
   // we need source type and reference to update the source id
   const handleSourceTypeChange = (e: RadioChangeEvent) => {
     const value = e.target.value;
