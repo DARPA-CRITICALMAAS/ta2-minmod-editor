@@ -10,6 +10,7 @@ import { Country, StateOrProvince } from "models";
 import { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { UserStore } from "models/user";
+import { MineralInventory, Measure } from "../../models/mineralSite/MineralInventory";
 
 interface NewMineralSiteModalProps {
   commodity: Commodity;
@@ -148,6 +149,49 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
         document: referenceDocument,
         comment: values.refComment || "",
       });
+
+      const mineralInventory = new MineralInventory({
+        category: ["Inferred", "Indicated", "Measured"].map(
+          (name) =>
+            new CandidateEntity({
+              source: "user",
+              confidence: 1.0,
+              observedName: name,
+              normalizedURI: `https://minmod.isi.edu/resource/${name}`,
+            })
+        ),
+        commodity: new CandidateEntity({
+          source: "user",
+          confidence: 1.0,
+          observedName: commodity.name,
+          normalizedURI: commodity.uri,
+        }),
+        grade: values.grade
+          ? new Measure({
+            value: values.grade,
+            unit: new CandidateEntity({
+              source: "user",
+              confidence: values.grade,
+              observedName: "%",
+              normalizedURI: commodity.uri,
+            }),
+          })
+          : undefined,
+        ore: values.tonnage
+          ? new Measure({
+            value: values.tonnage,
+            unit: new CandidateEntity({
+              source: "user",
+              confidence: values.tonnage,
+              observedName: "mt",
+              normalizedURI: commodity.uri,
+            }),
+          })
+          : undefined,
+        reference: reference,
+      });
+
+
       const sourceType = values.sourceType;
       const refDocUrl = values.refDoc;
       let combinedSourceId = " ";
@@ -199,7 +243,7 @@ export const NewMineralSiteModal: React.FC<NewMineralSiteModalProps> = ({ commod
             totalGrade: values.grade || 0,
           }),
         },
-        mineralInventory: [],
+        mineralInventory: [mineralInventory],
       });
 
       const newMineralSite = await mineralSiteStore.create(draft);
