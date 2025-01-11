@@ -14,8 +14,6 @@ export const ProfileMenu: React.FC = observer(() => {
         navigate("/login")
     };
     const user = userStore.getCurrentUser();
-
-    console.log("User in ProfileMenu:", user?.name);
     const menu = (
         <Menu>
             <Menu.Item key="username" disabled>
