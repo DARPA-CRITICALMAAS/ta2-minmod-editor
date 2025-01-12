@@ -31,20 +31,42 @@ export const LoginPage = () => {
   return (
     <div className={styles.loginContainer}>
       <h2>Login</h2>
-      <form onSubmit={handleLogin} className="login-form">
-        <div className="form-group">
+      <form onSubmit={handleLogin} className={styles.loginForm}>
+        <div className={styles.formGroup}>
           <label htmlFor="username">Username:</label>
-          <input type="text" id="username" value={username} onChange={(e) => setUsername(e.target.value)} required />
+          <input
+            type="text"
+            id="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+          />
         </div>
-        <div className="form-group">
+        <div className={styles.formGroup}>
           <label htmlFor="password">Password:</label>
-          <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          <input
+            type="password"
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
         </div>
-        {error && <p className="error-message">{error}</p>}
-        <button type="submit" className="login-button">
+        {error && <p style={{ color: "red" }}>{error}</p>}
+        <button
+          type="submit"
+          style={{
+            marginTop: "10px",
+            backgroundColor: "#0077b6",
+            color: "white",
+            fontSize: "1rem",
+            fontWeight: "bold",
+          }}
+        >
           Login
         </button>
       </form>
+
     </div>
   );
 };
