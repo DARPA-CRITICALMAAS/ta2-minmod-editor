@@ -20,31 +20,24 @@ export class UserStore extends RStore<string, User> {
     runInAction(() => {
       this.set(this.deserialize(resp.data));
     });
-    const isLoggedIn = await this.isLoggedIn();
   }
 
 
   async isLoggedIn(): Promise<boolean> {
     if (this.records.size > 0) {
-      console.log("User is already logged in (records present).");
       return true;
     }
 
     try {
       const resp = await axios.get(`${SERVER}/api/v1/whoami`);
-      console.log("WhoAmI API Response:", resp.data);
       runInAction(() => {
         this.set(this.deserialize(resp.data));
       });
       return true;
     } catch (err) {
-      console.error("Error during isLoggedIn check:", err);
       return false;
     }
   }
-
-
-
   public getCurrentUser(): User | undefined {
     if (this.records.size === 0) return undefined;
     return this.records.values().next().value || undefined;
@@ -71,10 +64,7 @@ export class UserStore extends RStore<string, User> {
       runInAction(() => {
         this.records.clear();
       });
-      console.log("Clearing user records and setting loggedOut flag");
-      console.log("Logout successful");
     } catch (err) {
-      console.error("Error during logout:", err);
     }
 
   }
