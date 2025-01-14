@@ -4,6 +4,7 @@ import { SearchBar, useSearchArgs } from "./SearchBar";
 import { DedupMineralSiteTable } from "./DedupMineralSiteTable";
 import { useRef } from "react";
 import { NewMineralSiteModal, NewMineralSiteFormRef } from "./NewMineralSiteModal";
+import { ProfileMenu } from "../../components/ProfileMenu";
 
 export const EditorPage = observer(() => {
   const [searchArgs, normSearchArgs, setSearchArgs] = useSearchArgs();
@@ -20,12 +21,19 @@ export const EditorPage = observer(() => {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          padding: "0 16px",
+          marginBottom: "16px",
         }}
       >
-        <SearchBar searchArgs={searchArgs} setSearchArgs={setSearchArgs} />
-        <Button type="primary" onClick={handleOpenNewMineralSiteForm}>
-          Add Mineral Site
-        </Button>
+        <div style={{ flex: 1 }}>
+          <SearchBar searchArgs={searchArgs} setSearchArgs={setSearchArgs} />
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          <Button type="primary" onClick={handleOpenNewMineralSiteForm}>
+            Add Mineral Site
+          </Button>
+          <ProfileMenu />
+        </div>
       </div>
       <DedupMineralSiteTable commodity={normSearchArgs.commodity} />
       <NewMineralSiteModal
