@@ -22,7 +22,6 @@ export class UserStore extends RStore<string, User> {
     });
   }
 
-
   async isLoggedIn(): Promise<boolean> {
     if (this.records.size > 0) {
       return true;
@@ -53,20 +52,15 @@ export class UserStore extends RStore<string, User> {
   }
 
   async logout() {
-    try {
-      const allCookies = document.cookie.split(";");
-      for (let i = 0; i < allCookies.length; i++) {
-        const cookie = allCookies[i];
-        const eqPos = cookie.indexOf("=");
-        const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-        document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
-      }
-      runInAction(() => {
-        this.records.clear();
-      });
-    } catch (err) {
+    const allCookies = document.cookie.split(";");
+    for (let i = 0; i < allCookies.length; i++) {
+      const cookie = allCookies[i];
+      const eqPos = cookie.indexOf("=");
+      const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
     }
-
+    runInAction(() => {
+      this.records.clear();
+    });
   }
-
 }

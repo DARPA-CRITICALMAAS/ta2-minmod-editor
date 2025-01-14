@@ -22,7 +22,6 @@ export const LoginPage = () => {
   }, [userStore, navigate]);
 
   const onFinish: FormProps<LoginData>["onFinish"] = async (values: LoginData) => {
-    console.log(values);
     if (values.username !== undefined && values.password !== undefined) {
       try {
         await userStore.login(values.username, values.password);
