@@ -21,17 +21,10 @@ export class UserStore extends RStore<string, User> {
       this.set(this.deserialize(resp.data));
     });
     const isLoggedIn = await this.isLoggedIn();
-    console.log("Post-login isLoggedIn Check:", isLoggedIn);
   }
-  public isLoggingOut: boolean = false;
 
 
   async isLoggedIn(): Promise<boolean> {
-    if (this.isLoggingOut) {
-      console.log("Skipping isLoggedIn check during logout.");
-      return false;
-    }
-
     if (this.records.size > 0) {
       console.log("User is already logged in (records present).");
       return true;
@@ -68,11 +61,6 @@ export class UserStore extends RStore<string, User> {
 
   async logout() {
     try {
-      this.isLoggingOut = true;
-      runInAction(() => {
-        this.records.clear();
-      });
-
       const allCookies = document.cookie.split(";");
       for (let i = 0; i < allCookies.length; i++) {
         const cookie = allCookies[i];
@@ -80,15 +68,15 @@ export class UserStore extends RStore<string, User> {
         const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
         document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
       }
+      runInAction(() => {
+        this.records.clear();
+      });
       console.log("Clearing user records and setting loggedOut flag");
-
       console.log("Logout successful");
     } catch (err) {
       console.error("Error during logout:", err);
     }
-    finally {
-      this.isLoggingOut = false;
-    }
+
   }
 
 }
