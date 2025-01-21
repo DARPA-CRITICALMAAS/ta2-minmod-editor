@@ -72,7 +72,6 @@ export class DedupMineralSiteStore extends RStore<string, DedupMineralSite> {
       });
     } catch (error: any) {
       if (error.response && error.response.status === 404) {
-        // entity does not exist
         runInAction(() => {
           this.records.set(id, null);
           this.state.value = "updated";
@@ -88,25 +87,35 @@ export class DedupMineralSiteStore extends RStore<string, DedupMineralSite> {
   }
 
   async fetchByCommodity(commodity: Commodity): Promise<FetchResult<DedupMineralSite>> {
-    if (!this.refetch && this.commodity2ids.index.has(commodity.id)) {
-      return this.getByCommodity(commodity);
-    }
-    return await this.fetch({
+    const fetchResult = await this.fetch({
       conditions: { commodity: commodity.id },
     });
+
+    runInAction(() => {
+      fetchResult.records.forEach((record) => {
+        const existingRecord = this.records.get(record.id);
+        if (!existingRecord) {
+          this.records.set(record.id, record);
+          this.index(record);
+        }
+      });
+      this.state.value = "updated";
+    });
+
+    return this.getByCommodity(commodity);
   }
+
 
   public getByCommodity(commodity: Commodity): FetchResult<DedupMineralSite> {
-    if (!this.commodity2ids.index.has(commodity.id)) {
-      return { records: [], total: 0 };
-    }
+    const ids = Array.from(this.commodity2ids.index.get(commodity.id) || []) as string[];
+    const records = ids
+      .map((id: string) => this.records.get(id))
+      .filter((record): record is DedupMineralSite => record !== undefined);
 
-    const records = [];
-    for (const id of this.commodity2ids.index.get(commodity.id)!) {
-      records.push(this.records.get(id)!);
-    }
     return { records, total: records.length };
   }
+
+
 
   public deserialize(record: any): DedupMineralSite {
     const MR = this.ns.MR;
