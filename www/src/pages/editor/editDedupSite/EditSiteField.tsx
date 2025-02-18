@@ -28,6 +28,7 @@ export const EditSiteField: React.FC<EditSiteFieldProps> = ({ currentSite, sites
   const { depositTypeStore, stateOrProvinceStore, countryStore } = useStores();
   const [form] = Form.useForm<FormFields>();
 
+
   const title = useMemo(() => {
     switch (editField) {
       case "name":
@@ -44,6 +45,28 @@ export const EditSiteField: React.FC<EditSiteFieldProps> = ({ currentSite, sites
         return "Grade (0 - 100%)";
       case "tonnage":
         return "Tonnage (Mt)";
+      case "mineral-form":
+        return "Mineral Forms"
+      case "alternation":
+        return "Alternation"
+      case "concentration-process":
+        return "Concentration Process"
+      case "ore-control":
+        return "Ore Control"
+      case "host-rock-unit":
+        return "Host Rock Unit"
+      case "host-rock-type":
+        return "Host Rock Type"
+      case "structure":
+        return "Structure"
+      case "associated-rock-unit":
+        return "Associated Rock Unit"
+      case "associated-rock-type":
+        return "Associated Rock Type"
+      case "tectonic":
+        return "Tectonic"
+      case "discovered-year":
+        return "Discovered Year"
       default:
         return "";
     }
@@ -90,6 +113,33 @@ export const EditSiteField: React.FC<EditSiteFieldProps> = ({ currentSite, sites
     case "tonnage":
       [editFieldComponent, initialValues] = getTonnageConfig(configArgs);
       break;
+    case "mineral-form":
+      [editFieldComponent, initialValues] = getMineralFormConfig(configArgs);
+      break;
+    case "alternation":
+      [editFieldComponent, initialValues] = getAlternationConfig(configArgs);
+      break;
+    case "discovered-year":
+      [editFieldComponent, initialValues] = getDiscoveredYearConfig(configArgs);
+      break;
+    // case "concentration-process":
+    //   return "Concentration Process"
+    // case "ore-control":
+    //   return "Ore Control"
+    // case "host-rock-unit":
+    //   return "Host Rock Unit"
+    // case "host-rock-type":
+    //   return "Host Rock Type"
+    // case "structure":
+    //   return "Structure"
+    // case "associated-rock-unit":
+    //   return "Associated Rock Unit"
+    // case "associated-rock-type":
+    //   return "Associated Rock Type"
+    // case "tectonic":
+    //   return "Tectonic"
+    // case "discovered-year":
+    //   return "Discovered Year"
     case undefined:
       break;
     default:
@@ -114,7 +164,14 @@ export const EditSiteField: React.FC<EditSiteFieldProps> = ({ currentSite, sites
       edit = { field: editField, observedName: depositTypeStore.getByURI(val.fieldValue)!.name, normalizedURI: val.fieldValue };
     } else if (editField === "grade" || editField === "tonnage") {
       edit = { field: editField, value: parseFloat(val.fieldValue), commodity };
-    } else {
+    } else if (editField == "mineral-form") {
+      edit = { field: editField, value: val.fieldValue };
+    } else if (editField == "alternation") {
+      edit = { field: editField, value: val.fieldValue };
+    } else if (editField == "discovered-year") {
+      edit = { field: editField, value: parseInt(val.fieldValue) }
+    }
+    else {
       throw new Error(`Unknown field ${editField}`);
     }
 
@@ -180,11 +237,55 @@ const getNameConfig = ({ currentSite, sites, setFieldProvenance }: GetFieldConfi
   const initialValues =
     currentSite !== undefined
       ? {
-          fieldValue: currentSite.name,
-          refDoc: currentSite.getFirstReferencedDocument(),
-          refComment: currentSite.reference[0].comment,
-          refAppliedToAll: false,
-        }
+        fieldValue: currentSite.name,
+        refDoc: currentSite.getFirstReferencedDocument(),
+        refComment: currentSite.reference[0].comment,
+        refAppliedToAll: false,
+      }
+      : defaultInitialValues;
+  return [component, initialValues];
+};
+
+const getMineralFormConfig = ({ currentSite, sites, setFieldProvenance }: GetFieldConfig): [React.ReactElement, FormFields] => {
+  const options = sites.filter((site) => site.mineralForm !== undefined).map((site) => ({ key: site.id, label: site.mineralForm[0]! }));
+  const component = <EditableSelect onProvenanceChange={setFieldProvenance} options={options} />;
+  const initialValues =
+    currentSite !== undefined
+      ? {
+        fieldValue: currentSite.mineralForm[0] || "",
+        refDoc: currentSite.getFirstReferencedDocument(),
+        refComment: currentSite.reference[0].comment,
+        refAppliedToAll: false,
+      }
+      : defaultInitialValues;
+  return [component, initialValues];
+};
+
+const getAlternationConfig = ({ currentSite, sites, setFieldProvenance }: GetFieldConfig): [React.ReactElement, FormFields] => {
+  const options = sites.filter((site) => site.geologyInfo?.alternation !== undefined).map((site) => ({ key: site.id, label: site.geologyInfo!.alternation! }));
+  const component = <EditableSelect onProvenanceChange={setFieldProvenance} options={options} />;
+  const initialValues =
+    currentSite !== undefined
+      ? {
+        fieldValue: currentSite.geologyInfo?.alternation || "",
+        refDoc: currentSite.getFirstReferencedDocument(),
+        refComment: currentSite.reference[0].comment,
+        refAppliedToAll: false,
+      }
+      : defaultInitialValues;
+  return [component, initialValues];
+};
+
+const getDiscoveredYearConfig = ({ currentSite, sites, setFieldProvenance }: GetFieldConfig): [React.ReactElement, FormFields] => {
+  const component = <Input type="number" />;;
+  const initialValues =
+    currentSite !== undefined
+      ? {
+        fieldValue: currentSite.discoveredYear?.toString() || "",
+        refDoc: currentSite.getFirstReferencedDocument(),
+        refComment: currentSite.reference[0].comment,
+        refAppliedToAll: false,
+      }
       : defaultInitialValues;
   return [component, initialValues];
 };
@@ -195,11 +296,11 @@ const getLocationConfig = ({ currentSite, sites, setFieldProvenance }: GetFieldC
   const initialValues =
     currentSite !== undefined
       ? {
-          fieldValue: currentSite.locationInfo?.location || "",
-          refDoc: currentSite.getFirstReferencedDocument(),
-          refComment: currentSite.reference[0].comment,
-          refAppliedToAll: false,
-        }
+        fieldValue: currentSite.locationInfo?.location || "",
+        refDoc: currentSite.getFirstReferencedDocument(),
+        refComment: currentSite.reference[0].comment,
+        refAppliedToAll: false,
+      }
       : defaultInitialValues;
   return [component, initialValues];
 };
@@ -218,11 +319,11 @@ const getCountryConfig = ({ currentSite, sites, setFieldProvenance, stores }: Ge
   const initialValues =
     currentSite !== undefined && (currentSite.locationInfo?.country || []).length > 0
       ? {
-          fieldValue: currentSite.locationInfo!.country[0].normalizedURI!,
-          refDoc: currentSite.getFirstReferencedDocument(),
-          refComment: currentSite.reference[0].comment,
-          refAppliedToAll: false,
-        }
+        fieldValue: currentSite.locationInfo!.country[0].normalizedURI!,
+        refDoc: currentSite.getFirstReferencedDocument(),
+        refComment: currentSite.reference[0].comment,
+        refAppliedToAll: false,
+      }
       : defaultInitialValues;
   return [component, initialValues];
 };
@@ -241,11 +342,11 @@ const getStateOrProvinceConfig = ({ currentSite, sites, setFieldProvenance, stor
   const initialValues =
     currentSite !== undefined && (currentSite.locationInfo?.stateOrProvince || []).length > 0
       ? {
-          fieldValue: currentSite.locationInfo!.stateOrProvince[0].normalizedURI!,
-          refDoc: currentSite.getFirstReferencedDocument(),
-          refComment: currentSite.reference[0].comment,
-          refAppliedToAll: false,
-        }
+        fieldValue: currentSite.locationInfo!.stateOrProvince[0].normalizedURI!,
+        refDoc: currentSite.getFirstReferencedDocument(),
+        refComment: currentSite.reference[0].comment,
+        refAppliedToAll: false,
+      }
       : defaultInitialValues;
   return [component, initialValues];
 };
@@ -264,11 +365,11 @@ const getDepositTypeConfig = ({ currentSite, sites, setFieldProvenance, stores }
   const initialValues =
     currentSite !== undefined && currentSite.depositTypeCandidate.length > 0
       ? {
-          fieldValue: currentSite.depositTypeCandidate[0].normalizedURI!,
-          refDoc: currentSite.getFirstReferencedDocument(),
-          refComment: currentSite.reference[0].comment,
-          refAppliedToAll: false,
-        }
+        fieldValue: currentSite.depositTypeCandidate[0].normalizedURI!,
+        refDoc: currentSite.getFirstReferencedDocument(),
+        refComment: currentSite.reference[0].comment,
+        refAppliedToAll: false,
+      }
       : defaultInitialValues;
   return [component, initialValues];
 };
@@ -278,11 +379,11 @@ const getTonnageConfig = ({ currentSite, sites, setFieldProvenance, stores, comm
   const initialValues =
     currentSite !== undefined && currentSite.depositTypeCandidate.length > 0
       ? {
-          fieldValue: currentSite.gradeTonnage[commodity]?.totalTonnage?.toFixed(4) || "",
-          refDoc: currentSite.getFirstReferencedDocument(),
-          refComment: currentSite.reference[0].comment,
-          refAppliedToAll: false,
-        }
+        fieldValue: currentSite.gradeTonnage[commodity]?.totalTonnage?.toFixed(4) || "",
+        refDoc: currentSite.getFirstReferencedDocument(),
+        refComment: currentSite.reference[0].comment,
+        refAppliedToAll: false,
+      }
       : defaultInitialValues;
   return [component, initialValues];
 };
@@ -292,11 +393,11 @@ const getGradeConfig = ({ currentSite, sites, setFieldProvenance, stores, commod
   const initialValues =
     currentSite !== undefined && currentSite.depositTypeCandidate.length > 0
       ? {
-          fieldValue: currentSite.gradeTonnage[commodity]?.totalGrade?.toFixed(4) || "",
-          refDoc: currentSite.getFirstReferencedDocument(),
-          refComment: currentSite.reference[0].comment,
-          refAppliedToAll: false,
-        }
+        fieldValue: currentSite.gradeTonnage[commodity]?.totalGrade?.toFixed(4) || "",
+        refDoc: currentSite.getFirstReferencedDocument(),
+        refComment: currentSite.reference[0].comment,
+        refAppliedToAll: false,
+      }
       : defaultInitialValues;
   return [component, initialValues];
 };

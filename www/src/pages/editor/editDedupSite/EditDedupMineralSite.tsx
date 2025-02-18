@@ -424,7 +424,12 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
                   {
                     key: "mineral-form",
                     label: "Mineral Forms",
-                    children: site.mineralForm.join(", "),
+                    children: (
+                      <Flex justify="space-between">
+                        <span>{site.mineralForm.join(", ")}</span>
+                        <EditOutlined className={styles.editButton} onClick={() => setEditField("mineral-form")} />
+                      </Flex>
+                    ),
                     span: 3,
                   },
                   {
@@ -432,64 +437,114 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
                     label: "Geology Info",
                     span: 3,
                     children:
-                      site.geologyInfo === undefined ? undefined : (
-                        <Descriptions
-                          size={"small"}
-                          bordered={true}
-                          items={[
-                            {
-                              key: "alternation",
-                              label: "Alternation",
-                              children: site.geologyInfo.alternation,
-                            },
-                            {
-                              key: "concentration-process",
-                              label: "Concentration Process",
-                              children: site.geologyInfo.concentrationProcess,
-                            },
-                            {
-                              key: "ore-control",
-                              label: "Ore Control",
-                              children: site.geologyInfo.oreControl,
-                            },
-                            {
-                              key: "host-rock-unit",
-                              label: "Host Rock Unit",
-                              children: site.geologyInfo.hostRock?.unit,
-                            },
-                            {
-                              key: "host-rock-type",
-                              label: "Host Rock Type",
-                              children: site.geologyInfo.hostRock?.type,
-                            },
-                            {
-                              key: "structure",
-                              label: "Structure",
-                              children: site.geologyInfo.structure,
-                            },
-                            {
-                              key: "associated-rock-unit",
-                              label: "Associated Rock Unit",
-                              children: site.geologyInfo.associatedRock?.unit,
-                            },
-                            {
-                              key: "associated-rock-type",
-                              label: "Associated Rock Type",
-                              children: site.geologyInfo.associatedRock?.type,
-                            },
-                            {
-                              key: "tectonic",
-                              label: "Tectonic",
-                              children: site.geologyInfo.tectonic,
-                            },
-                          ]}
-                        />
-                      ),
+
+                      <Descriptions
+                        size={"small"}
+                        bordered={true}
+                        items={[
+                          {
+                            key: "alternation",
+                            label: "Alternation",
+                            children: (
+                              <Flex justify="space-between">
+                                <span>{site.geologyInfo?.alternation}</span>
+                                <EditOutlined className={styles.editButton} onClick={() => setEditField("alternation")} />
+                              </Flex>
+                            )
+                          },
+                          {
+                            key: "concentration-process",
+                            label: "Concentration Process",
+                            children: (
+                              <Flex justify="space-between">
+                                <span>{site.geologyInfo?.concentrationProcess}</span>
+                                <EditOutlined className={styles.editButton} onClick={() => setEditField("concentration-process")} />
+                              </Flex>
+                            )
+                          },
+                          {
+                            key: "ore-control",
+                            label: "Ore Control",
+                            children: (
+                              <Flex justify="space-between">
+                                <span>{site.geologyInfo?.oreControl}</span>
+                                <EditOutlined className={styles.editButton} onClick={() => setEditField("ore-control")} />
+                              </Flex>
+                            )
+                          },
+                          {
+                            key: "host-rock-unit",
+                            label: "Host Rock Unit",
+                            children: (
+                              <Flex justify="space-between">
+                                <span>{site.geologyInfo?.hostRock?.unit}</span>
+                                <EditOutlined className={styles.editButton} onClick={() => setEditField("host-rock-unit")} />
+                              </Flex>
+                            )
+                          },
+                          {
+                            key: "host-rock-type",
+                            label: "Host Rock Type",
+                            children: (
+                              <Flex justify="space-between">
+                                <span>{site.geologyInfo?.hostRock?.type}</span>
+                                <EditOutlined className={styles.editButton} onClick={() => setEditField("host-rock-type")} />
+                              </Flex>
+                            )
+                          },
+                          {
+                            key: "structure",
+                            label: "Structure",
+                            children: (
+                              <Flex justify="space-between">
+                                <span>{site.geologyInfo?.structure}</span>
+                                <EditOutlined className={styles.editButton} onClick={() => setEditField("structure")} />
+                              </Flex>
+                            )
+                          },
+                          {
+                            key: "associated-rock-unit",
+                            label: "Associated Rock Unit",
+                            children: (
+                              <Flex justify="space-between">
+                                <span>{site.geologyInfo?.associatedRock?.unit}</span>
+                                <EditOutlined className={styles.editButton} onClick={() => setEditField("associated-rock-unit")} />
+                              </Flex>
+                            )
+                          },
+                          {
+                            key: "associated-rock-type",
+                            label: "Associated Rock Type",
+                            children: (
+                              <Flex justify="space-between">
+                                <span>{site.geologyInfo?.associatedRock?.type}</span>
+                                <EditOutlined className={styles.editButton} onClick={() => setEditField("associated-rock-type")} />
+                              </Flex>
+                            )
+                          },
+                          {
+                            key: "tectonic",
+                            label: "Tectonic",
+                            children: (
+                              <Flex justify="space-between">
+                                <span>{site.geologyInfo?.tectonic}</span>
+                                <EditOutlined className={styles.editButton} onClick={() => setEditField("tectonic")} />
+                              </Flex>
+                            )
+                          },
+                        ]}
+                      />
+                    ,
                   },
                   {
                     key: "discovered-year",
                     label: "Discovered Year",
-                    children: site.discoveredYear,
+                    children: (
+                      <Flex justify="space-between">
+                        <span>{site.discoveredYear}</span>
+                        <EditOutlined className={styles.editButton} onClick={() => setEditField("discovered-year")} />
+                      </Flex>
+                    ),
                   },
                 ]}
               />

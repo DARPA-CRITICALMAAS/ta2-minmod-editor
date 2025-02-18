@@ -60,7 +60,7 @@ export class Reference {
     };
   }
 
-  public static normalizeProperty(property: "name" | "location" | "country" | "stateOrProvince" | "depositType" | "grade" | "tonnage"): string {
+  public static normalizeProperty(property: "name" | "location" | "country" | "stateOrProvince" | "depositType" | "grade" | "tonnage"| "mineral-form" | "alternation" | "discovered-year"): string {
     switch (property) {
       case "name":
         return "http://www.w3.org/2000/01/rdf-schema#label";

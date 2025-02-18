@@ -11,7 +11,7 @@ import { IStore, User } from "models";
 import { InternalID } from "models/typing";
 import { GeologyInfo } from "./GeologyInfo";
 
-export type EditableField = "name" | "location" | "country" | "stateOrProvince" | "depositType" | "grade" | "tonnage";
+export type EditableField = "name" | "location" | "country" | "stateOrProvince" | "depositType" | "grade" | "tonnage" |"mineral-form" | "alternation" | "concentration-process" | "ore-control" | "host-rock-unit" | "host-rock-type" | "structure" | "associated-rock-unit" | "associated-rock-type" | "tectonic" | "discovered-year";
 export type FieldEdit =
   | { field: "name"; value: string }
   | { field: "location"; value: string }
@@ -23,7 +23,10 @@ export type FieldEdit =
       value: number;
       commodity: string;
     }
-  | { field: "tonnage"; value: number; commodity: string };
+  | { field: "tonnage"; value: number; commodity: string }
+  | {field : "mineral-form"; value :string}
+  | {field : "alternation"; value :string}
+  | {field : "discovered-year"; value: number};
 
 export type MineralSiteConstructorArgs = {
   id: InternalID;
@@ -212,9 +215,20 @@ export class MineralSite {
             this.gradeTonnage[edit.commodity].totalGrade = 0.000000001;
           }
         }
-
-        this.mineralInventory = [MineralInventory.fromGradeTonnage(stores, this.createdBy, this.gradeTonnage[edit.commodity], reference)];
-        break;
+      break;
+      case "mineral-form":
+        this.mineralForm = this.mineralForm? [edit.value] : [];
+      break;
+      case "alternation":
+        if (this.geologyInfo?.alternation === undefined) {
+          this.geologyInfo = new GeologyInfo({alternation: edit.value })
+        } else{
+          this.geologyInfo.alternation = edit.value;
+        }
+      break;
+      case "discovered-year":
+        this.discoveredYear = edit.value;
+      break;
       default:
         throw new Error(`Unknown edit: ${edit}`);
     }
