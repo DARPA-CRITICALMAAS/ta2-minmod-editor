@@ -34,7 +34,7 @@ export const EditRefDoc: React.FC<EditRefDocProps> = ({ availableDocs, value: do
           value={doc?.uri}
           onChange={(e) => {
             const uri = e.target.value;
-            if (uri) {
+            if (uri !== "") {
               if (onChange !== undefined) {
                 onChange(new Document({ uri, title: "" }));
               }
