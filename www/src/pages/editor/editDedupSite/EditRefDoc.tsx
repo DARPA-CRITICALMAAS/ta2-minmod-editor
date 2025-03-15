@@ -8,16 +8,7 @@ export interface EditRefDocProps {
   onChange?: (doc: Document | null) => void;
 }
 
-function isValidUrl(inputURL: string) {
-  if (!inputURL.trim()) return false;
-  if (inputURL === "") return false;
-  try {
-    new URL(inputURL);
-    return !/\s/.test(inputURL);
-  } catch (err) {
-    return false;
-  }
-}
+
 const UNSELECT_VALUE = "e269e284cd592d703cb477fc2075cfde6ebfa9299e06deb0850f6061f72a6a9f";
 
 export const EditRefDoc: React.FC<EditRefDocProps> = ({ availableDocs, value: doc, onChange }) => {
@@ -39,36 +30,16 @@ export const EditRefDoc: React.FC<EditRefDocProps> = ({ availableDocs, value: do
 
   if (selectingValue) {
     return (
-      <Form.Item
-        name="documentUrl"
-        rules={[
-          {
-            required: true,
-            message: "Reference Document URL is required",
-          },
-          {
-            validator: (_, value) => {
-              if (!value) {
-                return Promise.resolve(); 
-              }
-              if (isValidUrl(value)) {
-                return Promise.resolve();
-              }
-              return Promise.reject(new Error("Invalid URL "));
-            },
-          },
-        ]}
-      >
         <Input
           value={doc?.uri}
           onChange={(e) => {
             const uri = e.target.value;
             if (uri) {
-              if (onChange) {
+              if (onChange !== undefined) {
                 onChange(new Document({ uri, title: "" }));
               }
             } else {
-              if (onChange) {
+              if (onChange !== undefined) {
                 onChange(null);
               }
             }
@@ -84,7 +55,7 @@ export const EditRefDoc: React.FC<EditRefDocProps> = ({ availableDocs, value: do
             />
           }
         />
-      </Form.Item>
+
     );
   }
   return <Select options={options} value={doc === null || doc === undefined ? undefined : doc.uri} onChange={(uri) => onUpdateOption(uri)} />;
