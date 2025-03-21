@@ -22,7 +22,6 @@ type FormFields = {
   fieldValue: string | undefined;
   refDoc: Document | null;
   refComment: string;
-  refAppliedToAll: boolean;
 };
 
 export const EditSiteField: React.FC<EditSiteFieldProps> = ({ currentSite, sites, editField, commodity, onFinish }) => {
@@ -124,35 +123,15 @@ export const EditSiteField: React.FC<EditSiteFieldProps> = ({ currentSite, sites
       reference: new Reference({
         document: val.refDoc,
         comment: val.refComment,
-        property: val.refAppliedToAll ? undefined : Reference.normalizeProperty(editField),
         pageInfo: [],
       }),
     });
   };
 
   return (
-    <Modal
-      title="Edit Mineral Site"
-      width="70%"
-      open={editField !== undefined}
-      onCancel={() => onFinish()}
-      footer={null}
-    >
-      <Form
-        form={form}
-        onFinish={onSave}
-        layout="vertical"
-        style={{ marginTop: 24, marginBottom: 24 }}
-        requiredMark={true}
-        initialValues={initialValues}
-      >
-        <Form.Item<FormFields>
-          name="fieldValue"
-          label={title}
-          required={true}
-          tooltip="This is a required field"
-          rules={[{ required: true, message: "Value cannot be empty" }]}
-        >
+    <Modal title="Edit Mineral Site" width="70%" open={editField !== undefined} onCancel={() => onFinish()} footer={null}>
+      <Form form={form} onFinish={onSave} layout="vertical" style={{ marginTop: 24, marginBottom: 24 }} requiredMark={true} initialValues={initialValues}>
+        <Form.Item<FormFields> name="fieldValue" label={title} required={true} tooltip="This is a required field" rules={[{ required: true, message: "Value cannot be empty" }]}>
           {editFieldComponent}
         </Form.Item>
         <Form.Item<FormFields>
@@ -180,9 +159,6 @@ export const EditSiteField: React.FC<EditSiteFieldProps> = ({ currentSite, sites
         <Form.Item<FormFields> name="refComment" label="Comment">
           <Input.TextArea rows={3} />
         </Form.Item>
-        <Form.Item<FormFields> name="refAppliedToAll" valuePropName="checked">
-          <Checkbox>This reference applies to all fields</Checkbox>
-        </Form.Item>
         <Form.Item<FormFields>>
           <Space>
             <Button type="primary" htmlType="submit">
@@ -202,7 +178,6 @@ const defaultInitialValues: FormFields = {
   fieldValue: undefined,
   refDoc: null,
   refComment: "",
-  refAppliedToAll: false,
 };
 
 interface GetFieldConfig {
