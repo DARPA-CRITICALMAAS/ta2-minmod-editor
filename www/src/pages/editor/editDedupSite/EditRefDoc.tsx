@@ -32,7 +32,7 @@ export const EditRefDoc: React.FC<EditRefDocProps> = observer(({ availableDocs, 
   };
 
   const isEnteringYourOwn = doc !== undefined && availableDocs.every((availableDoc) => availableDoc.uri !== doc.uri);
-  const selectOption = <Select options={options} value={isEnteringYourOwn ? UNSELECT_VALUE : doc?.uri} onChange={(uri) => onUpdateOption(uri)} />;
+  const selectOption = <Select style={{ width: "100%" }} options={options} value={isEnteringYourOwn ? UNSELECT_VALUE : doc?.uri} onChange={(uri) => onUpdateOption(uri)} />;
 
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
@@ -94,7 +94,7 @@ export const EditSource: React.FC<{ document: Document; currentUser: User; updat
           <Input placeholder={"Document Title"} value={doc.title} onChange={updateDocTitle} disabled={disabled} />
         </div>
         <div style={{ width: "100%" }}>
-          <FormLabel label="Document ID" required={true} help="CDR ID of document e.g., 02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5" />
+          <FormLabel label="Document ID" required={true} tooltip="CDR ID of document e.g., 02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5" />
           <Input placeholder={"Document ID"} value={doc.getCDRDocumentId()} onChange={updateDocURI} disabled={disabled} />
           {errorMessage !== undefined && <Typography.Text type="danger">{errorMessage}</Typography.Text>}
         </div>
@@ -108,7 +108,7 @@ export const EditSource: React.FC<{ document: Document; currentUser: User; updat
           <Input placeholder={"Document Title"} value={doc.title} onChange={updateDocTitle} disabled={disabled} />
         </div>
         <div style={{ width: "100%" }}>
-          <FormLabel label="Document URL" required={true} help="If the document has a DOI, please enter the DOI URL such as https://doi.org/10.1016/j.oregeorev.2016.08.010" />
+          <FormLabel label="Document URL" required={true} tooltip="If the document has a DOI, please enter the DOI URL such as https://doi.org/10.1016/j.oregeorev.2016.08.010" />
           <Input placeholder={"Document URL"} value={doc.uri} onChange={updateDocURI} disabled={disabled} />
           {errorMessage !== undefined && <Typography.Text type="danger">{errorMessage}</Typography.Text>}
         </div>

@@ -500,7 +500,14 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
           expandedRowKeys: Array.from(expandedRowKeys),
         }}
       />
-      <EditSiteField key={editField} sites={siteGroups.sites} currentSite={currentSite} editField={editField} onFinish={onEditFinish} commodity={commodity.id} />
+      <EditSiteField
+        key={`${editField}:${editField !== undefined && currentSite?.getFieldValue(editField, commodity.id)}`}
+        sites={siteGroups.sites}
+        currentSite={currentSite}
+        editField={editField}
+        onFinish={onEditFinish}
+        commodity={commodity.id}
+      />
     </Flex>
   );
 }) as React.FC<EditDedupMineralSiteProps>;

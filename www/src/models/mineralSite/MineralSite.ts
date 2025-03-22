@@ -217,6 +217,25 @@ export class MineralSite {
     }
     this.reference = reference;
   }
+
+  getFieldValue(field: EditableField, commodity: InternalID): string | undefined {
+    switch (field) {
+      case "name":
+        return this.name;
+      case "location":
+        return this.locationInfo?.location;
+      case "country":
+        return this.locationInfo?.country[0]?.normalizedURI;
+      case "stateOrProvince":
+        return this.locationInfo?.stateOrProvince[0]?.normalizedURI;
+      case "depositType":
+        return this.depositTypeCandidate[0]?.normalizedURI;
+      case "grade":
+        return this.gradeTonnage[commodity]?.totalGrade?.toString();
+      case "tonnage":
+        return this.gradeTonnage[commodity]?.totalTonnage?.toString();
+    }
+  }
 }
 
 export class DraftCreateMineralSite extends MineralSite {
