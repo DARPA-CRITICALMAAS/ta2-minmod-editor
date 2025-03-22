@@ -350,8 +350,9 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
     const currentUser = userStore.getCurrentUser()!;
     const existingSite = siteGroups.sites.find((site) => site.createdBy.includes(currentUser.url));
     let cb;
-    if (existingSite === undefined) {
-      const draftSite = DraftCreateMineralSite.fromMineralSite(stores, dedupSite, siteGroups.sites, currentUser, change.reference);
+    if (existingSite === undefined || existingSite.reference.document.uri !== change.reference.document.uri) {
+      // when reference change, it will be a new site
+      const draftSite = DraftCreateMineralSite.fromMineralSite(dedupSite, currentUser, change.reference);
       draftSite.updateField(stores, change.edit, change.reference);
       cb = mineralSiteStore.createAndUpdateDedup(dedupSite.commodity, draftSite);
     } else {

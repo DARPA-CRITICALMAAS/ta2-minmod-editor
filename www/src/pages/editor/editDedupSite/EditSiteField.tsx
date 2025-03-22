@@ -20,11 +20,12 @@ interface EditSiteFieldProps {
 
 type FormFields = {
   fieldValue: string | undefined;
-  refDoc: Document | null;
+  refDoc: Document | undefined;
   refComment: string;
 };
 
 export const EditSiteField: React.FC<EditSiteFieldProps> = ({ currentSite, sites, editField, commodity, onFinish }) => {
+  console.log("EditSiteField", currentSite);
   const { depositTypeStore, stateOrProvinceStore, countryStore } = useStores();
   const [form] = Form.useForm<FormFields>();
 
@@ -52,16 +53,14 @@ export const EditSiteField: React.FC<EditSiteFieldProps> = ({ currentSite, sites
   const setFieldProvenance = (key: string | undefined) => {
     if (key !== undefined) {
       const site = sites.filter((site) => site.id === key)[0];
-      // there can be multiple docs per site, we choose the first one and
-      // users can correct it.
-      form.setFieldValue("refDoc", site.getFirstReferencedDocument());
+      form.setFieldValue("refDoc", site.getDocument());
     } else {
-      form.setFieldValue("refDoc", null);
+      form.setFieldValue("refDoc", undefined);
     }
   };
 
   const docs = _.uniqBy(
-    sites.flatMap((site) => Object.values(site.getReferencedDocuments())),
+    sites.map((site) => site.getDocument()),
     "uri"
   );
 
@@ -99,7 +98,7 @@ export const EditSiteField: React.FC<EditSiteFieldProps> = ({ currentSite, sites
   const onSave = (values: any) => {
     if (editField === undefined) return;
     const val = form.getFieldsValue();
-    if (val.refDoc === null || val.fieldValue === undefined) {
+    if (val.refDoc === undefined || val.fieldValue === undefined || !val.refDoc.isValid()) {
       return;
     }
 
@@ -142,15 +141,6 @@ export const EditSiteField: React.FC<EditSiteFieldProps> = ({ currentSite, sites
           rules={[
             {
               required: true,
-              validator: (_, value: Document | null) => {
-                if (value === null) {
-                  return Promise.reject(new Error("Document URL is required"));
-                }
-                if (isValidUrl(value.uri)) {
-                  return Promise.resolve();
-                }
-                return Promise.reject(new Error("Invalid URL"));
-              },
             },
           ]}
         >
@@ -176,7 +166,7 @@ export const EditSiteField: React.FC<EditSiteFieldProps> = ({ currentSite, sites
 
 const defaultInitialValues: FormFields = {
   fieldValue: undefined,
-  refDoc: null,
+  refDoc: undefined,
   refComment: "",
 };
 
@@ -195,8 +185,8 @@ const getNameConfig = ({ currentSite, sites, setFieldProvenance }: GetFieldConfi
     currentSite !== undefined
       ? {
           fieldValue: currentSite.name,
-          refDoc: currentSite.getFirstReferencedDocument(),
-          refComment: currentSite.reference[0].comment,
+          refDoc: currentSite.getDocument(),
+          refComment: currentSite.reference.comment,
           refAppliedToAll: false,
         }
       : defaultInitialValues;
@@ -210,8 +200,8 @@ const getLocationConfig = ({ currentSite, sites, setFieldProvenance }: GetFieldC
     currentSite !== undefined
       ? {
           fieldValue: currentSite.locationInfo?.location || "",
-          refDoc: currentSite.getFirstReferencedDocument(),
-          refComment: currentSite.reference[0].comment,
+          refDoc: currentSite.getDocument(),
+          refComment: currentSite.reference.comment,
           refAppliedToAll: false,
         }
       : defaultInitialValues;
@@ -233,8 +223,8 @@ const getCountryConfig = ({ currentSite, sites, setFieldProvenance, stores }: Ge
     currentSite !== undefined && (currentSite.locationInfo?.country || []).length > 0
       ? {
           fieldValue: currentSite.locationInfo!.country[0].normalizedURI!,
-          refDoc: currentSite.getFirstReferencedDocument(),
-          refComment: currentSite.reference[0].comment,
+          refDoc: currentSite.getDocument(),
+          refComment: currentSite.reference.comment,
           refAppliedToAll: false,
         }
       : defaultInitialValues;
@@ -256,8 +246,8 @@ const getStateOrProvinceConfig = ({ currentSite, sites, setFieldProvenance, stor
     currentSite !== undefined && (currentSite.locationInfo?.stateOrProvince || []).length > 0
       ? {
           fieldValue: currentSite.locationInfo!.stateOrProvince[0].normalizedURI!,
-          refDoc: currentSite.getFirstReferencedDocument(),
-          refComment: currentSite.reference[0].comment,
+          refDoc: currentSite.getDocument(),
+          refComment: currentSite.reference.comment,
           refAppliedToAll: false,
         }
       : defaultInitialValues;
@@ -279,8 +269,8 @@ const getDepositTypeConfig = ({ currentSite, sites, setFieldProvenance, stores }
     currentSite !== undefined && currentSite.depositTypeCandidate.length > 0
       ? {
           fieldValue: currentSite.depositTypeCandidate[0].normalizedURI!,
-          refDoc: currentSite.getFirstReferencedDocument(),
-          refComment: currentSite.reference[0].comment,
+          refDoc: currentSite.getDocument(),
+          refComment: currentSite.reference.comment,
           refAppliedToAll: false,
         }
       : defaultInitialValues;
@@ -293,8 +283,8 @@ const getTonnageConfig = ({ currentSite, sites, setFieldProvenance, stores, comm
     currentSite !== undefined && currentSite.depositTypeCandidate.length > 0
       ? {
           fieldValue: currentSite.gradeTonnage[commodity]?.totalTonnage?.toFixed(4) || "",
-          refDoc: currentSite.getFirstReferencedDocument(),
-          refComment: currentSite.reference[0].comment,
+          refDoc: currentSite.getDocument(),
+          refComment: currentSite.reference.comment,
           refAppliedToAll: false,
         }
       : defaultInitialValues;
@@ -307,8 +297,8 @@ const getGradeConfig = ({ currentSite, sites, setFieldProvenance, stores, commod
     currentSite !== undefined && currentSite.depositTypeCandidate.length > 0
       ? {
           fieldValue: currentSite.gradeTonnage[commodity]?.totalGrade?.toFixed(4) || "",
-          refDoc: currentSite.getFirstReferencedDocument(),
-          refComment: currentSite.reference[0].comment,
+          refDoc: currentSite.getDocument(),
+          refComment: currentSite.reference.comment,
           refAppliedToAll: false,
         }
       : defaultInitialValues;

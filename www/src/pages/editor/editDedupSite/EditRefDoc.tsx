@@ -1,22 +1,24 @@
-import { Document } from "models";
-import { Form, Input, Select, Space, Typography } from "antd";
-import { useState } from "react";
-import { CloseCircleOutlined } from "@ant-design/icons";
+import { Document, User, useStores } from "models";
+import { Flex, Form, Input, Radio, Select, Space, Typography } from "antd";
+import { FormLabel } from "components/FormLabel";
+import { observer } from "mobx-react-lite";
+import { isValidUrl } from "misc";
+
 export interface EditRefDocProps {
   availableDocs: Document[];
   value?: Document;
-  onChange?: (doc?: Document) => void;
+  onChange?: (doc: Document) => void;
 }
 
 const UNSELECT_VALUE = "e269e284cd592d703cb477fc2075cfde6ebfa9299e06deb0850f6061f72a6a9f";
 
-export const EditRefDoc: React.FC<EditRefDocProps> = ({ availableDocs, value: doc, onChange }) => {
+export const EditRefDoc: React.FC<EditRefDocProps> = observer(({ availableDocs, value: doc, onChange: onChangeArg }) => {
+  const { userStore } = useStores();
+
   const options: object[] = availableDocs.map((doc) => ({ value: doc.uri, label: doc.title || doc.uri }));
   options.push({ value: UNSELECT_VALUE, label: <Typography.Text italic={true}>Enter your own</Typography.Text> });
 
-  if (onChange === undefined) {
-    onChange = (doc?: Document) => {};
-  }
+  const onChange = onChangeArg === undefined ? (doc: Document) => {} : onChangeArg;
 
   const onUpdateOption = (uri: string) => {
     if (uri === UNSELECT_VALUE) {
@@ -30,51 +32,105 @@ export const EditRefDoc: React.FC<EditRefDocProps> = ({ availableDocs, value: do
   };
 
   const isEnteringYourOwn = doc !== undefined && availableDocs.every((availableDoc) => availableDoc.uri !== doc.uri);
-  console.log("isEnteringYourOwn", isEnteringYourOwn);
+  const selectOption = <Select options={options} value={isEnteringYourOwn ? UNSELECT_VALUE : doc?.uri} onChange={(uri) => onUpdateOption(uri)} />;
 
-  if (isEnteringYourOwn) {
-    return (
-      <Space direction="vertical" style={{ width: "100%" }}>
-        <div>
-          <Typography.Text>Document Title:</Typography.Text>
-          <Input
-            value={doc.title}
-            onChange={(e) => {
-              const title = e.target.value;
-              onChange(new Document({ uri: doc.uri, title }));
-            }}
-            placeholder={"Enter title of the document"}
-            suffix={
-              <CloseCircleOutlined
-                style={{ color: "rgba(0,0,0,.25)" }}
-                onClick={() => {
-                  onChange(new Document({ uri: doc.uri, title: "" }));
-                }}
-              />
-            }
-          />
+  return (
+    <Space direction="vertical" style={{ width: "100%" }}>
+      {selectOption}
+      {doc !== undefined && <EditSource document={doc} currentUser={userStore.getCurrentUser()!} updateDocument={onChange} disabled={!isEnteringYourOwn} />}
+    </Space>
+  );
+});
+
+export const EditSource: React.FC<{ document: Document; currentUser: User; updateDocument: (doc: Document) => void; disabled: boolean }> = ({
+  document: doc,
+  currentUser,
+  updateDocument,
+  disabled,
+}) => {
+  let docType;
+  let errorMessage = undefined;
+  if (doc.uri === currentUser.url) {
+    docType = "unpublished";
+  } else if (doc.isCDRDocument()) {
+    docType = "report";
+    if (!doc.isValidCDRDocumentId()) {
+      errorMessage = "Invalid CDR document ID";
+    }
+  } else {
+    docType = "article";
+    if (!doc.isValid()) {
+      errorMessage = "Invalid Document URL";
+    }
+  }
+
+  const updateDocType = (e: any) => {
+    const value = e.target.value;
+    if (value === "report") {
+      updateDocument(Document.cdrDocument("", ""));
+    } else if (value === "article") {
+      updateDocument(new Document({ uri: "", title: "" }));
+    } else {
+      updateDocument(new Document({ uri: currentUser.url, title: `Unpublished document by ${currentUser.name}` }));
+    }
+  };
+
+  const updateDocTitle = (e: any) => {
+    const value = e.target.value;
+    updateDocument(new Document({ uri: doc.uri, title: value }));
+  };
+
+  const updateDocURI = (e: any) => {
+    const value = e.target.value;
+    updateDocument(new Document({ uri: value, title: doc.title }));
+  };
+
+  let content = undefined;
+  if (docType === "report") {
+    content = (
+      <>
+        <div style={{ width: "100%" }}>
+          <FormLabel label="Title" />
+          <Input placeholder={"Document Title"} value={doc.title} onChange={updateDocTitle} disabled={disabled} />
         </div>
-        <div>
-          <Typography.Text>Document URL*:</Typography.Text>
-          <Input
-            value={doc?.uri}
-            onChange={(e) => {
-              const uri = e.target.value;
-              onChange(new Document({ uri, title: doc.title }));
-            }}
-            placeholder={"Enter URL of a document. If the document has a DOI, please enter the DOI URL: https://doi.org/10.1016/j.oregeorev.2016.08.010"}
-            suffix={
-              <CloseCircleOutlined
-                style={{ color: "rgba(0,0,0,.25)" }}
-                onClick={() => {
-                  onChange(undefined);
-                }}
-              />
-            }
-          />
+        <div style={{ width: "100%" }}>
+          <FormLabel label="Document ID" required={true} help="CDR ID of document e.g., 02a000a83e76360bec8f3fce2ff46cc8099f950cc1f757f8a16592062c49b3a5c5" />
+          <Input placeholder={"Document ID"} value={doc.getCDRDocumentId()} onChange={updateDocURI} disabled={disabled} />
+          {errorMessage !== undefined && <Typography.Text type="danger">{errorMessage}</Typography.Text>}
         </div>
-      </Space>
+      </>
+    );
+  } else if (docType === "article") {
+    content = (
+      <>
+        <div style={{ width: "100%" }}>
+          <FormLabel label="Title" />
+          <Input placeholder={"Document Title"} value={doc.title} onChange={updateDocTitle} disabled={disabled} />
+        </div>
+        <div style={{ width: "100%" }}>
+          <FormLabel label="Document URL" required={true} help="If the document has a DOI, please enter the DOI URL such as https://doi.org/10.1016/j.oregeorev.2016.08.010" />
+          <Input placeholder={"Document URL"} value={doc.uri} onChange={updateDocURI} disabled={disabled} />
+          {errorMessage !== undefined && <Typography.Text type="danger">{errorMessage}</Typography.Text>}
+        </div>
+      </>
+    );
+  } else {
+    content = (
+      <div style={{ width: "100%" }}>
+        <FormLabel label="Title" />
+        <Input placeholder={"Document Title"} value={doc.title} onChange={updateDocTitle} disabled={disabled} />
+      </div>
     );
   }
-  return <Select options={options} value={doc === null || doc === undefined ? undefined : doc.uri} onChange={(uri) => onUpdateOption(uri)} />;
+
+  return (
+    <Flex gap="middle" align="start" vertical={true} style={{ border: "1px dashed #ddd", borderRadius: 4, padding: 8 }}>
+      <Radio.Group value={docType} onChange={updateDocType} disabled={disabled}>
+        <Radio value="report">CDR Document</Radio>
+        <Radio value="article">Article</Radio>
+        <Radio value="unpublished">Unpublished</Radio>
+      </Radio.Group>
+      {content}
+    </Flex>
+  );
 };
