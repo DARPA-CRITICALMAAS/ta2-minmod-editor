@@ -1,4 +1,4 @@
-import { Button, Flex, Space, Table, Typography, message, Checkbox, Tag, Descriptions } from "antd";
+import { Button, Flex, Space, Table, Typography, message, Checkbox, Tag, Descriptions, TableColumnsType } from "antd";
 import { observer } from "mobx-react-lite";
 import { useStores, Commodity, DedupMineralSite, MineralSite, Reference, DraftCreateMineralSite, FieldEdit, EditableField, DraftUpdateMineralSite } from "models";
 import { useEffect, useMemo, useState } from "react";
@@ -145,12 +145,15 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
       message.success("Ungrouping was successful!");
     }
   };
-  const columns = useMemo(() => {
-    const defaultColumns = [
+
+  // whether to scroll the table horizontally
+  const scrollX = settingStore.displayColumns.size > 0;
+
+  const columns: TableColumnsType<any> = useMemo(() => {
+    const defaultColumns: TableColumnsType<any> = [
       {
         title: "",
         key: "select",
-        hidden: siteGroups.sites.length === 1,
         render: (_: any, site: MineralSite) => (
           <Space size="small">
             <Checkbox
@@ -420,8 +423,15 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
         );
       },
     });
+
+    if (scrollX) {
+      defaultColumns[0].fixed = "left";
+      defaultColumns[1].fixed = "left";
+      defaultColumns[defaultColumns.length - 1].fixed = "right";
+    }
+
     return defaultColumns;
-  }, [commodity.id, siteGroups, selectedRows, ungroupTogether]);
+  }, [commodity.id, siteGroups, selectedRows, ungroupTogether, scrollX]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -495,7 +505,7 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
   }
 
   return (
-    <Flex vertical={true} gap="small">
+    <Flex vertical={true} gap="small" style={scrollX ? { width: "calc(100vw - 44px - 44px)" } : {}}>
       {groupBtns}
       <Table<MineralSite>
         className={styles.table}
@@ -585,6 +595,13 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
                     key: "discovered-year",
                     label: "Discovered Year",
                     children: site.discoveredYear,
+                    span: 3,
+                  },
+                  {
+                    key: "comment",
+                    label: "Comment",
+                    children: site.reference.comment,
+                    span: 3,
                   },
                 ]}
               />
@@ -593,6 +610,7 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
           showExpandColumn: false,
           expandedRowKeys: Array.from(expandedRowKeys),
         }}
+        scroll={scrollX ? { x: "max-content" } : undefined}
       />
       <EditSiteField key={editField} sites={siteGroups.sites} currentSite={currentSite} editField={editField} onFinish={onEditFinish} commodity={commodity.id} />
     </Flex>
