@@ -1,18 +1,22 @@
 import { RStore } from "gena-app";
 import { SERVER } from "env";
-import { runInAction } from "mobx";
+import { action, makeObservable, runInAction } from "mobx";
 import axios from "axios";
+
+type Role = "admin" | "user" | "system";
 
 export interface User {
   id: string;
   url: string;
   email: string;
   name: string;
+  role: Role;
 }
 
 export class UserStore extends RStore<string, User> {
   constructor() {
-    super(`${SERVER}/api/v1`, { id: "username" }, false);
+    super(`${SERVER}/api/v1/users`, { id: "username" }, false);
+    makeObservable(this);
   }
 
   async login(username: string, password: string) {
@@ -48,6 +52,7 @@ export class UserStore extends RStore<string, User> {
       email: obj.email,
       name: obj.name,
       url: obj.uri,
+      role: obj.role,
     };
   }
 
