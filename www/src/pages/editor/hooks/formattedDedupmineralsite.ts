@@ -42,7 +42,7 @@ export function useFormattedDedupMineralSite(sites: DedupMineralSite[]): Formatt
   const allFormattedList = useMemo(() => {
     const usernames = Array.from(new Set(sites.flatMap(extractUsernamesFromDedupSite))).filter((username) => {
       const user = userStore.get(username);
-      return user !== undefined && user !== null && user.role === "user";
+      return user !== undefined && user !== null && user.role !== "system";
     });
     return sites.map((site) => getFormattedDedupmineralsite(site, usernames));
   }, [sites, userStore.records.size]);
