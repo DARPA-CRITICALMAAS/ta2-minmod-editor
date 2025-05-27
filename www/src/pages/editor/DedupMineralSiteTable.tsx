@@ -84,7 +84,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
         key: "name",
         ...nameFilterProps,
         render: (_: any, site: FormattedDedupMineralSite) => {
-          const isEdited = site.isEdited;
+          const isEdited = site.isEdited.name || false;
           return (
             <div className={isEdited ? styles.cellHighlight : ""}>
               <Typography.Link href={`/derived/${site.origin.id}`} target="_blank">
@@ -104,7 +104,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
         key: "type",
         ...typeFilterProps,
         render: (_: any, site: FormattedDedupMineralSite) => {
-          const isEdited = site.isEdited;
+          const isEdited = site.isEdited.type || false;
           return (
             <div className={isEdited ? styles.cellHighlight : ""}>
               <span className="font-small">
@@ -120,7 +120,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
         key: "rank",
         ...rankFilterProps,
         render: (_: any, site: FormattedDedupMineralSite) => {
-          const isEdited = site.isEdited;
+          const isEdited = site.isEdited.rank || false;
           return (
             <div className={isEdited ? styles.cellHighlight : ""}>
               <span className="font-small">
@@ -135,7 +135,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
         title: "Location",
         key: "location",
         render: (value: any, dedupSite: FormattedDedupMineralSite) => {
-          const isEdited = dedupSite.isEdited;
+          const isEdited = dedupSite.isEdited.coordinates || false;
           if (dedupSite.origin.location !== undefined && dedupSite.origin.location.lat !== undefined && dedupSite.origin.location.lon !== undefined) {
             return (
               <div className={isEdited ? styles.cellHighlight : ""}>
@@ -157,7 +157,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
         title: "Country",
         key: "country",
         render: (_: any, site: FormattedDedupMineralSite) => {
-          const isEdited = site.isEdited;
+          const isEdited = site.isEdited.country || false;
           if (site.origin.location === undefined || site.origin.location.country.length === 0) {
             return <Empty />;
           }
@@ -182,7 +182,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
         title: "State/Province",
         key: "state",
         render: (_: any, site: FormattedDedupMineralSite) => {
-          const isEdited = site.isEdited;
+          const isEdited = site.isEdited.state_or_province || false;
           if (site.origin.location === undefined || site.origin.location.stateOrProvince.length === 0) {
             return <Empty />;
           }
@@ -207,7 +207,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
         title: "Deposit Type",
         key: "depositType",
         render: (_: any, site: FormattedDedupMineralSite) => {
-          const isEdited = site.isEdited;
+          const isEdited = false;
           const dt = site.origin.getTop1DepositType();
           if (dt === undefined) {
             return <Empty />;
@@ -230,7 +230,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
         title: "Dep. Score",
         key: "depositConfidence",
         render: (_: any, site: FormattedDedupMineralSite) => {
-          const isEdited = site.isEdited;
+          const isEdited = false;
           const dt = site.origin.getTop1DepositType();
           if (dt === undefined) {
             return <Empty />;
@@ -242,7 +242,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
         title: "Tonnage (Mt)",
         dataIndex: "totalTonnage",
         render: (_: any, site: FormattedDedupMineralSite) => {
-          const isEdited = site.isEdited;
+          const isEdited = false;
           return (
             <div className={isEdited ? styles.cellHighlight : ""}>
               <Tonnage tonnage={site.origin.gradeTonnage?.totalTonnage} />{" "}
@@ -259,7 +259,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
         title: "Grade (%)",
         dataIndex: "totalGrade",
         render: (_: any, site: FormattedDedupMineralSite) => {
-          const isEdited = site.isEdited;
+          const isEdited = false;
           return (
             <div className={isEdited ? styles.cellHighlight : ""}>
               <Grade grade={site.origin.gradeTonnage?.totalGrade} />{" "}

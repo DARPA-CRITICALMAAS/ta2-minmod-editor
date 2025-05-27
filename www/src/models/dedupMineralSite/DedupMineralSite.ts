@@ -105,6 +105,8 @@ export class DedupMineralSiteLocation {
   }
 }
 
+export type TraceField = "name" | "type" | "rank" | "coordinates" | "country" | "state_or_province"
+
 export class DedupMineralSite {
   id: InternalID;
   uri: IRI;
@@ -116,6 +118,7 @@ export class DedupMineralSite {
   location?: DedupMineralSiteLocation;
   gradeTonnage: GradeTonnage;
   modifiedAt: string;
+  trace: Partial<Record<TraceField, string>>;
 
   public constructor({
     id,
@@ -128,6 +131,7 @@ export class DedupMineralSite {
     location,
     gradeTonnage,
     modifiedAt,
+    trace
   }: {
     id: InternalID;
     uri: IRI;
@@ -139,6 +143,7 @@ export class DedupMineralSite {
     location?: DedupMineralSiteLocation;
     gradeTonnage: GradeTonnage;
     modifiedAt: string;
+    trace: Partial<Record<TraceField, string>>;
   }) {
     this.id = id;
     this.uri = uri;
@@ -150,6 +155,7 @@ export class DedupMineralSite {
     this.location = location;
     this.gradeTonnage = gradeTonnage;
     this.modifiedAt = modifiedAt;
+    this.trace = trace;
   }
 
   get commodity(): string {

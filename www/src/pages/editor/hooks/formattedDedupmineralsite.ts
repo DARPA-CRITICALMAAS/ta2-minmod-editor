@@ -1,29 +1,37 @@
 import { useStores } from "models";
-import { DedupMineralSite } from "models/dedupMineralSite/DedupMineralSite";
+import { DedupMineralSite, TraceField } from "models/dedupMineralSite/DedupMineralSite";
 import { useEffect, useMemo } from "react";
 
 export class FormattedDedupMineralSite {
   origin: DedupMineralSite;
-  isEdited: boolean;
+  isEdited: Partial<Record<TraceField, boolean>>;
 
-  public constructor(origin: DedupMineralSite, isEdited: boolean = false) {
+  public constructor(origin: DedupMineralSite, isEdited: Partial<Record<TraceField, boolean>> = {}) {
     this.origin = origin;
     this.isEdited = isEdited;
   }
 }
 
+const extractUsernameFromSite = (siteId: string): string | undefined => {
+  const parts = siteId?.split("__");
+  return parts && parts.length > 1 ? parts[parts.length - 1] : undefined;
+}
+
 export const extractUsernamesFromDedupSite = (dedupSite: DedupMineralSite): string[] => {
   return dedupSite.sites
-    .map((site) => {
-      const parts = site.id?.split("__");
-      return parts && parts.length > 1 ? parts[parts.length - 1] : undefined;
-    })
-    .filter((username): username is string => Boolean(username));
+    .map((site) => extractUsernameFromSite(site.id))
+    .filter((username): username is string => username !== undefined);
 };
 
+
 export function getFormattedDedupmineralsite(site: DedupMineralSite, currentUsernames: string[]): FormattedDedupMineralSite {
-  const siteUsernames = extractUsernamesFromDedupSite(site);
-  const isEdited = siteUsernames.some((username) => currentUsernames.includes(username));
+  const isEdited: Partial<Record<TraceField, boolean>> = {};
+  Object.entries(site.trace).forEach(([field, siteId]) => {
+    const username = extractUsernameFromSite(siteId);
+    if (username !== undefined && currentUsernames.includes(username)) {
+      isEdited[field as TraceField] = true;
+    }
+  });
   return new FormattedDedupMineralSite(site, isEdited);
 }
 

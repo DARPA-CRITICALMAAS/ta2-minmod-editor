@@ -502,6 +502,14 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
         </Tooltip>
       </Space>
     );
+  } else {
+    groupBtns = (
+      <Space>
+        <Button key="separately" type="primary">
+          Verified all results
+        </Button>
+      </Space>
+    );
   }
 
   return (

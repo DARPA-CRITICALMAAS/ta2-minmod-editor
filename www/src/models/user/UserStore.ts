@@ -1,4 +1,4 @@
-import { RStore } from "gena-app";
+import { FetchResponse, RStore } from "gena-app";
 import { SERVER } from "env";
 import { action, makeObservable, runInAction } from "mobx";
 import axios from "axios";
@@ -67,5 +67,9 @@ export class UserStore extends RStore<string, User> {
     runInAction(() => {
       this.records.clear();
     });
+  }
+
+  protected normRemoteSuccessfulResponse(resp: any): FetchResponse {
+    return { items: Array.isArray(resp.data) ? resp.data : Object.values(resp.data), total: resp.data.length };
   }
 }
