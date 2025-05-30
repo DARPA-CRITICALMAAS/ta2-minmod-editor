@@ -20,11 +20,11 @@ export type FieldEdit =
   | { field: "stateOrProvince"; observedName: string; normalizedURI: string }
   | { field: "depositType"; observedName: string; normalizedURI: string }
   | {
-      field: "grade";
-      value: number;
-      commodity: string;
-    }
-  | { field: "tonnage"; value: number; commodity: string };
+    field: "grade";
+    value: number;
+    commodity: InternalID;
+  }
+  | { field: "tonnage"; value: number; commodity: InternalID };
 
 export type MineralSiteConstructorArgs = {
   id: InternalID;
@@ -47,7 +47,7 @@ export type MineralSiteConstructorArgs = {
   modifiedAt?: string;
 
   coordinates?: Coordinates;
-  gradeTonnage: { [commodity: string]: GradeTonnage };
+  gradeTonnage: { [commodity: InternalID]: GradeTonnage };
 };
 
 export class MineralSite {
@@ -69,7 +69,7 @@ export class MineralSite {
   reference: Reference;
   modifiedAt?: string;
   coordinates?: Coordinates;
-  gradeTonnage: { [commodity: string]: GradeTonnage };
+  gradeTonnage: { [commodity: InternalID]: GradeTonnage };
 
   public constructor({
     id,

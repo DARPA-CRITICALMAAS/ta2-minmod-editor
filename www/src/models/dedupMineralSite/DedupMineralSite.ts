@@ -105,7 +105,16 @@ export class DedupMineralSiteLocation {
   }
 }
 
-export type TraceField = "name" | "type" | "rank" | "coordinates" | "country" | "state_or_province"
+export interface Trace {
+  name: InternalID;
+  type: InternalID;
+  rank: InternalID;
+  coordinates: InternalID;
+  country: InternalID;
+  state_or_province: InternalID;
+  deposit_types: InternalID[];
+  grade_tonnage: { commodity: InternalID, site_id: InternalID }[];
+}
 
 export class DedupMineralSite {
   id: InternalID;
@@ -118,7 +127,7 @@ export class DedupMineralSite {
   location?: DedupMineralSiteLocation;
   gradeTonnage: GradeTonnage;
   modifiedAt: string;
-  trace: Partial<Record<TraceField, string>>;
+  trace: Trace;
 
   public constructor({
     id,
@@ -143,7 +152,7 @@ export class DedupMineralSite {
     location?: DedupMineralSiteLocation;
     gradeTonnage: GradeTonnage;
     modifiedAt: string;
-    trace: Partial<Record<TraceField, string>>;
+    trace: Trace;
   }) {
     this.id = id;
     this.uri = uri;

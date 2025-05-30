@@ -1,12 +1,24 @@
 import { useStores } from "models";
-import { DedupMineralSite, TraceField } from "models/dedupMineralSite/DedupMineralSite";
+import { DedupMineralSite, Trace } from "models/dedupMineralSite/DedupMineralSite";
 import { useEffect, useMemo } from "react";
+import { InternalID, IRI } from "models/typing";
+
+interface FormattedDedupMineralSiteIsEdited {
+  name: boolean;
+  type: boolean;
+  rank: boolean;
+  coordinates: boolean;
+  country: boolean;
+  state_or_province: boolean;
+  deposit_types: boolean[];
+  grade_tonnage: { commodity: InternalID, isEdited: boolean }[];
+}
 
 export class FormattedDedupMineralSite {
   origin: DedupMineralSite;
-  isEdited: Partial<Record<TraceField, boolean>>;
+  isEdited: FormattedDedupMineralSiteIsEdited;
 
-  public constructor(origin: DedupMineralSite, isEdited: Partial<Record<TraceField, boolean>> = {}) {
+  public constructor(origin: DedupMineralSite, isEdited: FormattedDedupMineralSiteIsEdited) {
     this.origin = origin;
     this.isEdited = isEdited;
   }
@@ -25,13 +37,28 @@ export const extractUsernamesFromDedupSite = (dedupSite: DedupMineralSite): stri
 
 
 export function getFormattedDedupmineralsite(site: DedupMineralSite, currentUsernames: string[]): FormattedDedupMineralSite {
-  const isEdited: Partial<Record<TraceField, boolean>> = {};
-  Object.entries(site.trace).forEach(([field, siteId]) => {
-    const username = extractUsernameFromSite(siteId);
-    if (username !== undefined && currentUsernames.includes(username)) {
-      isEdited[field as TraceField] = true;
-    }
-  });
+  const isEdited: FormattedDedupMineralSiteIsEdited = {} as FormattedDedupMineralSiteIsEdited;
+
+  for (const field of ["name", "type", "rank", "coordinates", "country", "state_or_province"] as const) {
+    if (site.trace[field] === undefined) continue;
+    const username = extractUsernameFromSite(site.trace[field]);
+    isEdited[field] = username !== undefined && currentUsernames.includes(username);
+  }
+
+  if (site.trace.deposit_types !== undefined) {
+    isEdited.deposit_types = site.trace.deposit_types.map((_siteId) => {
+      const username = extractUsernameFromSite(_siteId);
+      return username !== undefined && currentUsernames.includes(username);
+    });
+  }
+
+  if (site.trace.grade_tonnage !== undefined) {
+    isEdited.grade_tonnage = (site.trace.grade_tonnage).map((item) => {
+      const username = extractUsernameFromSite(item.site_id);
+      return { commodity: item.commodity, isEdited: username !== undefined && currentUsernames.includes(username) };
+    });
+  }
+
   return new FormattedDedupMineralSite(site, isEdited);
 }
 
