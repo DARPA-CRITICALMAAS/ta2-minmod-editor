@@ -105,6 +105,17 @@ export class DedupMineralSiteLocation {
   }
 }
 
+export interface Trace {
+  name: InternalID;
+  type: InternalID;
+  rank: InternalID;
+  coordinates: InternalID;
+  country: InternalID;
+  state_or_province: InternalID;
+  deposit_types: InternalID[];
+  grade_tonnage: { commodity: InternalID, site_id: InternalID }[];
+}
+
 export class DedupMineralSite {
   id: InternalID;
   uri: IRI;
@@ -116,6 +127,7 @@ export class DedupMineralSite {
   location?: DedupMineralSiteLocation;
   gradeTonnage: GradeTonnage;
   modifiedAt: string;
+  trace: Trace;
 
   public constructor({
     id,
@@ -128,6 +140,7 @@ export class DedupMineralSite {
     location,
     gradeTonnage,
     modifiedAt,
+    trace
   }: {
     id: InternalID;
     uri: IRI;
@@ -139,6 +152,7 @@ export class DedupMineralSite {
     location?: DedupMineralSiteLocation;
     gradeTonnage: GradeTonnage;
     modifiedAt: string;
+    trace: Trace;
   }) {
     this.id = id;
     this.uri = uri;
@@ -150,6 +164,7 @@ export class DedupMineralSite {
     this.location = location;
     this.gradeTonnage = gradeTonnage;
     this.modifiedAt = modifiedAt;
+    this.trace = trace;
   }
 
   get commodity(): string {
