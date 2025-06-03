@@ -7,7 +7,7 @@ import { EditOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import { EditSiteField } from "./EditSiteField";
 import styles from "./EditDedupMineralSite.module.css";
 import { Tooltip } from "antd";
-import { ReferenceComponent } from "pages/editor/editDedupSite/ReferenceComponent";
+import { ReferenceComponent } from "pages/editor/components/editDedupSite/ReferenceComponent";
 import { InternalID } from "models/typing";
 import { Empty, Grade, MayEmptyString, Tonnage } from "components/Primitive";
 
@@ -445,7 +445,7 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
     fetchData();
   }, [dedupSite.sites, mineralSiteStore]);
 
-  const onEditFinish = (change?: { edit: FieldEdit; reference: Reference }) => {
+  const onEditFinish = (change?: { edit: FieldEdit; sourceId: string; recordId: string; reference: Reference }) => {
     if (change === undefined) {
       setEditField(undefined);
       return;
@@ -454,9 +454,9 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
     const currentUser = userStore.getCurrentUser()!;
     const existingSite = siteGroups.sites.find((site) => site.createdBy.includes(currentUser.url));
     let cb;
-    if (existingSite === undefined || existingSite.reference.document.uri !== change.reference.document.uri) {
+    if (existingSite === undefined || existingSite.sourceId !== change.sourceId || existingSite.recordId !== change.recordId || existingSite.reference.document.uri !== change.reference.document.uri) {
       // when reference change, it will be a new site
-      const draftSite = DraftCreateMineralSite.fromMineralSite(dedupSite, currentUser, change.reference);
+      const draftSite = DraftCreateMineralSite.fromMineralSite(dedupSite, currentUser, change.sourceId, change.recordId, change.reference);
       draftSite.updateField(stores, change.edit, change.reference);
       cb = mineralSiteStore.createAndUpdateDedup(dedupSite.commodity, draftSite);
     } else {

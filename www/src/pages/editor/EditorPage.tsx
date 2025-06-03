@@ -1,9 +1,9 @@
 import { Button, Flex } from "antd";
 import { observer } from "mobx-react-lite";
-import { SearchBar, useSearchArgs } from "./SearchBar";
-import { DedupMineralSiteTable } from "./DedupMineralSiteTable";
+import { SearchBar, useSearchArgs } from "./components/SearchBar";
+import { DedupMineralSiteTable } from "./components/DedupMineralSiteTable";
 import { useRef } from "react";
-import { NewMineralSiteModal, NewMineralSiteFormRef } from "./NewMineralSiteModal";
+import { NewMineralSiteModal, NewMineralSiteFormRef } from "./subpages/NewMineralSiteModal";
 
 export const EditorPage = observer(() => {
   const [searchArgs, normSearchArgs, setSearchArgs] = useSearchArgs();

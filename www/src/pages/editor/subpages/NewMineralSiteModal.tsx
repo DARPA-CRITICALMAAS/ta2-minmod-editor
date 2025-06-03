@@ -2,12 +2,12 @@ import React, { ForwardedRef, forwardRef, useImperativeHandle } from "react";
 import { isValidUrl } from "misc";
 import { Button, Form, Input, Modal, Space, message, Row, Col, Select, Divider, Radio, RadioChangeEvent } from "antd";
 import { useStores, Commodity, DraftCreateMineralSite, CandidateEntity } from "models";
-import { LocationInfo } from "../../models/mineralSite/LocationInfo";
-import { Reference, Document } from "../../models/mineralSite/Reference";
-import { GradeTonnage } from "../../models/mineralSite/GradeTonnage";
+import { LocationInfo } from "../../../models/mineralSite/LocationInfo";
+import { Reference, Document } from "../../../models/mineralSite/Reference";
+import { GradeTonnage } from "../../../models/mineralSite/GradeTonnage";
 import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { MineralInventory, Measure } from "../../models/mineralSite/MineralInventory";
+import { MineralInventory, Measure } from "../../../models/mineralSite/MineralInventory";
 import { useMemo } from "react";
 import { observer } from "mobx-react-lite";
 

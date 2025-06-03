@@ -12,7 +12,7 @@ import { FilterDropdownProps } from "antd/es/table/interface";
 import Highlighter from "react-highlight-words";
 import Fuse from "fuse.js";
 import styles from "./DedupMineralSiteTable.module.css";
-import { FormattedDedupMineralSite, useFormattedDedupMineralSite } from "./hooks/formattedDedupmineralsite";
+import { FormattedDedupMineralSite, useFormattedDedupMineralSite } from "../hooks/formattedDedupmineralsite";
 import { ConfirmDataButton } from "./ConfirmDataButton";
 
 interface DedupMineralSiteTableProps {

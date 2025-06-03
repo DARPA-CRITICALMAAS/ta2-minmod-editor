@@ -3,7 +3,7 @@ import { EditableSelect } from "components/EditableSelect";
 import _ from "lodash";
 import { MineralSite, Reference, Document, FieldEdit, EditableField, useStores } from "models";
 import { useMemo, useState } from "react";
-import { EditRefDoc } from "./EditRefDoc";
+import { EditRefDoc, RefDocV2 } from "./EditRefDoc";
 import { InternalID } from "models/typing";
 import { DepositTypeStore } from "models/depositType";
 import { CountryStore } from "models/country";
@@ -16,12 +16,12 @@ interface EditSiteFieldProps {
   currentSite?: MineralSite;
   commodity: InternalID;
   editField?: EditableField;
-  onFinish: (change?: { edit: FieldEdit; reference: Reference }) => void;
+  onFinish: (change?: { edit: FieldEdit; sourceId: string; recordId: string; reference: Reference }) => void;
 }
 
 type FormFields = {
   fieldValue: string | undefined;
-  refDoc: Document | undefined;
+  refDoc: RefDocV2 | undefined;
   refComment: string;
 };
 
@@ -35,7 +35,7 @@ export const EditSiteField: React.FC<EditSiteFieldProps> = ({ currentSite, sites
   const { depositTypeStore, stateOrProvinceStore, countryStore } = useStores();
   const [editData, setEditData] = useState<FormFields>({
     fieldValue: currentSite === undefined || editField === undefined ? undefined : currentSite.getFieldValue(editField, commodity),
-    refDoc: currentSite === undefined ? undefined : currentSite.getDocument(),
+    refDoc: currentSite === undefined ? undefined : RefDocV2.fromSite(currentSite),
     refComment: currentSite === undefined ? "" : currentSite.reference.comment,
   });
 
@@ -69,15 +69,15 @@ export const EditSiteField: React.FC<EditSiteFieldProps> = ({ currentSite, sites
 
     if (key !== undefined) {
       const site = sites.filter((site) => site.id === key)[0];
-      setEditData((prev) => ({ ...prev, refDoc: site.getDocument() }));
+      setEditData((prev) => ({ ...prev, refDoc: RefDocV2.fromSite(site) }));
     } else {
       setEditData((prev) => ({ ...prev, refDoc: undefined }));
     }
   };
 
   const docs = _.uniqBy(
-    sites.map((site) => site.getDocument()),
-    "uri"
+    sites.map((site) => RefDocV2.fromSite(site)),
+    (doc) => JSON.stringify([doc.sourceId, doc.recordId, doc.document.uri])
   );
 
   let editFieldComponent = undefined;
@@ -124,7 +124,7 @@ export const EditSiteField: React.FC<EditSiteFieldProps> = ({ currentSite, sites
   const isDataValid = () => {
     if (editField === undefined) return false;
     const val = editData;
-    if (val.refDoc === undefined || val.fieldValue === undefined || !val.refDoc.isValid()) {
+    if (val.refDoc === undefined || val.fieldValue === undefined || !val.refDoc.document.isValid()) {
       return false;
     }
     return true;
@@ -133,7 +133,7 @@ export const EditSiteField: React.FC<EditSiteFieldProps> = ({ currentSite, sites
   const onSave = (values: any) => {
     if (editField === undefined) return;
     const val = editData;
-    if (val.refDoc === undefined || val.fieldValue === undefined || !val.refDoc.isValid()) {
+    if (val.refDoc === undefined || val.fieldValue === undefined || !val.refDoc.document.isValid()) {
       return;
     }
 
@@ -154,8 +154,10 @@ export const EditSiteField: React.FC<EditSiteFieldProps> = ({ currentSite, sites
 
     onFinish({
       edit,
+      sourceId: val.refDoc.sourceId,
+      recordId: val.refDoc.recordId,
       reference: new Reference({
-        document: val.refDoc,
+        document: val.refDoc.document,
         comment: val.refComment,
         pageInfo: [],
       }),
@@ -172,7 +174,7 @@ export const EditSiteField: React.FC<EditSiteFieldProps> = ({ currentSite, sites
           <EditRefDoc availableDocs={docs} value={editData.refDoc} onChange={(doc) => setEditData({ ...editData, refDoc: doc })} />
         </FormItem>
         <FormItem name="refComment" label="Comment">
-          <Input.TextArea rows={3} />
+          <Input.TextArea rows={3} value={editData.refComment} onChange={(e) => setEditData({ ...editData, refComment: e.target.value })} />
         </FormItem>
         <Space>
           <Button type="primary" htmlType="submit" onClick={onSave} disabled={!isDataValid()}>
@@ -204,7 +206,7 @@ const getNameConfig = ({ currentSite, sites, setFieldProvenance, value, setValue
     currentSite !== undefined
       ? {
           fieldValue: currentSite.name,
-          refDoc: currentSite.getDocument(),
+          refDoc: RefDocV2.fromSite(currentSite),
           refComment: currentSite.reference.comment,
           refAppliedToAll: false,
         }
@@ -219,7 +221,7 @@ const getLocationConfig = ({ currentSite, sites, setFieldProvenance, value, setV
     currentSite !== undefined
       ? {
           fieldValue: currentSite.locationInfo?.location || "",
-          refDoc: currentSite.getDocument(),
+          refDoc: RefDocV2.fromSite(currentSite),
           refComment: currentSite.reference.comment,
           refAppliedToAll: false,
         }
@@ -242,7 +244,7 @@ const getCountryConfig = ({ currentSite, sites, setFieldProvenance, stores, valu
     currentSite !== undefined && (currentSite.locationInfo?.country || []).length > 0
       ? {
           fieldValue: currentSite.locationInfo!.country[0].normalizedURI!,
-          refDoc: currentSite.getDocument(),
+          refDoc: RefDocV2.fromSite(currentSite),
           refComment: currentSite.reference.comment,
           refAppliedToAll: false,
         }
@@ -265,7 +267,7 @@ const getStateOrProvinceConfig = ({ currentSite, sites, setFieldProvenance, stor
     currentSite !== undefined && (currentSite.locationInfo?.stateOrProvince || []).length > 0
       ? {
           fieldValue: currentSite.locationInfo!.stateOrProvince[0].normalizedURI!,
-          refDoc: currentSite.getDocument(),
+          refDoc: RefDocV2.fromSite(currentSite),
           refComment: currentSite.reference.comment,
           refAppliedToAll: false,
         }
@@ -288,7 +290,7 @@ const getDepositTypeConfig = ({ currentSite, sites, setFieldProvenance, stores, 
     currentSite !== undefined && currentSite.depositTypeCandidate.length > 0
       ? {
           fieldValue: currentSite.depositTypeCandidate[0].normalizedURI!,
-          refDoc: currentSite.getDocument(),
+          refDoc: RefDocV2.fromSite(currentSite),
           refComment: currentSite.reference.comment,
           refAppliedToAll: false,
         }
@@ -302,7 +304,7 @@ const getTonnageConfig = ({ currentSite, sites, setFieldProvenance, stores, comm
     currentSite !== undefined && currentSite.depositTypeCandidate.length > 0
       ? {
           fieldValue: currentSite.gradeTonnage[commodity]?.totalTonnage?.toFixed(4) || "",
-          refDoc: currentSite.getDocument(),
+          refDoc: RefDocV2.fromSite(currentSite),
           refComment: currentSite.reference.comment,
           refAppliedToAll: false,
         }
@@ -316,7 +318,7 @@ const getGradeConfig = ({ currentSite, sites, setFieldProvenance, stores, commod
     currentSite !== undefined && currentSite.depositTypeCandidate.length > 0
       ? {
           fieldValue: currentSite.gradeTonnage[commodity]?.totalGrade?.toFixed(4) || "",
-          refDoc: currentSite.getDocument(),
+          refDoc: RefDocV2.fromSite(currentSite),
           refComment: currentSite.reference.comment,
           refAppliedToAll: false,
         }

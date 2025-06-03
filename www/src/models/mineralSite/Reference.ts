@@ -26,11 +26,11 @@ export class Reference {
             page: info.page,
             boundingBox: info.boundingBox
               ? new BoundingBox({
-                  xMax: info.boundingBox.xMax,
-                  xMin: info.boundingBox.xMin,
-                  yMax: info.boundingBox.yMax,
-                  yMin: info.boundingBox.yMin,
-                })
+                xMax: info.boundingBox.xMax,
+                xMin: info.boundingBox.xMin,
+                yMax: info.boundingBox.yMax,
+                yMin: info.boundingBox.yMin,
+              })
               : undefined,
           })
       ),
@@ -86,12 +86,12 @@ export class Document {
     this.title = title;
   }
 
-  public isCDRDocument(): boolean {
-    return this.uri.startsWith(CDR_DOCUMENT_URL_PREFIX);
-  }
-
   public static cdrDocument(id: string, title: string): Document {
     return new Document({ uri: `${CDR_DOCUMENT_URL_PREFIX}/${id}`, title });
+  }
+
+  public isCDRDocument(): boolean {
+    return this.uri.startsWith(CDR_DOCUMENT_URL_PREFIX);
   }
 
   public clone(): Document {
