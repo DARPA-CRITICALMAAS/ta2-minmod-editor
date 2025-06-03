@@ -246,17 +246,7 @@ export class DraftCreateMineralSite extends MineralSite {
     this.draftID = draftID;
   }
 
-  public static fromMineralSite(dedupMineralSite: DedupMineralSite, user: User, reference: Reference): DraftCreateMineralSite {
-    // source id and record id is derived from the reference
-    let sourceId, recordId;
-    if (reference.document.isCDRDocument()) {
-      sourceId = CDR_DOCUMENT_URL_PREFIX;
-      recordId = reference.document.getCDRDocumentId();
-    } else {
-      sourceId = reference.document.uri;
-      recordId = uuidv4();
-    }
-
+  public static fromMineralSite(dedupMineralSite: DedupMineralSite, user: User, sourceId: string, recordId: string, reference: Reference): DraftCreateMineralSite {
     return new DraftCreateMineralSite({
       draftID: `draft-${dedupMineralSite.id}`,
       id: "", // backend does not care about uri as they will recalculate it

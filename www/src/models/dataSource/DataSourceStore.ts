@@ -6,6 +6,7 @@ export interface DataSource {
   id: IRI;
   uri: IRI;
   name: string;
+  type: string;
   connection: string;
 }
 
@@ -25,6 +26,7 @@ export class DataSourceStore extends RStore<string, DataSource> {
       id: obj.uri,
       uri: obj.uri,
       name: obj.name,
+      type: obj.type,
       connection: obj.connection,
     };
   }

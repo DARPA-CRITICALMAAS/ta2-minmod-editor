@@ -7,9 +7,9 @@ import { routes } from "routes";
 import { useQueryParams } from "gena-app";
 import { observer } from "mobx-react-lite";
 import styles from "./SearchBar.module.css";
-import { AddFieldModal } from "./EditSetting";
+import { AddFieldModal } from "../subpages/EditSetting";
 import { SettingOutlined } from "@ant-design/icons";
-import { DownloadButton } from "./EditDownload";
+import { DownloadButton } from "./DownloadDataButton";
 
 interface SearchBarProps {
   searchArgs: SearchArgs;

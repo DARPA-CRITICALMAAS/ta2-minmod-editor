@@ -21,7 +21,8 @@ export const ConfirmDataButton = ({ dedupSite, commodity }: { dedupSite: DedupMi
     const userSite = Object.values(sites).find((site) => site.createdBy.includes(currentUser.url));
     let draftSite: DraftCreateMineralSite | DraftUpdateMineralSite;
     if (userSite === undefined) {
-      draftSite = DraftCreateMineralSite.fromMineralSite(dedupSite, currentUser, Object.values(sites)[0].reference);
+      const baseSite = Object.values(sites)[0];
+      draftSite = DraftCreateMineralSite.fromMineralSite(dedupSite, currentUser, baseSite.sourceId, baseSite.recordId, baseSite.reference);
     } else {
       draftSite = new DraftUpdateMineralSite(userSite);
     }
