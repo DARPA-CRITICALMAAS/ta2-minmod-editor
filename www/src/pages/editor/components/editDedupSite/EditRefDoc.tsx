@@ -120,12 +120,16 @@ export const EditSource: React.FC<{ document: RefDocV2; currentUser: User; updat
 
     const updateDocTitle = (e: any) => {
       const value = e.target.value;
-      updateDocument(new RefDocV2({ sourceId: doc.sourceId, recordId: doc.recordId, document: new Document({ uri: doc.document.uri, title: value }) }));
+      const newdoc = doc.document.clone();
+      newdoc.title = value;
+      updateDocument(new RefDocV2({ sourceId: doc.sourceId, recordId: doc.recordId, document: newdoc }));
     };
 
     const updateDocURI = (e: any) => {
       const value = e.target.value;
-      updateDocument(new RefDocV2({ sourceId: value, recordId: doc.recordId, document: new Document({ uri: value, title: doc.document.title }) }));
+      const newdoc = doc.document.clone();
+      newdoc.uri = value;
+      updateDocument(new RefDocV2({ sourceId: value, recordId: doc.recordId, document: newdoc }));
     };
 
     let content = undefined;
@@ -164,7 +168,9 @@ export const EditSource: React.FC<{ document: RefDocV2; currentUser: User; updat
           recordId={doc.recordId}
           doc={doc.document}
           updateSourceRecordId={({ sourceId, recordId }: { sourceId: string; recordId: string }) => {
-            updateDocument(new RefDocV2({ sourceId, recordId, document: doc.document }));
+            const newdoc = doc.document.clone();
+            newdoc.uri = sourceId;
+            updateDocument(new RefDocV2({ sourceId, recordId, document: newdoc }));
           }}
           errorMessage={errorMessage}
           disabled={disabled}
@@ -223,7 +229,15 @@ export const DBReference = observer(
       <>
         <div style={{ width: "100%" }}>
           <FormLabel label="Database" />
-          <Select style={{ width: "100%" }} options={dbs} value={sourceId} onChange={(value) => updateSourceRecordId({ sourceId: value, recordId })} disabled={disabled} />
+          <Select
+            style={{ width: "100%" }}
+            options={dbs}
+            value={sourceId}
+            onChange={(value) => updateSourceRecordId({ sourceId: value, recordId })}
+            showSearch={true}
+            optionFilterProp="label"
+            disabled={disabled}
+          />
         </div>
         <div style={{ width: "100%" }}>
           <FormLabel label="Record ID" required={true} tooltip="The ID of the mineral site in the database. For example, in MRDS, it is `dep_id`." />

@@ -1,4 +1,4 @@
-import { Button } from "antd";
+import { Button, Popconfirm } from "antd";
 import { CheckCircleOutlined, CheckOutlined, EditOutlined, PlusOutlined, SearchOutlined, UngroupOutlined } from "@ant-design/icons";
 import { Commodity, DedupMineralSite, DraftCreateMineralSite, DraftUpdateMineralSite, useStores } from "models";
 import { useState } from "react";
@@ -129,8 +129,10 @@ export const ConfirmDataButton = ({ dedupSite, commodity }: { dedupSite: DedupMi
   };
 
   return (
-    <Button variant="solid" color="green" size="middle" icon={<CheckCircleOutlined />} onClick={onClick} loading={isLoading}>
-      Confirm Data
-    </Button>
+    <Popconfirm title="Confirm that the data is correct?" onConfirm={onClick} okText="Yes" cancelText="No">
+      <Button variant="solid" color="green" size="middle" icon={<CheckCircleOutlined />} loading={isLoading}>
+        Confirm Data
+      </Button>
+    </Popconfirm>
   );
 };

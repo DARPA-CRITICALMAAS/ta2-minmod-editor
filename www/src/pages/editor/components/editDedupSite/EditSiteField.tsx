@@ -174,7 +174,7 @@ export const EditSiteField: React.FC<EditSiteFieldProps> = ({ currentSite, sites
           <EditRefDoc availableDocs={docs} value={editData.refDoc} onChange={(doc) => setEditData({ ...editData, refDoc: doc })} />
         </FormItem>
         <FormItem name="refComment" label="Comment">
-          <Input.TextArea rows={3} />
+          <Input.TextArea rows={3} value={editData.refComment} onChange={(e) => setEditData({ ...editData, refComment: e.target.value })} />
         </FormItem>
         <Space>
           <Button type="primary" htmlType="submit" onClick={onSave} disabled={!isDataValid()}>

@@ -1,16 +1,12 @@
 import { CandidateEntity } from "./CandidateEntity";
 import { GradeTonnage } from "./GradeTonnage";
 import { Coordinates, LocationInfo } from "./LocationInfo";
-import { Reference, Document, CDR_DOCUMENT_URL_PREFIX } from "./Reference";
+import { Reference, Document } from "./Reference";
 import { DedupMineralSite } from "../dedupMineralSite";
-import { DepositTypeStore } from "models/depositType";
-import { StateOrProvinceStore } from "models/stateOrProvince";
-import { CountryStore } from "models/country";
 import { MineralInventory } from "./MineralInventory";
 import { IStore, User } from "models";
 import { InternalID } from "models/typing";
 import { GeologyInfo } from "./GeologyInfo";
-import { v4 as uuidv4 } from "uuid";
 
 export type EditableField = "name" | "location" | "country" | "stateOrProvince" | "depositType" | "grade" | "tonnage";
 export type FieldEdit =
