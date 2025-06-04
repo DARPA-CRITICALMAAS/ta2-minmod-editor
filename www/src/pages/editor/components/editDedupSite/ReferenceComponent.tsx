@@ -40,19 +40,27 @@ export const ReferenceComponent: React.FC<ReferenceComponentProps> = observer(({
   const doc = site.getDocument();
   let content = (
     <Typography.Link target="_blank" href={connection !== undefined ? connection : doc.uri} title={doc.title || doc.uri} className="font-small">
-      {getDocTitle(doc)}
+      {getDocTitle(doc, site)}
     </Typography.Link>
   );
 
   return <Typography.Text>{content}</Typography.Text>;
 });
 
-const getDocTitle = (doc: Document) => {
-  if (doc.title !== undefined) {
+const getDocTitle = (doc: Document, site: MineralSite) => {
+  if (doc.title !== undefined && doc.title.length > 0) {
     return doc.title;
   }
-  if (doc.uri.length > 70) {
-    return doc.uri.substring(0, 70) + "...";
+
+  let uri = doc.uri;
+  if (uri.length > 70) {
+    uri = uri.substring(0, 70) + "...";
   }
-  return doc.uri;
+
+  let recordId = site.recordId;
+  if (recordId.length > 10) {
+    recordId = recordId.substring(0, 10) + "...";
+  }
+
+  return `${uri} (${recordId})`;
 };

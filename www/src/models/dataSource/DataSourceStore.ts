@@ -6,7 +6,7 @@ export interface DataSource {
   id: IRI;
   uri: IRI;
   name: string;
-  type: string;
+  type: "database" | "article" | "mining-report" | "unpublished";
   connection: string;
 }
 

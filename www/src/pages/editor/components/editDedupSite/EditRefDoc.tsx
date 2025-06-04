@@ -47,9 +47,12 @@ export interface EditRefDocProps {
 }
 
 export const EditRefDoc: React.FC<EditRefDocProps> = observer(({ availableDocs, value: doc, onChange: onChangeArg }) => {
-  const { userStore } = useStores();
+  const { userStore, sourceStore } = useStores();
 
-  const options: object[] = availableDocs.map((refdoc: RefDocV2, index: number) => ({ value: index, label: refdoc.document.title || refdoc.document.uri }));
+  const options: object[] = availableDocs.map((refdoc: RefDocV2, index: number) => {
+    let title = refdoc.document.title || refdoc.document.uri;
+    return { value: index, label: title };
+  });
   options.push({ value: availableDocs.length, label: <Typography.Text italic={true}>Enter your own</Typography.Text> });
   const onChange = onChangeArg === undefined ? (doc: RefDocV2) => {} : onChangeArg;
 
@@ -65,7 +68,46 @@ export const EditRefDoc: React.FC<EditRefDocProps> = observer(({ availableDocs, 
   if (selectOptionValue === -1) {
     selectOptionValue = availableDocs.length; // If the document is not found, we assume the user wants to enter their own.
   }
-  const selectOption = <Select style={{ width: "100%" }} options={options} value={doc === undefined ? undefined : selectOptionValue} onChange={(value) => onUpdateOption(value)} />;
+  const selectOption = (
+    <Select
+      style={{ width: "100%" }}
+      options={options}
+      value={doc === undefined ? undefined : selectOptionValue}
+      onChange={(value) => onUpdateOption(value)}
+      optionRender={(option) => {
+        const index = option.value as number;
+        if (index >= availableDocs.length) {
+          return option.label; // This is the "Enter your own" option
+        }
+
+        const refdoc = availableDocs[index];
+        let desc = undefined;
+
+        // The description is recordId for database
+        const source = sourceStore.get(refdoc.sourceId);
+        if (source !== null && source !== undefined) {
+          if (source.type === "database" || source.type === "mining-report") {
+            desc = `Record ID: ${refdoc.recordId}`;
+          } else if (source.type === "article") {
+            desc = (
+              <a href={refdoc.document.uri} target="_blank" rel="noopener noreferrer">
+                {refdoc.document.uri}
+              </a>
+            );
+          } else if (source.type === "unpublished") {
+            desc = `User: ${refdoc.sourceId}`;
+          }
+        }
+
+        return (
+          <Space direction="vertical">
+            <Typography.Text>{option.label}</Typography.Text>
+            {desc !== undefined && <Typography.Text type="secondary">{desc}</Typography.Text>}
+          </Space>
+        );
+      }}
+    />
+  );
 
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
