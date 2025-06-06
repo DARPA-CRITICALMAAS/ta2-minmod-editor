@@ -612,7 +612,7 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
         }}
         scroll={scrollX ? { x: "max-content" } : undefined}
       />
-      <EditSiteField key={editField} sites={siteGroups.sites} currentSite={currentSite} editField={editField} onFinish={onEditFinish} commodity={commodity.id} />
+      <EditSiteField key={editField} dedupSite={dedupSite} sites={siteGroups.sites} currentSite={currentSite} editField={editField} onFinish={onEditFinish} commodity={commodity} />
     </Flex>
   );
 }) as React.FC<EditDedupMineralSiteProps>;

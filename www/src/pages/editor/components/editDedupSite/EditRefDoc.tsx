@@ -41,12 +41,14 @@ export class RefDocV2 {
 }
 
 export interface EditRefDocProps {
+  siteName: string;
+  commodityName: string;
   availableDocs: RefDocV2[];
   value?: RefDocV2;
   onChange?: (doc: RefDocV2) => void;
 }
 
-export const EditRefDoc: React.FC<EditRefDocProps> = observer(({ availableDocs, value: doc, onChange: onChangeArg }) => {
+export const EditRefDoc: React.FC<EditRefDocProps> = observer(({ siteName, commodityName, availableDocs, value: doc, onChange: onChangeArg }) => {
   const { userStore, sourceStore } = useStores();
 
   const options: object[] = availableDocs.map((refdoc: RefDocV2, index: number) => {
@@ -112,13 +114,22 @@ export const EditRefDoc: React.FC<EditRefDocProps> = observer(({ availableDocs, 
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
       {selectOption}
-      {doc !== undefined && <EditSource document={doc} currentUser={userStore.getCurrentUser()!} updateDocument={onChange} disabled={selectOptionValue < availableDocs.length} />}
+      {doc !== undefined && (
+        <EditSource
+          siteName={siteName}
+          commodityName={commodityName}
+          document={doc}
+          currentUser={userStore.getCurrentUser()!}
+          updateDocument={onChange}
+          disabled={selectOptionValue < availableDocs.length}
+        />
+      )}
     </Space>
   );
 });
 
-export const EditSource: React.FC<{ document: RefDocV2; currentUser: User; updateDocument: (doc: RefDocV2) => void; disabled: boolean }> = observer(
-  ({ document: doc, currentUser, updateDocument, disabled }) => {
+export const EditSource: React.FC<{ siteName: string; commodityName: string; document: RefDocV2; currentUser: User; updateDocument: (doc: RefDocV2) => void; disabled: boolean }> = observer(
+  ({ siteName, commodityName, document: doc, currentUser, updateDocument, disabled }) => {
     const { sourceStore } = useStores();
 
     let docType;
@@ -143,7 +154,7 @@ export const EditSource: React.FC<{ document: RefDocV2; currentUser: User; updat
         }
       }
       if (!doc.document.isValid()) {
-        errorMessage = "Invalid Document URL";
+        errorMessage = docType === "database" ? "Invalid Database" : "Invalid Document URL";
       }
     }
 
@@ -156,7 +167,10 @@ export const EditSource: React.FC<{ document: RefDocV2; currentUser: User; updat
       } else if (value === "database") {
         updateDocument(new RefDocV2({ sourceId: "", recordId: "1", document: new Document({ uri: "", title: "" }) }));
       } else {
-        updateDocument(new RefDocV2({ sourceId: currentUser.url, recordId: "", document: new Document({ uri: currentUser.url, title: `Unpublished document by ${currentUser.name}` }) }));
+        const recordId = `${siteName} (${commodityName})`;
+        updateDocument(
+          new RefDocV2({ sourceId: currentUser.url, recordId: recordId, document: new Document({ uri: currentUser.url, title: `Unpublished document by ${currentUser.name} for ${recordId}` }) })
+        );
       }
     };
 
@@ -223,6 +237,22 @@ export const EditSource: React.FC<{ document: RefDocV2; currentUser: User; updat
         <div style={{ width: "100%" }}>
           <FormLabel label="Title" />
           <Input placeholder={"Document Title"} value={doc.document.title} onChange={updateDocTitle} disabled={disabled} />
+          <div style={{ width: "100%" }}>
+            <FormLabel
+              label="Record ID"
+              required={true}
+              tooltip="The ID of the mineral site (must be unique across all unpublished records by you). If you encounter duplicated records, try changing this value"
+            />
+            <Input
+              placeholder={"Record ID"}
+              value={doc.recordId}
+              onChange={(e) => {
+                updateDocument(new RefDocV2({ sourceId: doc.sourceId, recordId: e.target.value, document: doc.document }));
+              }}
+              disabled={disabled}
+            />
+            {errorMessage !== undefined && <Typography.Text type="danger">{errorMessage}</Typography.Text>}
+          </div>
         </div>
       );
     }

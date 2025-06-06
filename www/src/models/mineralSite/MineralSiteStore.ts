@@ -18,7 +18,16 @@ export class MineralSiteStore extends CRUDStore<string, DraftCreateMineralSite, 
   }
 
   async createAndUpdateDedup(commodity: string, draft: DraftCreateMineralSite, discardDraft: boolean = true): Promise<MineralSite> {
-    const record = await this.create(draft, discardDraft);
+    let record: MineralSite;
+    try {
+      record = await this.create(draft, discardDraft);
+    } catch (error: any) {
+      if (error.response && error.response.status === 409) {
+        throw new Error("Duplicate mineral site detected. Please change the record ID", { cause: error });
+      } else {
+        throw error; // rethrow the error if it's not a 409 conflict
+      }
+    }
     await this.dedupMineralSiteStore.forceFetchByURI(record.dedupSiteURI, commodity);
     return record;
   }

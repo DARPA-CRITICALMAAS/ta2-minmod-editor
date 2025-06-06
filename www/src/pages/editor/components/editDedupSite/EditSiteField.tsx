@@ -1,7 +1,7 @@
 import { Button, Checkbox, Flex, Form, Input, Modal, Select, Space } from "antd";
 import { EditableSelect } from "components/EditableSelect";
 import _ from "lodash";
-import { MineralSite, Reference, Document, FieldEdit, EditableField, useStores } from "models";
+import { MineralSite, Reference, Document, FieldEdit, EditableField, useStores, Commodity, DedupMineralSite } from "models";
 import { useMemo, useState } from "react";
 import { EditRefDoc, RefDocV2 } from "./EditRefDoc";
 import { InternalID } from "models/typing";
@@ -12,9 +12,10 @@ import { isValidUrl } from "misc";
 import { FormItem } from "components/FormItem";
 
 interface EditSiteFieldProps {
+  dedupSite: DedupMineralSite;
   sites: MineralSite[];
   currentSite?: MineralSite;
-  commodity: InternalID;
+  commodity: Commodity;
   editField?: EditableField;
   onFinish: (change?: { edit: FieldEdit; sourceId: string; recordId: string; reference: Reference }) => void;
 }
@@ -31,10 +32,10 @@ const defaultInitialValues: FormFields = {
   refComment: "",
 };
 
-export const EditSiteField: React.FC<EditSiteFieldProps> = ({ currentSite, sites, editField, commodity, onFinish }) => {
+export const EditSiteField: React.FC<EditSiteFieldProps> = ({ dedupSite, currentSite, sites, editField, commodity, onFinish }) => {
   const { depositTypeStore, stateOrProvinceStore, countryStore } = useStores();
   const [editData, setEditData] = useState<FormFields>({
-    fieldValue: currentSite === undefined || editField === undefined ? undefined : currentSite.getFieldValue(editField, commodity),
+    fieldValue: currentSite === undefined || editField === undefined ? undefined : currentSite.getFieldValue(editField, commodity.id),
     refDoc: currentSite === undefined ? undefined : RefDocV2.fromSite(currentSite),
     refComment: currentSite === undefined ? "" : currentSite.reference.comment,
   });
@@ -87,7 +88,7 @@ export const EditSiteField: React.FC<EditSiteFieldProps> = ({ currentSite, sites
     sites,
     setFieldProvenance,
     stores: { depositTypeStore, countryStore, stateOrProvinceStore },
-    commodity,
+    commodity: commodity.id,
     value: editData.fieldValue,
     setValue: (value: string) => {
       setEditData((prev) => ({ ...prev, fieldValue: value }));
@@ -147,7 +148,7 @@ export const EditSiteField: React.FC<EditSiteFieldProps> = ({ currentSite, sites
     } else if (editField === "depositType") {
       edit = { field: editField, observedName: depositTypeStore.getByURI(val.fieldValue)!.name, normalizedURI: val.fieldValue };
     } else if (editField === "grade" || editField === "tonnage") {
-      edit = { field: editField, value: parseFloat(val.fieldValue), commodity };
+      edit = { field: editField, value: parseFloat(val.fieldValue), commodity: commodity.id };
     } else {
       throw new Error(`Unknown field ${editField}`);
     }
@@ -171,7 +172,7 @@ export const EditSiteField: React.FC<EditSiteFieldProps> = ({ currentSite, sites
           {editFieldComponent}
         </FormItem>
         <FormItem label="Reference" name="refDoc" tooltip="Source of the information (required)" required={true}>
-          <EditRefDoc availableDocs={docs} value={editData.refDoc} onChange={(doc) => setEditData({ ...editData, refDoc: doc })} />
+          <EditRefDoc siteName={dedupSite.name} commodityName={commodity.name} availableDocs={docs} value={editData.refDoc} onChange={(doc) => setEditData({ ...editData, refDoc: doc })} />
         </FormItem>
         <FormItem name="refComment" label="Comment">
           <Input.TextArea rows={3} value={editData.refComment} onChange={(e) => setEditData({ ...editData, refComment: e.target.value })} />
