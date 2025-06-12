@@ -10,6 +10,8 @@ interface FormField {
 export const AddFieldModal: React.FC = observer(() => {
   const { settingStore } = useStores();
   const displayField: { value: DisplayField; label: string }[] = [
+    { value: "siteType", label: "Site Type" },
+    { value: "siteRank", label: "Site Rank" },
     { value: "geology_info", label: "Geology Info" },
     { value: "discover_year", label: "Discover Year" },
     { value: "mineral_form", label: "Mineral Form" },

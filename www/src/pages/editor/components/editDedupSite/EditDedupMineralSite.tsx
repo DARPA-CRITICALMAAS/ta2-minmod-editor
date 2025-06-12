@@ -150,6 +150,37 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
   const scrollX = settingStore.displayColumns.size > 0;
 
   const columns: TableColumnsType<any> = useMemo(() => {
+    const typeAndRankColumns: TableColumnsType<any> = [];
+
+    if (settingStore.displayColumns.has("siteType")) {
+      typeAndRankColumns.push({
+        title: (
+          <Flex justify="space-between">
+            <span>Type</span>
+            <EditOutlined className={styles.editButton} onClick={() => setEditField("siteType")} />
+          </Flex>
+        ),
+        key: "siteType",
+        render: (_: any, site: MineralSite) => {
+          return <MayEmptyString value={site.siteType} />;
+        },
+      });
+    }
+    if (settingStore.displayColumns.has("siteRank")) {
+      typeAndRankColumns.push({
+        title: (
+          <Flex justify="space-between">
+            <span>Rank</span>
+            <EditOutlined className={styles.editButton} onClick={() => setEditField("siteRank")} />
+          </Flex>
+        ),
+        key: "siteRank",
+        render: (_: any, site: MineralSite) => {
+          return <MayEmptyString value={site.siteRank} />;
+        },
+      });
+    }
+
     const defaultColumns: TableColumnsType<any> = [
       {
         title: "",
@@ -218,6 +249,7 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
           );
         },
       },
+      ...typeAndRankColumns,
       {
         title: (
           <Flex justify="space-between">

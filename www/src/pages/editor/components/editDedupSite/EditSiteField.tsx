@@ -44,6 +44,10 @@ export const EditSiteField: React.FC<EditSiteFieldProps> = ({ dedupSite, current
     switch (editField) {
       case "name":
         return "Name";
+      case "siteType":
+        return "Site Type";
+      case "siteRank":
+        return "Site Rank";
       case "location":
         return "Location";
       case "country":
@@ -98,6 +102,12 @@ export const EditSiteField: React.FC<EditSiteFieldProps> = ({ dedupSite, current
     case "name":
       [editFieldComponent, initialValues] = getNameConfig(configArgs);
       break;
+    case "siteType":
+      [editFieldComponent, initialValues] = getTypeConfig(configArgs);
+      break;
+    case "siteRank":
+      [editFieldComponent, initialValues] = getRankConfig(configArgs);
+      break;
     case "depositType":
       [editFieldComponent, initialValues] = getDepositTypeConfig(configArgs);
       break;
@@ -139,7 +149,7 @@ export const EditSiteField: React.FC<EditSiteFieldProps> = ({ dedupSite, current
     }
 
     let edit: FieldEdit;
-    if (editField === "name" || editField === "location") {
+    if (editField === "name" || editField === "location" || editField === "siteType" || editField === "siteRank") {
       edit = { field: editField, value: val.fieldValue as string };
     } else if (editField === "country") {
       edit = { field: editField, observedName: countryStore.getByURI(val.fieldValue)!.name, normalizedURI: val.fieldValue };
@@ -207,6 +217,41 @@ const getNameConfig = ({ currentSite, sites, setFieldProvenance, value, setValue
     currentSite !== undefined
       ? {
           fieldValue: currentSite.name,
+          refDoc: RefDocV2.fromSite(currentSite),
+          refComment: currentSite.reference.comment,
+          refAppliedToAll: false,
+        }
+      : defaultInitialValues;
+  return [component, initialValues];
+};
+
+const getTypeConfig = ({ currentSite, sites, setFieldProvenance, value, setValue }: GetFieldConfig): [React.ReactElement, FormFields] => {
+  let options = sites.filter((site) => site.siteType !== undefined).map((site) => site.siteType!);
+  options = options.concat(["Mine", "Occurrence", "Prospect", "Past Producer", "Producer", "Plant", "NotSpecified"]);
+  const selectOptions = (_.uniqBy as any)(options).map((type: string) => ({ value: type, label: type }));
+  const component = <Select showSearch={true} options={selectOptions} optionFilterProp="label" value={value} onChange={(value) => setValue(value)} />;
+  console.log({ selectOptions, value });
+  const initialValues =
+    currentSite !== undefined
+      ? {
+          fieldValue: currentSite.siteType,
+          refDoc: RefDocV2.fromSite(currentSite),
+          refComment: currentSite.reference.comment,
+          refAppliedToAll: false,
+        }
+      : defaultInitialValues;
+  return [component, initialValues];
+};
+
+const getRankConfig = ({ currentSite, sites, setFieldProvenance, value, setValue }: GetFieldConfig): [React.ReactElement, FormFields] => {
+  let options = sites.filter((site) => site.siteRank !== undefined).map((site) => site.siteRank!);
+  options = options.concat(["A", "B", "C", "D", "E", "U"]);
+  const selectOptions = (_.uniqBy as any)(options).map((type: string) => ({ value: type, label: type }));
+  const component = <Select showSearch={true} options={selectOptions} optionFilterProp="label" value={value} onChange={(value) => setValue(value)} />;
+  const initialValues =
+    currentSite !== undefined
+      ? {
+          fieldValue: currentSite.siteRank,
           refDoc: RefDocV2.fromSite(currentSite),
           refComment: currentSite.reference.comment,
           refAppliedToAll: false,

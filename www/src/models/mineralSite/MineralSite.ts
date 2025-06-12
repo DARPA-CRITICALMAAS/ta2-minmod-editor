@@ -8,9 +8,11 @@ import { IStore, User } from "models";
 import { InternalID } from "models/typing";
 import { GeologyInfo } from "./GeologyInfo";
 
-export type EditableField = "name" | "location" | "country" | "stateOrProvince" | "depositType" | "grade" | "tonnage";
+export type EditableField = "name" | "siteType" | "siteRank" | "location" | "country" | "stateOrProvince" | "depositType" | "grade" | "tonnage";
 export type FieldEdit =
   | { field: "name"; value: string }
+  | { field: "siteType"; value: string }
+  | { field: "siteRank"; value: string }
   | { field: "location"; value: string }
   | { field: "country"; observedName: string; normalizedURI: string }
   | { field: "stateOrProvince"; observedName: string; normalizedURI: string }
@@ -122,6 +124,12 @@ export class MineralSite {
       case "name":
         this.name = edit.value;
         break;
+      case "siteType":
+        this.siteType = edit.value === "NotSpecified" ? undefined : edit.value;
+        break;
+      case "siteRank":
+        this.siteRank = edit.value === "U" ? undefined : edit.value;
+        break;
       case "location":
         if (this.locationInfo === undefined) {
           this.locationInfo = new LocationInfo({ location: edit.value, country: [], stateOrProvince: [] });
@@ -218,6 +226,10 @@ export class MineralSite {
     switch (field) {
       case "name":
         return this.name;
+      case "siteType":
+        return this.siteType;
+      case "siteRank":
+        return this.siteRank;
       case "location":
         return this.locationInfo?.location;
       case "country":
