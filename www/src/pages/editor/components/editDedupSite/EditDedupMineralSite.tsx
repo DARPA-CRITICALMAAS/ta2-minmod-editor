@@ -151,6 +151,7 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
 
   const columns: TableColumnsType<any> = useMemo(() => {
     const typeAndRankColumns: TableColumnsType<any> = [];
+    const beforeSourceColumns: TableColumnsType<any> = [];
 
     if (settingStore.displayColumns.has("siteType")) {
       typeAndRankColumns.push({
@@ -177,6 +178,108 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
         key: "siteRank",
         render: (_: any, site: MineralSite) => {
           return <MayEmptyString value={site.siteRank} />;
+        },
+      });
+    }
+
+    if (settingStore.displayColumns.has("geology_info")) {
+      beforeSourceColumns.push({
+        title: "Alternation",
+        key: "alternation",
+        render: (_: any, site: MineralSite) => {
+          return <MayEmptyString value={site.geologyInfo?.alternation} />;
+        },
+      });
+
+      beforeSourceColumns.push({
+        title: "Concentration Process",
+        key: "concentration-process",
+        render: (_: any, site: MineralSite) => {
+          return <MayEmptyString value={site.geologyInfo?.concentrationProcess} />;
+        },
+      });
+
+      beforeSourceColumns.push({
+        title: "Ore Control",
+        key: "ore-control",
+        render: (_: any, site: MineralSite) => {
+          return <MayEmptyString value={site.geologyInfo?.oreControl} />;
+        },
+      });
+
+      beforeSourceColumns.push({
+        title: "Host Rock Unit",
+        key: "host-rock-unit",
+        render: (_: any, site: MineralSite) => {
+          return <MayEmptyString value={site.geologyInfo?.hostRock?.unit} />;
+        },
+      });
+
+      beforeSourceColumns.push({
+        title: "Host Rock Type",
+        key: "host-rock-type",
+        render: (_: any, site: MineralSite) => {
+          return <MayEmptyString value={site.geologyInfo?.hostRock?.type} />;
+        },
+      });
+
+      beforeSourceColumns.push({
+        title: "Structure",
+        key: "structure",
+        render: (_: any, site: MineralSite) => {
+          return <MayEmptyString value={site.geologyInfo?.structure} />;
+        },
+      });
+
+      beforeSourceColumns.push({
+        title: "Associated Rock Unit",
+        key: "associated-rock-unit",
+        render: (_: any, site: MineralSite) => {
+          return <MayEmptyString value={site.geologyInfo?.associatedRock?.unit} />;
+        },
+      });
+
+      beforeSourceColumns.push({
+        title: "Associated Rock Type",
+        key: "associated-rock-type",
+        render: (_: any, site: MineralSite) => {
+          return <MayEmptyString value={site.geologyInfo?.associatedRock?.type} />;
+        },
+      });
+
+      beforeSourceColumns.push({
+        title: "Tectonic",
+        key: "tectonic",
+        render: (_: any, site: MineralSite) => {
+          return <MayEmptyString value={site.geologyInfo?.tectonic} />;
+        },
+      });
+    }
+    if (settingStore.displayColumns.has("mineral_form")) {
+      beforeSourceColumns.push({
+        title: "Mineral form",
+        key: "mineralForm",
+        render: (_: any, site: MineralSite) => {
+          return <MayEmptyString value={site.mineralForm.join(", ")} />;
+        },
+      });
+    }
+    if (settingStore.displayColumns.has("discover_year")) {
+      beforeSourceColumns.push({
+        title: "Discover year",
+        key: "discoverYear",
+        render: (_: any, site: MineralSite) => {
+          return <MayEmptyString value={site.discoveredYear?.toString()} />;
+        },
+      });
+    }
+
+    if (settingStore.displayColumns.has("comment")) {
+      beforeSourceColumns.push({
+        title: <span>Comment</span>,
+        key: "comment",
+        render: (_: any, site: MineralSite) => {
+          return <MayEmptyString value={site.reference.comment} />;
         },
       });
     }
@@ -343,118 +446,28 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
           return <Grade grade={site.gradeTonnage[commodity.id]?.totalGrade} />;
         },
       },
-    ];
-    if (settingStore.displayColumns.has("geology_info")) {
-      defaultColumns.push({
-        title: "Alternation",
-        key: "alternation",
+      ...beforeSourceColumns,
+      {
+        title: "Source",
+        key: "reference",
         render: (_: any, site: MineralSite) => {
-          return <MayEmptyString value={site.geologyInfo?.alternation} />;
+          return (
+            <div style={{ maxWidth: 200, display: "inline-block" }}>
+              <ReferenceComponent site={site} />
+              <Tooltip
+                trigger="click"
+                title="This key identifies same deposits from the same record of a data source. When select/unselect a deposit, all deposits with the same key will be selected/unselected together."
+              >
+                <Typography.Text type="secondary" strong={true} className="font-small" style={{ cursor: "pointer" }}>
+                  &nbsp;(
+                  {siteGroups.groups[siteGroups.site2groupKey[site.id]].label})
+                </Typography.Text>
+              </Tooltip>
+            </div>
+          );
         },
-      });
-
-      defaultColumns.push({
-        title: "Concentration Process",
-        key: "concentration-process",
-        render: (_: any, site: MineralSite) => {
-          return <MayEmptyString value={site.geologyInfo?.concentrationProcess} />;
-        },
-      });
-
-      defaultColumns.push({
-        title: "Ore Control",
-        key: "ore-control",
-        render: (_: any, site: MineralSite) => {
-          return <MayEmptyString value={site.geologyInfo?.oreControl} />;
-        },
-      });
-
-      defaultColumns.push({
-        title: "Host Rock Unit",
-        key: "host-rock-unit",
-        render: (_: any, site: MineralSite) => {
-          return <MayEmptyString value={site.geologyInfo?.hostRock?.unit} />;
-        },
-      });
-
-      defaultColumns.push({
-        title: "Host Rock Type",
-        key: "host-rock-type",
-        render: (_: any, site: MineralSite) => {
-          return <MayEmptyString value={site.geologyInfo?.hostRock?.type} />;
-        },
-      });
-
-      defaultColumns.push({
-        title: "Structure",
-        key: "structure",
-        render: (_: any, site: MineralSite) => {
-          return <MayEmptyString value={site.geologyInfo?.structure} />;
-        },
-      });
-
-      defaultColumns.push({
-        title: "Associated Rock Unit",
-        key: "associated-rock-unit",
-        render: (_: any, site: MineralSite) => {
-          return <MayEmptyString value={site.geologyInfo?.associatedRock?.unit} />;
-        },
-      });
-
-      defaultColumns.push({
-        title: "Associated Rock Type",
-        key: "associated-rock-type",
-        render: (_: any, site: MineralSite) => {
-          return <MayEmptyString value={site.geologyInfo?.associatedRock?.type} />;
-        },
-      });
-
-      defaultColumns.push({
-        title: "Tectonic",
-        key: "tectonic",
-        render: (_: any, site: MineralSite) => {
-          return <MayEmptyString value={site.geologyInfo?.tectonic} />;
-        },
-      });
-    }
-    if (settingStore.displayColumns.has("mineral_form")) {
-      defaultColumns.push({
-        title: "Mineral form",
-        key: "mineralForm",
-        render: (_: any, site: MineralSite) => {
-          return <MayEmptyString value={site.mineralForm.join(", ")} />;
-        },
-      });
-    }
-    if (settingStore.displayColumns.has("discover_year")) {
-      defaultColumns.push({
-        title: "Discover year",
-        key: "discoverYear",
-        render: (_: any, site: MineralSite) => {
-          return <MayEmptyString value={site.discoveredYear?.toString()} />;
-        },
-      });
-    }
-    defaultColumns.push({
-      title: "Source",
-      key: "reference",
-      render: (_: any, site: MineralSite) => {
-        return (
-          <div style={{ maxWidth: 200, display: "inline-block" }}>
-            <ReferenceComponent site={site} />
-            <Tooltip
-              trigger="click"
-              title="This key identifies same deposits from the same record of a data source. When select/unselect a deposit, all deposits with the same key will be selected/unselected together."
-            >
-              <Typography.Text type="secondary" strong={true} className="font-small" style={{ cursor: "pointer" }}>
-                &nbsp;(
-                {siteGroups.groups[siteGroups.site2groupKey[site.id]].label})
-              </Typography.Text>
-            </Tooltip>
-          </div>
-        );
       },
-    });
+    ];
 
     if (scrollX) {
       defaultColumns[0].fixed = "left";

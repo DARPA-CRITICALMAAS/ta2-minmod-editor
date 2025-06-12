@@ -1,6 +1,6 @@
 import { makeAutoObservable } from "mobx";
 
-export type DisplayField = "siteType" | "siteRank" | "geology_info" | "discover_year" | "mineral_form";
+export type DisplayField = "siteType" | "siteRank" | "geology_info" | "discover_year" | "mineral_form" | "comment";
 
 export class SettingStore {
   displayColumns: Set<DisplayField> = new Set();

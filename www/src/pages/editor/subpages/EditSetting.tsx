@@ -15,6 +15,7 @@ export const AddFieldModal: React.FC = observer(() => {
     { value: "geology_info", label: "Geology Info" },
     { value: "discover_year", label: "Discover Year" },
     { value: "mineral_form", label: "Mineral Form" },
+    { value: "comment", label: "Comment" },
   ];
 
   return (
