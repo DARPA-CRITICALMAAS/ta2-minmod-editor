@@ -136,6 +136,9 @@ export const EditSource: React.FC<{ siteName: string; commodityName: string; doc
     let errorMessage = undefined;
     if (doc.document.uri === currentUser.url) {
       docType = "unpublished";
+      if (doc.recordId === "") {
+        errorMessage = "Record ID cannot be empty";
+      }
     } else if (doc.document.isCDRDocument()) {
       docType = "report";
       if (!doc.document.isValidCDRDocumentId()) {
@@ -153,8 +156,11 @@ export const EditSource: React.FC<{ siteName: string; commodityName: string; doc
           docType = "article";
         }
       }
+
       if (!doc.document.isValid()) {
         errorMessage = docType === "database" ? "Invalid Database" : "Invalid Document URL";
+      } else if (doc.recordId === "") {
+        errorMessage = "Record ID cannot be empty";
       }
     }
 

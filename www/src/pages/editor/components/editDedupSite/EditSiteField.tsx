@@ -135,7 +135,7 @@ export const EditSiteField: React.FC<EditSiteFieldProps> = ({ dedupSite, current
   const isDataValid = () => {
     if (editField === undefined) return false;
     const val = editData;
-    if (val.refDoc === undefined || val.fieldValue === undefined || !val.refDoc.document.isValid()) {
+    if (val.refDoc === undefined || val.fieldValue === undefined || !val.refDoc.isValid()) {
       return false;
     }
     return true;
@@ -144,7 +144,7 @@ export const EditSiteField: React.FC<EditSiteFieldProps> = ({ dedupSite, current
   const onSave = (values: any) => {
     if (editField === undefined) return;
     const val = editData;
-    if (val.refDoc === undefined || val.fieldValue === undefined || !val.refDoc.document.isValid()) {
+    if (val.refDoc === undefined || val.fieldValue === undefined || !val.refDoc.isValid()) {
       return;
     }
 
