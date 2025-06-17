@@ -219,6 +219,13 @@ export class MineralSite {
     if (this.reference.document.uri !== reference.document.uri) {
       throw new Error(`Reference document URI mismatch: ${this.reference.document.uri} !== ${reference.document.uri}. A mineral Site should not reference to multiple documents.`);
     }
+
+    if (reference.document.title !== undefined) {
+      reference.document.title = reference.document.title.trim();
+      if (reference.document.title === "") {
+        reference.document.title = undefined;
+      }
+    }
     this.reference = reference;
   }
 
