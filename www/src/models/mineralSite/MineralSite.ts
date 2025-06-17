@@ -122,19 +122,19 @@ export class MineralSite {
   updateField(stores: IStore, edit: FieldEdit, reference: Reference) {
     switch (edit.field) {
       case "name":
-        this.name = edit.value;
+        this.name = edit.value.trim();
         break;
       case "siteType":
-        this.siteType = edit.value === "NotSpecified" ? undefined : edit.value;
+        this.siteType = edit.value === "NotSpecified" ? undefined : edit.value.trim();
         break;
       case "siteRank":
-        this.siteRank = edit.value === "U" ? undefined : edit.value;
+        this.siteRank = edit.value === "U" ? undefined : edit.value.trim();
         break;
       case "location":
         if (this.locationInfo === undefined) {
-          this.locationInfo = new LocationInfo({ location: edit.value, country: [], stateOrProvince: [] });
+          this.locationInfo = new LocationInfo({ location: edit.value.trim(), country: [], stateOrProvince: [] });
         } else {
-          this.locationInfo.location = edit.value;
+          this.locationInfo.location = edit.value.trim();
         }
         break;
       case "country":
