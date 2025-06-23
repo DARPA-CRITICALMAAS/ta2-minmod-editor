@@ -19,14 +19,6 @@ export class RefDocV2 {
     this.document = document;
   }
 
-  static empty(): RefDocV2 {
-    return new RefDocV2({
-      sourceId: "",
-      recordId: "",
-      document: new Document({ uri: "", title: "" }),
-    });
-  }
-
   static fromSite(site: MineralSite): RefDocV2 {
     return new RefDocV2({
       sourceId: site.sourceId,
@@ -60,7 +52,15 @@ export const EditRefDoc: React.FC<EditRefDocProps> = observer(({ siteName, commo
 
   const onUpdateOption = (index: number) => {
     if (index === availableDocs.length) {
-      onChange(RefDocV2.empty());
+      onChange(
+        new RefDocV2({
+          sourceId: "",
+          // because sourceId is empty, it is interpreted as an article and we need to set to "na" to be
+          // consistent with the code in EditSource component
+          recordId: "na",
+          document: new Document({ uri: "", title: "" }),
+        })
+      );
     } else {
       onChange(availableDocs[index]);
     }
@@ -159,7 +159,7 @@ export const EditSource: React.FC<{ siteName: string; commodityName: string; doc
 
       if (!doc.document.isValid()) {
         errorMessage = docType === "database" ? "Invalid Database" : "Invalid Document URL";
-      } else if (doc.recordId === "") {
+      } else if (docType === "database" && doc.recordId === "") {
         errorMessage = "Record ID cannot be empty";
       }
     }
