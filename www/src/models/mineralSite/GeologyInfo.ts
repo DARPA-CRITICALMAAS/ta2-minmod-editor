@@ -16,7 +16,7 @@ export class RockType {
 }
 
 export class GeologyInfo {
-  alternation?: string;
+  alteration?: string;
   concentrationProcess?: string;
   oreControl?: string;
   hostRock?: RockType;
@@ -25,7 +25,7 @@ export class GeologyInfo {
   tectonic?: string;
 
   public constructor({
-    alternation,
+    alteration,
     concentrationProcess,
     oreControl,
     hostRock,
@@ -33,7 +33,7 @@ export class GeologyInfo {
     structure,
     tectonic,
   }: {
-    alternation?: string;
+    alteration?: string;
     concentrationProcess?: string;
     oreControl?: string;
     hostRock?: RockType;
@@ -41,7 +41,7 @@ export class GeologyInfo {
     structure?: string;
     tectonic?: string;
   }) {
-    this.alternation = alternation;
+    this.alteration = alteration;
     this.concentrationProcess = concentrationProcess;
     this.oreControl = oreControl;
     this.hostRock = hostRock;
@@ -52,7 +52,7 @@ export class GeologyInfo {
 
   public static deserialize(obj: any) {
     return new GeologyInfo({
-      alternation: obj.alternation,
+      alteration: obj.alteration,
       concentrationProcess: obj.concentration_process,
       oreControl: obj.ore_control,
       hostRock: obj.host_rock === undefined ? undefined : new RockType(obj.host_rock),
@@ -64,7 +64,7 @@ export class GeologyInfo {
 
   public serialize() {
     return {
-      alternation: this.alternation,
+      alteration: this.alteration,
       concentration_process: this.concentrationProcess,
       ore_control: this.oreControl,
       host_rock: this.hostRock?.serialize(),

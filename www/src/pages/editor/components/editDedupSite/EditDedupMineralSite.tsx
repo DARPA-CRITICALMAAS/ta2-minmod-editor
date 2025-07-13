@@ -184,10 +184,10 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
 
     if (settingStore.displayColumns.has("geology_info")) {
       beforeSourceColumns.push({
-        title: "Alternation",
-        key: "alternation",
+        title: "Alteration",
+        key: "alteration",
         render: (_: any, site: MineralSite) => {
-          return <MayEmptyString value={site.geologyInfo?.alternation} />;
+          return <MayEmptyString value={site.geologyInfo?.alteration} />;
         },
       });
 
@@ -595,9 +595,9 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
                           bordered={true}
                           items={[
                             {
-                              key: "alternation",
-                              label: "Alternation",
-                              children: site.geologyInfo.alternation,
+                              key: "alteration",
+                              label: "Alteration",
+                              children: site.geologyInfo.alteration,
                             },
                             {
                               key: "concentration-process",
