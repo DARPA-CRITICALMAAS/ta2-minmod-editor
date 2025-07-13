@@ -16,7 +16,7 @@ export const Tonnage = ({ tonnage }: { tonnage?: number }) => {
     return "";
   }, [tonnage]);
 
-  return <span>{s}</span>;
+  return <span title={tonnage?.toString()}>{s}</span>;
 };
 
 export const Grade = ({ grade }: { grade?: number }) => {
@@ -28,7 +28,20 @@ export const Grade = ({ grade }: { grade?: number }) => {
     return "";
   }, [grade]);
 
-  return <span>{s}</span>;
+  return <span title={grade?.toString()}>{s}</span>;
+};
+
+export const ContainedMetal = ({ tonnage, grade }: { tonnage?: number; grade?: number }) => {
+  const [containedMetal, containedMetalDisplay] = useMemo(() => {
+    if (tonnage !== undefined && grade !== undefined) {
+      // calculate contained metal in tonnes (grade is in percent, tonnages in million tonnes)
+      const containedMetal = tonnage * grade * 10000;
+      return [containedMetal.toString(), removeTrailingZeros(containedMetal.toFixed(1)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")];
+    }
+    return ["", ""];
+  }, [tonnage, grade]);
+
+  return <span title={containedMetal}>{containedMetalDisplay}</span>;
 };
 
 export const Empty = () => <></>;

@@ -6,7 +6,7 @@ import { Button, Checkbox, Divider, Input, InputRef, Space, Table, TableColumnTy
 import { CheckCircleOutlined, CheckOutlined, EditOutlined, PlusOutlined, SearchOutlined, UngroupOutlined } from "@ant-design/icons";
 import { EditDedupMineralSite } from "./editDedupSite/EditDedupMineralSite";
 import { Entity } from "components/Entity";
-import { Empty, Grade, Tonnage } from "components/Primitive";
+import { ContainedMetal, Empty, Grade, Tonnage } from "components/Primitive";
 import { filter } from "lodash";
 import { FilterDropdownProps } from "antd/es/table/interface";
 import Highlighter from "react-highlight-words";
@@ -246,7 +246,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
           const isEdited = site.isEdited.grade_tonnage.some((gt) => gt.commodity == commodity?.id && gt.isEdited);
           return (
             <div className={isEdited ? styles.cellHighlight : ""}>
-              <Tonnage tonnage={site.origin.gradeTonnage?.totalTonnage} />{" "}
+              <Tonnage tonnage={site.origin.gradeTonnage?.totalTonnage} />
             </div>
           );
         },
@@ -263,7 +263,7 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
           const isEdited = site.isEdited.grade_tonnage.some((gt) => gt.commodity == commodity?.id && gt.isEdited);
           return (
             <div className={isEdited ? styles.cellHighlight : ""}>
-              <Grade grade={site.origin.gradeTonnage?.totalGrade} />{" "}
+              <Grade grade={site.origin.gradeTonnage?.totalGrade} />
             </div>
           );
         },
@@ -271,6 +271,26 @@ export const DedupMineralSiteTable: React.FC<DedupMineralSiteTableProps> = obser
           const gradeA = a.origin.gradeTonnage?.totalGrade || 0;
           const gradeB = b.origin.gradeTonnage?.totalGrade || 0;
           return gradeA - gradeB;
+        },
+      },
+      {
+        title: "Contained Metal (tonnes)",
+        key: "totalContainedMetal",
+        render: (_: any, site: FormattedDedupMineralSite) => {
+          const isEdited = site.isEdited.grade_tonnage.some((gt) => gt.commodity == commodity?.id && gt.isEdited);
+          return (
+            <div className={isEdited ? styles.cellHighlight : ""}>
+              <ContainedMetal tonnage={site.origin.gradeTonnage?.totalTonnage} grade={site.origin.gradeTonnage?.totalGrade} />
+            </div>
+          );
+        },
+        sorter: (a: FormattedDedupMineralSite, b: FormattedDedupMineralSite) => {
+          const tonnageA = a.origin.gradeTonnage?.totalTonnage || 0;
+          const tonnageB = b.origin.gradeTonnage?.totalTonnage || 0;
+
+          const gradeA = a.origin.gradeTonnage?.totalGrade || 0;
+          const gradeB = b.origin.gradeTonnage?.totalGrade || 0;
+          return tonnageA * gradeA - tonnageB * gradeB;
         },
       },
       {

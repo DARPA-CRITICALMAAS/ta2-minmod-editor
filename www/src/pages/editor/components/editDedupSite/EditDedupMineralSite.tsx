@@ -9,7 +9,7 @@ import styles from "./EditDedupMineralSite.module.css";
 import { Tooltip } from "antd";
 import { ReferenceComponent } from "pages/editor/components/editDedupSite/ReferenceComponent";
 import { InternalID } from "models/typing";
-import { Empty, Grade, MayEmptyString, Tonnage } from "components/Primitive";
+import { ContainedMetal, Empty, Grade, MayEmptyString, Tonnage } from "components/Primitive";
 
 const colors = ["magenta", "red", "volcano", "orange", "gold", "lime", "green", "cyan", "blue", "geekblue", "purple"];
 const getUserColor = (username: string) => {
@@ -444,6 +444,13 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
         key: "grade",
         render: (_: any, site: MineralSite) => {
           return <Grade grade={site.gradeTonnage[commodity.id]?.totalGrade} />;
+        },
+      },
+      {
+        title: "Contained Metal (tonnes)",
+        key: "containedMetal",
+        render: (_: any, site: MineralSite) => {
+          return <ContainedMetal tonnage={site.gradeTonnage[commodity.id]?.totalTonnage} grade={site.gradeTonnage[commodity.id]?.totalGrade} />;
         },
       },
       ...beforeSourceColumns,
