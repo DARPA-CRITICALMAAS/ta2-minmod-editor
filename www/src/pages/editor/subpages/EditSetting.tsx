@@ -13,7 +13,7 @@ export const AddFieldModal: React.FC = observer(() => {
     { value: "siteType", label: "Site Type" },
     { value: "siteRank", label: "Site Rank" },
     { value: "geology_info", label: "Geology Info" },
-    { value: "discover_year", label: "Discover Year" },
+    { value: "discover_year", label: "Discovery Year" },
     { value: "mineral_form", label: "Mineral Form" },
     { value: "comment", label: "Comment" },
   ];

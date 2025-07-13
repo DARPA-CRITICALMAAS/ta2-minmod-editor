@@ -266,7 +266,7 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
     }
     if (settingStore.displayColumns.has("discover_year")) {
       beforeSourceColumns.push({
-        title: "Discover year",
+        title: "Discovery year",
         key: "discoverYear",
         render: (_: any, site: MineralSite) => {
           return <MayEmptyString value={site.discoveredYear?.toString()} />;
@@ -645,7 +645,7 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
                   },
                   {
                     key: "discovered-year",
-                    label: "Discovered Year",
+                    label: "Discovery Year",
                     children: site.discoveredYear,
                     span: 3,
                   },
