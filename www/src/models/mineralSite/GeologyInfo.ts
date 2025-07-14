@@ -13,6 +13,10 @@ export class RockType {
       type: this.type,
     };
   }
+
+  public isEmpty(): boolean {
+    return (this.unit === undefined || this.unit.trim() === "") && (this.type === undefined || this.type.trim() === "");
+  }
 }
 
 export class GeologyInfo {
@@ -48,6 +52,16 @@ export class GeologyInfo {
     this.associatedRock = associatedRock;
     this.structure = structure;
     this.tectonic = tectonic;
+  }
+
+  isEmpty(): boolean {
+    return this.alteration === undefined &&
+      this.concentrationProcess === undefined &&
+      this.oreControl === undefined &&
+      this.hostRock === undefined &&
+      this.associatedRock === undefined &&
+      this.structure === undefined &&
+      this.tectonic === undefined;
   }
 
   public static deserialize(obj: any) {

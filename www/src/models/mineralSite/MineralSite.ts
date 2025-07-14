@@ -3,26 +3,17 @@ import { GradeTonnage } from "./GradeTonnage";
 import { Coordinates, LocationInfo } from "./LocationInfo";
 import { Reference, Document } from "./Reference";
 import { DedupMineralSite } from "../dedupMineralSite";
-import { MineralInventory } from "./MineralInventory";
+import { Measure, MineralInventory } from "./MineralInventory";
 import { IStore, User } from "models";
 import { InternalID } from "models/typing";
-import { GeologyInfo } from "./GeologyInfo";
+import { GeologyInfo, RockType } from "./GeologyInfo";
 
-export type EditableField = "name" | "siteType" | "siteRank" | "location" | "country" | "stateOrProvince" | "depositType" | "grade" | "tonnage";
-export type FieldEdit =
-  | { field: "name"; value: string }
-  | { field: "siteType"; value: string }
-  | { field: "siteRank"; value: string }
-  | { field: "location"; value: string }
-  | { field: "country"; observedName: string; normalizedURI: string }
-  | { field: "stateOrProvince"; observedName: string; normalizedURI: string }
-  | { field: "depositType"; observedName: string; normalizedURI: string }
-  | {
-    field: "grade";
-    value: number;
-    commodity: InternalID;
-  }
-  | { field: "tonnage"; value: number; commodity: InternalID };
+export type EditableField =
+  | "name" | "siteType" | "siteRank"
+  | "location" | "country" | "stateOrProvince"
+  | "depositType" | "mineralInventory" | "discoveredYear"
+  | "mineralForm" | "alteration" | "concentrationProcess"
+  | "oreControl" | "hostRock" | "associatedRock" | "structure" | "tectonic";
 
 export type MineralSiteConstructorArgs = {
   id: InternalID;
@@ -119,103 +110,285 @@ export class MineralSite {
     return this.reference.document;
   }
 
-  updateField(stores: IStore, edit: FieldEdit, reference: Reference) {
-    switch (edit.field) {
-      case "name":
-        this.name = edit.value.trim();
-        break;
-      case "siteType":
-        this.siteType = edit.value === "NotSpecified" ? undefined : edit.value.trim();
-        break;
-      case "siteRank":
-        this.siteRank = edit.value === "U" ? undefined : edit.value.trim();
-        break;
-      case "location":
-        if (this.locationInfo === undefined) {
-          this.locationInfo = new LocationInfo({ location: edit.value.trim(), country: [], stateOrProvince: [] });
-        } else {
-          this.locationInfo.location = edit.value.trim();
-        }
-        break;
-      case "country":
-        const country = [
-          new CandidateEntity({
-            source: this.createdBy, // this works because createdBy is a single item array for experts
-            confidence: 1.0,
-            normalizedURI: edit.normalizedURI,
-            observedName: edit.observedName,
-          }),
-        ];
+  setName(name: string, reference: Reference) {
+    name = name.trim();
+    if (name.length === 0) {
+      this.name = undefined;
+    } else {
+      this.name = name;
+    }
+    this.setReference(reference);
+  }
 
-        if (this.locationInfo === undefined) {
-          this.locationInfo = new LocationInfo({ country, stateOrProvince: [] });
-        } else {
-          this.locationInfo.country = country;
-        }
-        break;
-      case "stateOrProvince":
-        const stateOrProvince = [
-          new CandidateEntity({
-            source: this.createdBy, // this works because createdBy is a single item array for experts
-            confidence: 1.0,
-            normalizedURI: edit.normalizedURI,
-            observedName: edit.observedName,
-          }),
-        ];
-
-        if (this.locationInfo === undefined) {
-          this.locationInfo = new LocationInfo({ country: [], stateOrProvince });
-        } else {
-          this.locationInfo.stateOrProvince = stateOrProvince;
-        }
-        break;
-      case "depositType":
-        this.depositTypeCandidate = [
-          new CandidateEntity({
-            source: this.createdBy, // this works because createdBy is a single item array for experts
-            confidence: 1.0,
-            normalizedURI: edit.normalizedURI,
-            observedName: edit.observedName,
-          }),
-        ];
-        break;
-      case "grade":
-        if (this.gradeTonnage[edit.commodity] === undefined) {
-          this.gradeTonnage[edit.commodity] = new GradeTonnage({
-            commodity: edit.commodity,
-            totalGrade: edit.value,
-            totalTonnage: 0.0,
-          });
-        } else {
-          this.gradeTonnage[edit.commodity].totalGrade = edit.value;
-          if (this.gradeTonnage[edit.commodity].totalTonnage === undefined) {
-            this.gradeTonnage[edit.commodity].totalTonnage = 0.0;
-          }
-        }
-
-        this.mineralInventory = [MineralInventory.fromGradeTonnage(stores, this.createdBy, this.gradeTonnage[edit.commodity], reference)];
-        break;
-      case "tonnage":
-        if (this.gradeTonnage[edit.commodity] === undefined) {
-          this.gradeTonnage[edit.commodity] = new GradeTonnage({
-            commodity: edit.commodity,
-            totalTonnage: edit.value,
-            // set the grade to be very small, so the server is not going to discard this record
-            totalGrade: 0.000000001,
-          });
-        } else {
-          this.gradeTonnage[edit.commodity].totalTonnage = edit.value;
-          if (this.gradeTonnage[edit.commodity].totalGrade === undefined) {
-            this.gradeTonnage[edit.commodity].totalGrade = 0.000000001;
-          }
-        }
-
-        this.mineralInventory = [MineralInventory.fromGradeTonnage(stores, this.createdBy, this.gradeTonnage[edit.commodity], reference)];
-        break;
-      default:
-        throw new Error(`Unknown edit: ${edit}`);
+  setSiteType(siteType: string, reference: Reference) {
+    siteType = siteType.trim();
+    if (siteType.length === 0) {
+      throw new Error("Site type cannot be empty.");
     }
 
+    this.siteType = siteType === "NotSpecified" ? undefined : siteType;
+    this.setReference(reference);
+  }
+
+  setSiteRank(siteRank: string, reference: Reference) {
+    siteRank = siteRank.trim();
+    if (siteRank.length === 0) {
+      throw new Error("Site rank cannot be empty.");
+    }
+
+    this.siteRank = siteRank === "U" ? undefined : siteRank;
+    this.setReference(reference);
+  }
+
+  setLocation(location: string, reference: Reference) {
+    location = location.trim();
+    if (location.length === 0) {
+      if (this.locationInfo !== undefined) {
+        this.locationInfo.location = undefined;
+        if (this.locationInfo.isEmpty()) {
+          this.locationInfo = undefined;
+        }
+      }
+    } else {
+      if (this.locationInfo === undefined) {
+        this.locationInfo = new LocationInfo({ location, country: [], stateOrProvince: [] });
+      } else {
+        this.locationInfo.location = location;
+      }
+    }
+
+    this.setReference(reference);
+  }
+
+  setCountry(country: { observedName?: string; normalizedURI?: string }, reference: Reference) {
+    if (country.normalizedURI === undefined || country.normalizedURI.length === 0) {
+      if (this.locationInfo !== undefined) {
+        this.locationInfo.country = [];
+        if (this.locationInfo.isEmpty()) {
+          this.locationInfo = undefined;
+        }
+      }
+    } else {
+      if (this.locationInfo === undefined) {
+        this.locationInfo = new LocationInfo({ country: [], stateOrProvince: [] });
+      }
+
+      this.locationInfo.country = [
+        new CandidateEntity({
+          source: this.createdBy, // this works because createdBy is a single item array for experts
+          confidence: 1.0,
+          normalizedURI: country.normalizedURI,
+          observedName: country.observedName,
+        }),
+      ];
+    }
+    this.setReference(reference);
+  }
+
+  setStateOrProvince(stateOrProvince: { observedName?: string; normalizedURI?: string }, reference: Reference) {
+    if (stateOrProvince.normalizedURI === undefined || stateOrProvince.normalizedURI.length === 0) {
+      if (this.locationInfo !== undefined) {
+        this.locationInfo.stateOrProvince = [];
+        if (this.locationInfo.isEmpty()) {
+          this.locationInfo = undefined;
+        }
+      }
+    } else {
+      if (this.locationInfo === undefined) {
+        this.locationInfo = new LocationInfo({ country: [], stateOrProvince: [] });
+      }
+
+      this.locationInfo.stateOrProvince = [
+        new CandidateEntity({
+          source: this.createdBy, // this works because createdBy is a single item array for experts
+          confidence: 1.0,
+          normalizedURI: stateOrProvince.normalizedURI,
+          observedName: stateOrProvince.observedName,
+        }),
+      ];
+    }
+
+    this.setReference(reference);
+  }
+
+  setDepositType(depositType: { observedName?: string; normalizedURI?: string }, reference: Reference) {
+    if (depositType.normalizedURI === undefined || depositType.normalizedURI.length === 0) {
+      this.depositTypeCandidate = [];
+    } else {
+      this.depositTypeCandidate = [
+        new CandidateEntity({
+          source: this.createdBy, // this works because createdBy is a single item array for experts
+          confidence: 1.0,
+          normalizedURI: depositType.normalizedURI,
+          observedName: depositType.observedName,
+        }),
+      ];
+    }
+
+    this.setReference(reference);
+  }
+
+  setMineralInventory(gradeTonnage: { mineralInventory: MineralInventory[], gradeTonnage: { [commodity: InternalID]: GradeTonnage } }, reference: Reference) {
+    this.mineralInventory = gradeTonnage.mineralInventory;
+    this.gradeTonnage = gradeTonnage.gradeTonnage;
+    this.setReference(reference);
+  }
+
+  setDiscoveredYear(year: number | undefined, reference: Reference) {
+    this.discoveredYear = year;
+    this.setReference(reference);
+  }
+
+  setMineralForm(mineralForm: string[], reference: Reference) {
+    this.mineralForm = mineralForm;
+    this.setReference(reference);
+  }
+
+  setAlteration(alteration: string, reference: Reference) {
+    if (alteration.trim() === "") {
+      if (this.geologyInfo !== undefined) {
+        this.geologyInfo.alteration = undefined;
+        if (this.geologyInfo.isEmpty()) {
+          this.geologyInfo = undefined;
+        }
+      }
+    } else {
+      if (this.geologyInfo === undefined) {
+        this.geologyInfo = new GeologyInfo({});
+      }
+      this.geologyInfo.alteration = alteration.trim();
+    }
+
+    this.setReference(reference);
+  }
+
+  setConcentrationProcess(concentrationProcess: string, reference: Reference) {
+    if (concentrationProcess.trim() === "") {
+      if (this.geologyInfo !== undefined) {
+        this.geologyInfo.concentrationProcess = undefined;
+        if (this.geologyInfo.isEmpty()) {
+          this.geologyInfo = undefined;
+        }
+      }
+    } else {
+      if (this.geologyInfo === undefined) {
+        this.geologyInfo = new GeologyInfo({});
+      }
+      this.geologyInfo.concentrationProcess = concentrationProcess.trim();
+    }
+
+    this.setReference(reference);
+  }
+
+  setOreControl(oreControl: string, reference: Reference) {
+    if (oreControl.trim() === "") {
+      if (this.geologyInfo !== undefined) {
+        this.geologyInfo.oreControl = undefined;
+        if (this.geologyInfo.isEmpty()) {
+          this.geologyInfo = undefined;
+        }
+      }
+    } else {
+      if (this.geologyInfo === undefined) {
+        this.geologyInfo = new GeologyInfo({});
+      }
+      this.geologyInfo.oreControl = oreControl.trim();
+    }
+
+    this.setReference(reference);
+  }
+
+  setHostRock(hostRock: RockType, reference: Reference) {
+    hostRock.type = hostRock.type?.trim();
+    hostRock.unit = hostRock.unit?.trim();
+    if ((hostRock.type || "").length === 0) {
+      hostRock.type = undefined;
+    }
+    if ((hostRock.unit || "").length === 0) {
+      hostRock.unit = undefined;
+    }
+
+    if (hostRock.isEmpty()) {
+      if (this.geologyInfo !== undefined) {
+        this.geologyInfo.hostRock = undefined;
+        if (this.geologyInfo.isEmpty()) {
+          this.geologyInfo = undefined;
+        }
+      }
+    } else {
+      if (this.geologyInfo === undefined) {
+        this.geologyInfo = new GeologyInfo({});
+      }
+      this.geologyInfo.hostRock = hostRock;
+    }
+
+    this.setReference(reference);
+  }
+
+  setAssociatedRock(associatedRock: RockType, reference: Reference) {
+    associatedRock.type = associatedRock.type?.trim();
+    associatedRock.unit = associatedRock.unit?.trim();
+    if ((associatedRock.type || "").length === 0) {
+      associatedRock.type = undefined;
+    }
+    if ((associatedRock.unit || "").length === 0) {
+      associatedRock.unit = undefined;
+    }
+
+    if (associatedRock.isEmpty()) {
+      if (this.geologyInfo !== undefined) {
+        this.geologyInfo.associatedRock = undefined;
+        if (this.geologyInfo.isEmpty()) {
+          this.geologyInfo = undefined;
+        }
+      }
+    } else {
+      if (this.geologyInfo === undefined) {
+        this.geologyInfo = new GeologyInfo({});
+      }
+      this.geologyInfo.associatedRock = associatedRock;
+    }
+
+    this.setReference(reference);
+  }
+
+  setStructure(structure: string, reference: Reference) {
+    if (structure.trim() === "") {
+      if (this.geologyInfo !== undefined) {
+        this.geologyInfo.structure = undefined;
+        if (this.geologyInfo.isEmpty()) {
+          this.geologyInfo = undefined;
+        }
+      }
+    } else {
+      if (this.geologyInfo === undefined) {
+        this.geologyInfo = new GeologyInfo({});
+      }
+      this.geologyInfo.structure = structure.trim();
+    }
+
+    this.setReference(reference);
+  }
+
+  setTectonic(tectonic: string, reference: Reference) {
+    if (tectonic.trim() === "") {
+      if (this.geologyInfo !== undefined) {
+        this.geologyInfo.tectonic = undefined;
+        if (this.geologyInfo.isEmpty()) {
+          this.geologyInfo = undefined;
+        }
+      }
+    } else {
+      if (this.geologyInfo === undefined) {
+        this.geologyInfo = new GeologyInfo({});
+      }
+      this.geologyInfo.tectonic = tectonic.trim();
+    }
+
+    this.setReference(reference);
+  }
+
+  setReference(reference: Reference) {
     if (this.reference.document.uri !== reference.document.uri) {
       throw new Error(`Reference document URI mismatch: ${this.reference.document.uri} !== ${reference.document.uri}. A mineral Site should not reference to multiple documents.`);
     }
@@ -226,30 +399,8 @@ export class MineralSite {
         reference.document.title = undefined;
       }
     }
-    this.reference = reference;
-  }
 
-  getFieldValue(field: EditableField, commodity: InternalID): string | undefined {
-    switch (field) {
-      case "name":
-        return this.name;
-      case "siteType":
-        return this.siteType;
-      case "siteRank":
-        return this.siteRank;
-      case "location":
-        return this.locationInfo?.location;
-      case "country":
-        return this.locationInfo?.country[0]?.normalizedURI;
-      case "stateOrProvince":
-        return this.locationInfo?.stateOrProvince[0]?.normalizedURI;
-      case "depositType":
-        return this.depositTypeCandidate[0]?.normalizedURI;
-      case "grade":
-        return this.gradeTonnage[commodity]?.totalGrade?.toString();
-      case "tonnage":
-        return this.gradeTonnage[commodity]?.totalTonnage?.toString();
-    }
+    this.reference = reference;
   }
 }
 
@@ -288,8 +439,89 @@ export class DraftCreateMineralSite extends MineralSite {
 export class DraftUpdateMineralSite extends MineralSite {
   isSaved: boolean = true;
 
-  updateField(stores: IStore, edit: FieldEdit, reference: Reference) {
-    super.updateField(stores, edit, reference);
+
+  setName(name: string, reference: Reference) {
+    super.setName(name, reference);
+    this.isSaved = false;
+  }
+
+  setSiteType(siteType: string, reference: Reference) {
+    super.setSiteType(siteType, reference);
+    this.isSaved = false;
+  }
+
+  setSiteRank(siteRank: string, reference: Reference) {
+    super.setSiteRank(siteRank, reference);
+    this.isSaved = false;
+  }
+
+  setLocation(location: string, reference: Reference) {
+    super.setLocation(location, reference);
+    this.isSaved = false;
+  }
+
+  setCountry(country: { observedName?: string; normalizedURI?: string }, reference: Reference) {
+    super.setCountry(country, reference);
+    this.isSaved = false;
+  }
+
+  setStateOrProvince(stateOrProvince: { observedName?: string; normalizedURI?: string }, reference: Reference) {
+    super.setStateOrProvince(stateOrProvince, reference);
+    this.isSaved = false;
+  }
+
+  setDepositType(depositType: { observedName?: string; normalizedURI?: string }, reference: Reference) {
+    super.setDepositType(depositType, reference);
+    this.isSaved = false;
+  }
+
+  setMineralInventory(gradeTonnage: { mineralInventory: MineralInventory[], gradeTonnage: { [commodity: InternalID]: GradeTonnage } }, reference: Reference) {
+    super.setMineralInventory(gradeTonnage, reference);
+    this.isSaved = false;
+  }
+
+  setDiscoveredYear(year: number | undefined, reference: Reference) {
+    super.setDiscoveredYear(year, reference);
+    this.isSaved = false;
+  }
+
+  setMineralForm(mineralForm: string[], reference: Reference) {
+    super.setMineralForm(mineralForm, reference);
+    this.isSaved = false;
+  }
+
+  setAlteration(alteration: string, reference: Reference) {
+    super.setAlteration(alteration, reference);
+    this.isSaved = false;
+  }
+
+  setConcentrationProcess(concentrationProcess: string, reference: Reference) {
+    super.setConcentrationProcess(concentrationProcess, reference);
+    this.isSaved = false;
+  }
+
+  setOreControl(oreControl: string, reference: Reference) {
+    super.setOreControl(oreControl, reference);
+    this.isSaved = false;
+  }
+
+  setHostRock(hostRock: RockType, reference: Reference) {
+    super.setHostRock(hostRock, reference);
+    this.isSaved = false;
+  }
+
+  setAssociatedRock(associatedRock: RockType, reference: Reference) {
+    super.setAssociatedRock(associatedRock, reference);
+    this.isSaved = false;
+  }
+
+  setStructure(structure: string, reference: Reference) {
+    super.setStructure(structure, reference);
+    this.isSaved = false;
+  }
+
+  setTectonic(tectonic: string, reference: Reference) {
+    super.setTectonic(tectonic, reference);
     this.isSaved = false;
   }
 

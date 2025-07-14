@@ -1,8 +1,9 @@
 import { Button, Popconfirm } from "antd";
-import { CheckCircleOutlined, CheckOutlined, EditOutlined, PlusOutlined, SearchOutlined, UngroupOutlined } from "@ant-design/icons";
+import { CheckCircleOutlined } from "@ant-design/icons";
 import { Commodity, DedupMineralSite, DraftCreateMineralSite, DraftUpdateMineralSite, useStores } from "models";
 import { useState } from "react";
-import { CandidateEntity, LocationInfo } from "models/mineralSite";
+import { CandidateEntity, GradeTonnage, LocationInfo } from "models/mineralSite";
+import { MineralInventory } from "models/mineralSite/MineralInventory";
 
 export const ConfirmDataButton = ({ dedupSite, commodity }: { dedupSite: DedupMineralSite; commodity: Commodity }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -22,7 +23,13 @@ export const ConfirmDataButton = ({ dedupSite, commodity }: { dedupSite: DedupMi
     let draftSite: DraftCreateMineralSite | DraftUpdateMineralSite;
     if (userSite === undefined) {
       const baseSite = Object.values(sites)[0];
-      draftSite = DraftCreateMineralSite.fromMineralSite(dedupSite, currentUser, baseSite.sourceId, baseSite.recordId, baseSite.reference);
+      draftSite = DraftCreateMineralSite.fromMineralSite(
+        dedupSite,
+        currentUser,
+        baseSite.sourceId,
+        baseSite.recordId,
+        baseSite.reference
+      );
     } else {
       draftSite = new DraftUpdateMineralSite(userSite);
     }
@@ -48,39 +55,58 @@ export const ConfirmDataButton = ({ dedupSite, commodity }: { dedupSite: DedupMi
       if (dedupSite.location.country.length > 0) {
         draftSite.locationInfo.country = dedupSite.location.country.map((country) => {
           const entity = stores.countryStore.getByURI(country)!;
-          return new CandidateEntity({ source: draftSite.createdBy, confidence: 1.0, normalizedURI: entity.uri, observedName: entity.name });
+          return new CandidateEntity({
+            source: draftSite.createdBy,
+            confidence: 1.0,
+            normalizedURI: entity.uri,
+            observedName: entity.name,
+          });
         });
       }
       if (dedupSite.location.stateOrProvince.length > 0) {
         draftSite.locationInfo.stateOrProvince = dedupSite.location.stateOrProvince.map((stateOrProvince) => {
           const entity = stores.stateOrProvinceStore.getByURI(stateOrProvince)!;
-          return new CandidateEntity({ source: draftSite.createdBy, confidence: 1.0, normalizedURI: entity.uri, observedName: entity.name });
+          return new CandidateEntity({
+            source: draftSite.createdBy,
+            confidence: 1.0,
+            normalizedURI: entity.uri,
+            observedName: entity.name,
+          });
         });
       }
     }
     if (dedupSite.depositTypes.length > 0) {
       draftSite.depositTypeCandidate = dedupSite.depositTypes.map((depositType) => {
         const entity = stores.depositTypeStore.getByURI(depositType.uri)!;
-        return new CandidateEntity({ source: draftSite.createdBy, confidence: 1.0, normalizedURI: entity.uri, observedName: entity.name });
+        return new CandidateEntity({
+          source: draftSite.createdBy,
+          confidence: 1.0,
+          normalizedURI: entity.uri,
+          observedName: entity.name,
+        });
       });
     }
 
     if (dedupSite.gradeTonnage.totalGrade !== undefined && dedupSite.gradeTonnage.totalTonnage !== undefined) {
-      draftSite.updateField(
-        stores,
-        {
-          field: "grade",
-          commodity: dedupSite.gradeTonnage.commodity,
-          value: dedupSite.gradeTonnage.totalGrade,
-        },
-        draftSite.reference
+      // TODO: we should really merge the inventory of the same commodity, right now this code just replaces multiple
+      // inventories of the same commodity with a single one.
+
+      // filter out the existing inventory for this commodity
+      const lstInv = draftSite.mineralInventory.filter((inv) => inv.commodity.normalizedURI !== commodity.uri);
+      const gradeTonnage = Object.fromEntries(
+        Object.entries(draftSite.gradeTonnage).filter(([commodityId, gt]) => commodityId !== commodity.id)
       );
-      draftSite.updateField(
-        stores,
+
+      // append it back.
+      lstInv.push(
+        MineralInventory.fromGradeTonnage(commodity, draftSite.createdBy, dedupSite.gradeTonnage, draftSite.reference)
+      );
+      gradeTonnage[commodity.id] = dedupSite.gradeTonnage;
+
+      draftSite.setMineralInventory(
         {
-          field: "tonnage",
-          commodity: dedupSite.gradeTonnage.commodity,
-          value: dedupSite.gradeTonnage.totalTonnage,
+          mineralInventory: lstInv,
+          gradeTonnage: gradeTonnage,
         },
         draftSite.reference
       );

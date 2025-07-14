@@ -13,6 +13,13 @@ export class LocationInfo {
     this.crs = crs;
   }
 
+  public isEmpty(): boolean {
+    return this.location === undefined &&
+      this.country.length === 0 &&
+      this.stateOrProvince.length === 0 &&
+      this.crs === undefined;
+  }
+
   public static deserialize(obj: any) {
     return new LocationInfo({
       location: obj.location,

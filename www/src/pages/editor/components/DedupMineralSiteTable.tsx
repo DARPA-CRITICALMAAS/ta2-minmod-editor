@@ -4,7 +4,7 @@ import { observer } from "mobx-react-lite";
 import { Commodity } from "models/commodity";
 import { Button, Checkbox, Divider, Input, InputRef, Space, Table, TableColumnType, Typography, message } from "antd";
 import { CheckCircleOutlined, CheckOutlined, EditOutlined, PlusOutlined, SearchOutlined, UngroupOutlined } from "@ant-design/icons";
-import { EditDedupMineralSite } from "./editDedupSite/EditDedupMineralSite";
+import { EditDedupMineralSite } from "./edit-dedup-site/EditDedupMineralSite";
 import { Entity } from "components/Entity";
 import { ContainedMetal, Empty, Grade, Tonnage } from "components/Primitive";
 import { filter } from "lodash";

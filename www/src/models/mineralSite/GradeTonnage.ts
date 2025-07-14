@@ -11,6 +11,9 @@ export class GradeTonnage {
     this.totalTonnage = totalTonnage;
     this.totalGrade = totalGrade;
     this.totalContainedMetal = totalContainedMetal;
+    if (totalTonnage !== undefined && totalGrade !== undefined && totalContainedMetal === undefined) {
+      this.totalContainedMetal = totalTonnage * totalGrade / 100;
+    }
   }
 
   public clone(): GradeTonnage {

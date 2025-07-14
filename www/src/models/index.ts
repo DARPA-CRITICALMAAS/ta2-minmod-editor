@@ -9,7 +9,7 @@ import { DepositType, DepositTypeStore } from "./depositType";
 import { Country, CountryStore } from "./country";
 import { StateOrProvince, StateOrProvinceStore } from "./stateOrProvince";
 import { DedupMineralSite, DedupMineralSiteStore } from "./dedupMineralSite";
-import { FieldEdit, EditableField, Reference, Document, GradeTonnage, CandidateEntity, DraftCreateMineralSite, DraftUpdateMineralSite, MineralSite, MineralSiteStore } from "./mineralSite";
+import { EditableField, Reference, Document, GradeTonnage, CandidateEntity, DraftCreateMineralSite, DraftUpdateMineralSite, MineralSite, MineralSiteStore } from "./mineralSite";
 import { NamespaceManager, BindedNamespace } from "./Namespace";
 import { DataSource, DataSourceStore } from "./dataSource";
 import { Unit, UnitStore } from "./units";
@@ -62,4 +62,4 @@ export function useStores(): IStore {
 }
 
 export { Document, DedupMineralSite, MineralSite, Reference, GradeTonnage, CandidateEntity, DraftCreateMineralSite, DraftUpdateMineralSite, BindedNamespace, NamespaceManager };
-export type { FieldEdit, EditableField, Commodity, User, DepositType, Country, StateOrProvince, Unit, DataSource as Source };
+export type { EditableField, Commodity, User, DepositType, Country, StateOrProvince, Unit, DataSource as Source };

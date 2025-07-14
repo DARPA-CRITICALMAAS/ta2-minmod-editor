@@ -1,13 +1,13 @@
 import { Button, Flex, Space, Table, Typography, message, Checkbox, Tag, Descriptions, TableColumnsType } from "antd";
 import { observer } from "mobx-react-lite";
-import { useStores, Commodity, DedupMineralSite, MineralSite, Reference, DraftCreateMineralSite, FieldEdit, EditableField, DraftUpdateMineralSite } from "models";
+import { useStores, Commodity, DedupMineralSite, MineralSite, EditableField } from "models";
 import { useEffect, useMemo, useState } from "react";
-import { CanEntComponent, ListCanEntComponent } from "./CandidateEntity";
+import { CanEntComponent, ListCanEntComponent } from "../CandidateEntity";
 import { EditOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import { EditSiteField } from "./EditSiteField";
 import styles from "./EditDedupMineralSite.module.css";
 import { Tooltip } from "antd";
-import { ReferenceComponent } from "pages/editor/components/editDedupSite/ReferenceComponent";
+import { ReferenceComponent } from "pages/editor/components/edit-dedup-site/ReferenceComponent";
 import { InternalID } from "models/typing";
 import { ContainedMetal, Empty, Grade, MayEmptyString, Tonnage } from "components/Primitive";
 import { CommodityList } from "../CommodityList";
@@ -185,7 +185,12 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
 
     if (settingStore.displayColumns.has("geology_info")) {
       beforeSourceColumns.push({
-        title: "Alteration",
+        title: (
+          <Flex justify="space-between">
+            <span>Alteration</span>
+            <EditOutlined className={styles.editButton} onClick={() => setEditField("alteration")} />
+          </Flex>
+        ),
         key: "alteration",
         render: (_: any, site: MineralSite) => {
           return <MayEmptyString value={site.geologyInfo?.alteration} />;
@@ -193,7 +198,12 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
       });
 
       beforeSourceColumns.push({
-        title: "Concentration Process",
+        title: (
+          <Flex justify="space-between">
+            <span>Concentration Process</span>
+            <EditOutlined className={styles.editButton} onClick={() => setEditField("concentrationProcess")} />
+          </Flex>
+        ),
         key: "concentration-process",
         render: (_: any, site: MineralSite) => {
           return <MayEmptyString value={site.geologyInfo?.concentrationProcess} />;
@@ -201,7 +211,12 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
       });
 
       beforeSourceColumns.push({
-        title: "Ore Control",
+        title: (
+          <Flex justify="space-between">
+            <span>Ore Control</span>
+            <EditOutlined className={styles.editButton} onClick={() => setEditField("oreControl")} />
+          </Flex>
+        ),
         key: "ore-control",
         render: (_: any, site: MineralSite) => {
           return <MayEmptyString value={site.geologyInfo?.oreControl} />;
@@ -209,7 +224,12 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
       });
 
       beforeSourceColumns.push({
-        title: "Host Rock Unit",
+        title: (
+          <Flex justify="space-between">
+            <span>Host Rock Unit</span>
+            <EditOutlined className={styles.editButton} onClick={() => setEditField("hostRock")} />
+          </Flex>
+        ),
         key: "host-rock-unit",
         render: (_: any, site: MineralSite) => {
           return <MayEmptyString value={site.geologyInfo?.hostRock?.unit} />;
@@ -217,7 +237,12 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
       });
 
       beforeSourceColumns.push({
-        title: "Host Rock Type",
+        title: (
+          <Flex justify="space-between">
+            <span>Host Rock Type</span>
+            <EditOutlined className={styles.editButton} onClick={() => setEditField("hostRock")} />
+          </Flex>
+        ),
         key: "host-rock-type",
         render: (_: any, site: MineralSite) => {
           return <MayEmptyString value={site.geologyInfo?.hostRock?.type} />;
@@ -233,7 +258,12 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
       });
 
       beforeSourceColumns.push({
-        title: "Associated Rock Unit",
+        title: (
+          <Flex justify="space-between">
+            <span>Associated Rock Unit</span>
+            <EditOutlined className={styles.editButton} onClick={() => setEditField("associatedRock")} />
+          </Flex>
+        ),
         key: "associated-rock-unit",
         render: (_: any, site: MineralSite) => {
           return <MayEmptyString value={site.geologyInfo?.associatedRock?.unit} />;
@@ -241,7 +271,12 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
       });
 
       beforeSourceColumns.push({
-        title: "Associated Rock Type",
+        title: (
+          <Flex justify="space-between">
+            <span>Associated Rock Type</span>
+            <EditOutlined className={styles.editButton} onClick={() => setEditField("associatedRock")} />
+          </Flex>
+        ),
         key: "associated-rock-type",
         render: (_: any, site: MineralSite) => {
           return <MayEmptyString value={site.geologyInfo?.associatedRock?.type} />;
@@ -249,7 +284,12 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
       });
 
       beforeSourceColumns.push({
-        title: "Tectonic",
+        title: (
+          <Flex justify="space-between">
+            <span>Tectonic</span>
+            <EditOutlined className={styles.editButton} onClick={() => setEditField("tectonic")} />
+          </Flex>
+        ),
         key: "tectonic",
         render: (_: any, site: MineralSite) => {
           return <MayEmptyString value={site.geologyInfo?.tectonic} />;
@@ -258,7 +298,12 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
     }
     if (settingStore.displayColumns.has("mineral_form")) {
       beforeSourceColumns.push({
-        title: "Mineral form",
+        title: (
+          <Flex justify="space-between">
+            <span>Mineral Form</span>
+            <EditOutlined className={styles.editButton} onClick={() => setEditField("mineralForm")} />
+          </Flex>
+        ),
         key: "mineralForm",
         render: (_: any, site: MineralSite) => {
           return <MayEmptyString value={site.mineralForm.join(", ")} />;
@@ -267,7 +312,12 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
     }
     if (settingStore.displayColumns.has("discover_year")) {
       beforeSourceColumns.push({
-        title: "Discovery year",
+        title: (
+          <Flex justify="space-between">
+            <span>Discovery Year</span>
+            <EditOutlined className={styles.editButton} onClick={() => setEditField("discoveredYear")} />
+          </Flex>
+        ),
         key: "discoverYear",
         render: (_: any, site: MineralSite) => {
           return <MayEmptyString value={site.discoveredYear?.toString()} />;
@@ -277,7 +327,7 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
 
     if (settingStore.displayColumns.has("comment")) {
       beforeSourceColumns.push({
-        title: <span>Comment</span>,
+        title: "Comment",
         key: "comment",
         render: (_: any, site: MineralSite) => {
           return <MayEmptyString value={site.reference.comment} />;
@@ -303,7 +353,12 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
             />
             <button
               type="button"
-              className={"ant-table-row-expand-icon " + (expandedRowKeys.has(site.id) ? "ant-table-row-expand-icon-expanded" : "ant-table-row-expand-icon-collapsed")}
+              className={
+                "ant-table-row-expand-icon " +
+                (expandedRowKeys.has(site.id)
+                  ? "ant-table-row-expand-icon-expanded"
+                  : "ant-table-row-expand-icon-collapsed")
+              }
               style={{ borderRadius: 4, borderColor: "#bbb", opacity: 0.8 }}
               onClick={() => {
                 const newExpandedRowKeys = new Set(expandedRowKeys);
@@ -398,7 +453,9 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
         ),
         key: "state/province",
         render: (_: any, site: MineralSite) => {
-          return <ListCanEntComponent entities={site.locationInfo?.stateOrProvince || []} store="stateOrProvinceStore" />;
+          return (
+            <ListCanEntComponent entities={site.locationInfo?.stateOrProvince || []} store="stateOrProvinceStore" />
+          );
         },
       },
       {
@@ -427,7 +484,7 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
         title: (
           <Flex justify="space-between">
             <span>Tonnage (Mt)</span>
-            <EditOutlined className={styles.editButton} onClick={() => setEditField("tonnage")} />
+            <EditOutlined className={styles.editButton} onClick={() => setEditField("mineralInventory")} />
           </Flex>
         ),
         key: "tonnage",
@@ -439,7 +496,7 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
         title: (
           <Flex justify="space-between">
             <span>Grade (%)</span>
-            <EditOutlined className={styles.editButton} onClick={() => setEditField("grade")} />
+            <EditOutlined className={styles.editButton} onClick={() => setEditField("mineralInventory")} />
           </Flex>
         ),
         key: "grade",
@@ -451,7 +508,12 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
         title: "Contained Metal (tonnes)",
         key: "containedMetal",
         render: (_: any, site: MineralSite) => {
-          return <ContainedMetal tonnage={site.gradeTonnage[commodity.id]?.totalTonnage} grade={site.gradeTonnage[commodity.id]?.totalGrade} />;
+          return (
+            <ContainedMetal
+              tonnage={site.gradeTonnage[commodity.id]?.totalTonnage}
+              grade={site.gradeTonnage[commodity.id]?.totalGrade}
+            />
+          );
         },
       },
       ...beforeSourceColumns,
@@ -497,31 +559,6 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
 
     fetchData();
   }, [dedupSite.sites, mineralSiteStore]);
-
-  const onEditFinish = (change?: { edit: FieldEdit; sourceId: string; recordId: string; reference: Reference }) => {
-    if (change === undefined) {
-      setEditField(undefined);
-      return;
-    }
-
-    const currentUser = userStore.getCurrentUser()!;
-    const existingSite = siteGroups.sites.find((site) => site.createdBy.includes(currentUser.url));
-    let cb;
-    if (existingSite === undefined || existingSite.sourceId !== change.sourceId || existingSite.recordId !== change.recordId || existingSite.reference.document.uri !== change.reference.document.uri) {
-      // when reference change, it will be a new site
-      const draftSite = DraftCreateMineralSite.fromMineralSite(dedupSite, currentUser, change.sourceId, change.recordId, change.reference);
-      draftSite.updateField(stores, change.edit, change.reference);
-      cb = mineralSiteStore.createAndUpdateDedup(dedupSite.commodity, draftSite);
-    } else {
-      const draftSite = new DraftUpdateMineralSite(existingSite);
-      draftSite.updateField(stores, change.edit, change.reference);
-      cb = mineralSiteStore.updateAndUpdateDedup(dedupSite.commodity, draftSite);
-    }
-
-    cb.then(() => {
-      setEditField(undefined);
-    });
-  };
 
   const currentSite = siteGroups.sites.find((site) => site.createdBy == user.url);
 
@@ -671,7 +708,15 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
         }}
         scroll={scrollX ? { x: "max-content" } : undefined}
       />
-      <EditSiteField key={editField} dedupSite={dedupSite} sites={siteGroups.sites} currentSite={currentSite} editField={editField} onFinish={onEditFinish} commodity={commodity} />
+      <EditSiteField
+        key={editField}
+        dedupSite={dedupSite}
+        sites={siteGroups.sites}
+        currentSite={currentSite}
+        editField={editField}
+        onCancel={() => setEditField(undefined)}
+        commodity={commodity}
+      />
     </Flex>
   );
 }) as React.FC<EditDedupMineralSiteProps>;
