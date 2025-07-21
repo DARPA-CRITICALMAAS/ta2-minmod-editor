@@ -12,6 +12,23 @@ interface FormattedDedupMineralSiteIsEdited {
   state_or_province: boolean;
   deposit_types: boolean[];
   grade_tonnage: { commodity: InternalID, isEdited: boolean }[];
+  mineral_form: boolean;
+  geology_info: {
+    alteration: boolean;
+    concentrationProcess: boolean;
+    oreControl: boolean;
+    hostRock: {
+      unit: boolean;
+      type: boolean;
+    };
+    associatedRock: {
+      unit: boolean;
+      type: boolean;
+    };
+    structure: boolean;
+    tectonic: boolean;
+  };
+  discovered_year: boolean;
 }
 
 export class FormattedDedupMineralSite {
@@ -39,9 +56,10 @@ export const extractUsernamesFromDedupSite = (dedupSite: DedupMineralSite): stri
 export function getFormattedDedupmineralsite(site: DedupMineralSite, currentUsernames: string[]): FormattedDedupMineralSite {
   const isEdited: FormattedDedupMineralSiteIsEdited = {} as FormattedDedupMineralSiteIsEdited;
 
-  for (const field of ["name", "type", "rank", "coordinates", "country", "state_or_province"] as const) {
-    if (site.trace[field] === undefined) continue;
-    const username = extractUsernameFromSite(site.trace[field]);
+  for (const field of ["name", "type", "rank", "coordinates", "country", "state_or_province", "mineral_form", "discovered_year"] as const) {
+    const fieldTrace = site.trace[field];
+    if (fieldTrace === undefined) continue;
+    const username = extractUsernameFromSite(fieldTrace);
     isEdited[field] = username !== undefined && currentUsernames.includes(username);
   }
 
@@ -57,6 +75,42 @@ export function getFormattedDedupmineralsite(site: DedupMineralSite, currentUser
       const username = extractUsernameFromSite(item.site_id);
       return { commodity: item.commodity, isEdited: username !== undefined && currentUsernames.includes(username) };
     });
+  }
+
+  isEdited.geology_info = {
+    alteration: false,
+    concentrationProcess: false,
+    oreControl: false,
+    hostRock: {
+      unit: false,
+      type: false,
+    },
+    associatedRock: {
+      unit: false,
+      type: false,
+    },
+    structure: false,
+    tectonic: false,
+  };
+
+  if (site.trace.geology_info !== undefined) {
+    for (const field of ["alteration", "concentrationProcess", "oreControl", "structure", "tectonic"] as const) {
+      const fieldTrace = site.trace.geology_info[field];
+      if (fieldTrace === undefined) continue;
+      const username = extractUsernameFromSite(fieldTrace);
+      isEdited.geology_info[field] = username !== undefined && currentUsernames.includes(username);
+    }
+
+    for (const field of ["hostRock", "associatedRock"] as const) {
+      const fieldTrace = site.trace.geology_info[field];
+      if (fieldTrace === undefined) continue;
+      for (const subField of ["unit", "type"] as const) {
+        const subFieldTrace = fieldTrace[subField];
+        if (subFieldTrace === undefined) continue;
+        const username = extractUsernameFromSite(subFieldTrace);
+        isEdited.geology_info[field][subField] = username !== undefined && currentUsernames.includes(username);
+      }
+    }
   }
 
   return new FormattedDedupMineralSite(site, isEdited);

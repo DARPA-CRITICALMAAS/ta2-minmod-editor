@@ -183,6 +183,20 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
       });
     }
 
+    if (settingStore.displayColumns.has("mineral_form")) {
+      beforeSourceColumns.push({
+        title: (
+          <Flex justify="space-between">
+            <span>Mineral Form</span>
+            <EditOutlined className={styles.editButton} onClick={() => setEditField("mineralForm")} />
+          </Flex>
+        ),
+        key: "mineralForm",
+        render: (_: any, site: MineralSite) => {
+          return <MayEmptyString value={site.mineralForm.join(", ")} />;
+        },
+      });
+    }
     if (settingStore.displayColumns.has("geology_info")) {
       beforeSourceColumns.push({
         title: (
@@ -293,20 +307,6 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
         key: "tectonic",
         render: (_: any, site: MineralSite) => {
           return <MayEmptyString value={site.geologyInfo?.tectonic} />;
-        },
-      });
-    }
-    if (settingStore.displayColumns.has("mineral_form")) {
-      beforeSourceColumns.push({
-        title: (
-          <Flex justify="space-between">
-            <span>Mineral Form</span>
-            <EditOutlined className={styles.editButton} onClick={() => setEditField("mineralForm")} />
-          </Flex>
-        ),
-        key: "mineralForm",
-        render: (_: any, site: MineralSite) => {
-          return <MayEmptyString value={site.mineralForm.join(", ")} />;
         },
       });
     }
@@ -595,7 +595,8 @@ export const EditDedupMineralSite = observer(({ dedupSite, commodity }: EditDedu
   }
 
   return (
-    <Flex vertical={true} gap="small" style={scrollX ? { width: "calc(100vw - 44px - 44px)" } : {}}>
+    // -44px for the left & right padding of the main container, -16px for the left & right padding of the expandable row
+    <Flex vertical={true} gap="small" style={scrollX ? { width: "calc(100vw - 44px - 44px - 16px - 16px)" } : {}}>
       {groupBtns}
       <Table<MineralSite>
         className={styles.table}

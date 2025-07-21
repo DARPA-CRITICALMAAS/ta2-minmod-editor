@@ -36,7 +36,10 @@ export const ContainedMetal = ({ tonnage, grade }: { tonnage?: number; grade?: n
     if (tonnage !== undefined && grade !== undefined) {
       // calculate contained metal in tonnes (grade is in percent, tonnages in million tonnes)
       const containedMetal = tonnage * grade * 10000;
-      return [containedMetal.toString(), removeTrailingZeros(containedMetal.toFixed(1)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")];
+      return [
+        containedMetal.toString(),
+        removeTrailingZeros(containedMetal.toFixed(1)).replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+      ];
     }
     return ["", ""];
   }, [tonnage, grade]);
@@ -46,7 +49,7 @@ export const ContainedMetal = ({ tonnage, grade }: { tonnage?: number; grade?: n
 
 export const Empty = () => <></>;
 
-export const MayEmptyString = ({ value }: { value?: string }) => {
+export const MayEmptyString = ({ value }: { value?: string | number }) => {
   if (value !== undefined) {
     return <span>{value}</span>;
   }

@@ -9,6 +9,7 @@ import { GradeTonnage } from "../mineralSite";
 import { InternalID } from "../typing";
 import { StateOrProvince } from "models/stateOrProvince";
 import { Country, DepositType } from "models";
+import { GeologyInfo } from "models/mineralSite/GeologyInfo";
 
 interface SearchCondition {
   commodity: InternalID;
@@ -261,6 +262,9 @@ export class DedupMineralSiteStore extends RStore<string, DedupMineralSite> {
           })
           : undefined,
       gradeTonnage: GradeTonnage.deserialize(record.grade_tonnage[0]),
+      mineralForm: record.mineral_form,
+      geologyInfo: record.geology_info !== undefined ? GeologyInfo.deserialize(record.geology_info) : undefined,
+      discoveredYear: record.discovered_year,
       modifiedAt: record.modified_at,
       trace: record.trace || {},
     });

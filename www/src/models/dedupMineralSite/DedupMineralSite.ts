@@ -1,3 +1,4 @@
+import { GeologyInfo } from "models/mineralSite/GeologyInfo";
 import { CountryStore } from "../country";
 import { DepositTypeStore } from "../depositType";
 import { CandidateEntity, GradeTonnage, LocationInfo } from "../mineralSite";
@@ -106,14 +107,31 @@ export class DedupMineralSiteLocation {
 }
 
 export interface Trace {
-  name: InternalID;
-  type: InternalID;
-  rank: InternalID;
-  coordinates: InternalID;
-  country: InternalID;
-  state_or_province: InternalID;
-  deposit_types: InternalID[];
+  name?: InternalID;
+  type?: InternalID;
+  rank?: InternalID;
+  coordinates?: InternalID;
+  country?: InternalID;
+  state_or_province?: InternalID;
+  deposit_types?: InternalID[];
   grade_tonnage: { commodity: InternalID, site_id: InternalID }[];
+  mineral_form?: InternalID;
+  geology_info?: {
+    alteration?: InternalID;
+    concentrationProcess?: InternalID;
+    oreControl?: InternalID;
+    hostRock?: {
+      unit?: InternalID;
+      type?: InternalID;
+    };
+    associatedRock?: {
+      unit?: InternalID;
+      type?: InternalID;
+    };
+    structure?: InternalID;
+    tectonic?: InternalID;
+  },
+  discovered_year?: InternalID;
 }
 
 export class DedupMineralSite {
@@ -126,6 +144,9 @@ export class DedupMineralSite {
   depositTypes: DedupMineralSiteDepositType[];
   location?: DedupMineralSiteLocation;
   gradeTonnage: GradeTonnage;
+  mineralForm: string[];
+  geologyInfo?: GeologyInfo;
+  discoveredYear?: number;
   modifiedAt: string;
   trace: Trace;
 
@@ -139,6 +160,9 @@ export class DedupMineralSite {
     depositTypes,
     location,
     gradeTonnage,
+    mineralForm,
+    geologyInfo,
+    discoveredYear,
     modifiedAt,
     trace
   }: {
@@ -151,6 +175,9 @@ export class DedupMineralSite {
     depositTypes: DedupMineralSiteDepositType[];
     location?: DedupMineralSiteLocation;
     gradeTonnage: GradeTonnage;
+    mineralForm: string[];
+    geologyInfo?: GeologyInfo;
+    discoveredYear?: number;
     modifiedAt: string;
     trace: Trace;
   }) {
@@ -163,6 +190,9 @@ export class DedupMineralSite {
     this.depositTypes = depositTypes;
     this.location = location;
     this.gradeTonnage = gradeTonnage;
+    this.mineralForm = mineralForm;
+    this.geologyInfo = geologyInfo;
+    this.discoveredYear = discoveredYear;
     this.modifiedAt = modifiedAt;
     this.trace = trace;
   }
